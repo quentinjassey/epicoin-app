@@ -7,7 +7,12 @@ node_modules/
 .expo/
 dist/
 web-build/
-expo-env.d.ts
+
+# Environment variables & Secrets
+.env
+.env.local
+.env*.local
+*.env
 
 # Native
 .kotlin/
@@ -30,12 +35,54 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
-.env*.local
-
 # typescript
 *.tsbuildinfo
 
-# generated native folders
-/ios
-/android
+# iOS builds (keep ios/ folder for config)
+ios/Pods/
+ios/build/
+ios/*.xcworkspace/xcuserdata/
+ios/*.xcodeproj/xcuserdata/
+ios/*.xcodeproj/project.xcworkspace/xcuserdata/
+
+# Android builds (keep android/ folder for config)
+android/.gradle/
+android/build/
+android/app/build/
+android/.idea/
+android/local.properties
+
+# Python (ML training)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+*.pkl
+*.joblib
+
+# ML Models & Data (keep only trained models, not training data)
+supabase/functions/fraud-detection/*.pkl
+supabase/functions/fraud-detection/*.csv
+supabase/functions/fraud-detection/data/*.csv
+supabase/functions/fraud-detection/venv/
+
+# Supabase
+.branches/
+supabase/.temp/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/

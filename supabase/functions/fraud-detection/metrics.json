@@ -1,0 +1,92 @@
+{
+  "dataset": "PaySim",
+  "test_date": "2026-01-20T16:17:05.560465",
+  "best_model": "XGBoost",
+  "models": [
+    {
+      "model": "Logistic Regression",
+      "train_time_s": 10.4,
+      "precision": 0.04,
+      "recall": 0.933,
+      "f1_score": 0.078,
+      "auc_roc": 0.991,
+      "latency_p50_ms": 0.02,
+      "latency_p95_ms": 0.02,
+      "latency_p99_ms": 0.03
+    },
+    {
+      "model": "Random Forest",
+      "train_time_s": 61.5,
+      "precision": 0.999,
+      "recall": 0.996,
+      "f1_score": 0.998,
+      "auc_roc": 1.0,
+      "latency_p50_ms": 15.64,
+      "latency_p95_ms": 28.66,
+      "latency_p99_ms": 64.5,
+      "top_features": [
+        {
+          "feature_idx": 7,
+          "importance": 0.358
+        },
+        {
+          "feature_idx": 2,
+          "importance": 0.133
+        },
+        {
+          "feature_idx": 3,
+          "importance": 0.102
+        },
+        {
+          "feature_idx": 12,
+          "importance": 0.096
+        },
+        {
+          "feature_idx": 10,
+          "importance": 0.072
+        }
+      ]
+    },
+    {
+      "model": "XGBoost",
+      "train_time_s": 7.07,
+      "precision": 0.965,
+      "recall": 0.997,
+      "f1_score": 0.981,
+      "auc_roc": 1.0,
+      "latency_p50_ms": 0.17,
+      "latency_p95_ms": 0.23,
+      "latency_p99_ms": 0.31,
+      "top_features": [
+        {
+          "feature_idx": 7,
+          "importance": 0.477
+        },
+        {
+          "feature_idx": 12,
+          "importance": 0.475
+        },
+        {
+          "feature_idx": 1,
+          "importance": 0.034
+        },
+        {
+          "feature_idx": 3,
+          "importance": 0.004
+        },
+        {
+          "feature_idx": 9,
+          "importance": 0.002
+        }
+      ]
+    }
+  ],
+  "requirements": {
+    "recall_min": 0.85,
+    "latency_p95_max_ms": 300
+  },
+  "validation": {
+    "recall_passed": true,
+    "latency_passed": true
+  }
+}
