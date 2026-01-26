@@ -6,11 +6,17 @@ const corsHeaders = {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Seuils de décision
-const RISK_THRESHOLDS = {
+// Seuils de décision par défaut (si config non disponible)
+const DEFAULT_RISK_THRESHOLDS = {
     LOW: 30,      // 0-30: Approve automatiquement
     MEDIUM: 70,   // 31-70: Revue manuelle
     HIGH: 71      // 71-100: Bloquer automatiquement
+}
+
+// Poids par défaut (si config non disponible)
+const DEFAULT_WEIGHTS = {
+    ML: 0.40,
+    HEURISTIC: 0.60
 }
 
 // Poids des features enrichis
@@ -146,8 +152,11 @@ serve(async (req) => {
             }
         }
 
-        // Analyse de fraude enrichie
-        const analysis = await analyzeFraudEnriched(supabase, transaction, userId)
+        // Récupérer la configuration dynamique
+        const config = await getFraudConfig(supabase)
+        
+        // Analyse de fraude enrichie avec configuration dynamique
+        const analysis = await analyzeFraudEnriched(supabase, transaction, userId, config)
 
         console.log('[Fraud Detection Enhanced] Risk score:', analysis.riskScore, 'Decision:', analysis.decision)
 
@@ -165,7 +174,47 @@ serve(async (req) => {
     }
 })
 
-async function analyzeFraudEnriched(supabase: any, transaction: EnrichedTransactionPayload, userId: string): Promise<FraudAnalysis> {
+// Fonction pour récupérer la configuration dynamique
+async function getFraudConfig(supabase: any) {
+    try {
+        const { data, error } = await supabase.rpc('get_fraud_config')
+        
+        if (error || !data || data.length === 0) {
+            console.warn('[Fraud Config] Unable to fetch config, using defaults:', error?.message)
+            return {
+                ml_weight: DEFAULT_WEIGHTS.ML,
+                heuristic_weight: DEFAULT_WEIGHTS.HEURISTIC,
+                threshold_approve: DEFAULT_RISK_THRESHOLDS.LOW,
+                threshold_review: DEFAULT_RISK_THRESHOLDS.MEDIUM
+            }
+        }
+        
+        const config = data[0]
+        console.log('[Fraud Config] Using dynamic config:', config)
+        
+        return {
+            ml_weight: parseFloat(config.ml_weight),
+            heuristic_weight: parseFloat(config.heuristic_weight),
+            threshold_approve: config.threshold_approve,
+            threshold_review: config.threshold_review
+        }
+    } catch (error) {
+        console.error('[Fraud Config] Error fetching config:', error.message)
+        return {
+            ml_weight: DEFAULT_WEIGHTS.ML,
+            heuristic_weight: DEFAULT_WEIGHTS.HEURISTIC,
+            threshold_approve: DEFAULT_RISK_THRESHOLDS.LOW,
+            threshold_review: DEFAULT_RISK_THRESHOLDS.MEDIUM
+        }
+    }
+}
+
+async function analyzeFraudEnriched(
+    supabase: any, 
+    transaction: EnrichedTransactionPayload, 
+    userId: string,
+    config: { ml_weight: number, heuristic_weight: number, threshold_approve: number, threshold_review: number }
+): Promise<FraudAnalysis> {
     const reasons: FraudAnalysis['reasons'] = []
     let riskScore = 0
     const features: Record<string, any> = {}
@@ -196,6 +245,44 @@ async function analyzeFraudEnriched(supabase: any, transaction: EnrichedTransact
         .limit(100)
 
     features.transaction_count_30d = recentTransactions?.length || 0
+
+    // Calcul des statistiques utilisateur pour le ML
+    if (recentTransactions && recentTransactions.length > 0) {
+        const amounts = recentTransactions.map(tx => tx.amount).filter(a => a > 0)
+        
+        if (amounts.length > 0) {
+            // Moyenne des montants
+            features.user_avg_amount = amounts.reduce((sum, a) => sum + a, 0) / amounts.length
+            
+            // Écart-type des montants
+            const variance = amounts.reduce((sum, a) => sum + Math.pow(a - features.user_avg_amount, 2), 0) / amounts.length
+            features.user_std_amount = Math.sqrt(variance)
+            
+            // Déviation du montant actuel
+            features.amount_deviation = Math.abs(transaction.amount - features.user_avg_amount)
+            
+            // Nombre de transactions utilisateur (pour ML)
+            features.user_tx_count = amounts.length
+            
+            // Ratio de fraude utilisateur (nombre de transactions échouées/bloquées)
+            const fraudCount = recentTransactions.filter(tx => 
+                tx.status === 'failed' || tx.fraud_score > 70
+            ).length
+            features.user_fraud_ratio = fraudCount / recentTransactions.length
+        } else {
+            features.user_avg_amount = 0
+            features.user_std_amount = 0
+            features.amount_deviation = 0
+            features.user_tx_count = 0
+            features.user_fraud_ratio = 0
+        }
+    } else {
+        features.user_avg_amount = 0
+        features.user_std_amount = 0
+        features.amount_deviation = 0
+        features.user_tx_count = 0
+        features.user_fraud_ratio = 0
+    }
 
     // ==================== RÈGLES HEURISTIQUES ENRICHIES ====================
 
@@ -475,29 +562,53 @@ async function analyzeFraudEnriched(supabase: any, transaction: EnrichedTransact
     }
 
     // 13. Appeler modèle ML externe (Hugging Face) - avec features enrichies
+    // Sauvegarder le score heuristique brut avant mélange
+    const heuristicScoreRaw = riskScore
+    features.heuristic_score_raw = heuristicScoreRaw
+    
     try {
         const mlFeatures = buildMLFeatures(transaction, features, userProfile, riskScore)
         const mlScore = await callMLModel(mlFeatures)
         
-        // Mixer score règles + ML (60% règles, 40% ML)
-        riskScore = Math.round(riskScore * 0.6 + mlScore * 0.4)
-        console.log('[Fraud Detection Enhanced] ML model active, mixed score:', riskScore)
+        // NOUVEAU: Enrichir les logs ML pour traçabilité complète
         features.ml_score = mlScore
         features.ml_active = true
+        features.ml_model_endpoint = Deno.env.get('HUGGINGFACE_ENDPOINT_URL') || 'Inference API'
+        features.ml_model_id = Deno.env.get('HUGGINGFACE_MODEL_ID') || 'QuentinJassey/epicoin-fraud-detection-enriched'
+        features.ml_features_sent = mlFeatures // Les 17 features envoyées au modèle (sans fraud_score ni status)
+        features.ml_timestamp = new Date().toISOString()
+        
+        // Mixer score règles + ML avec les poids configurés dynamiquement
+        // Le modèle ML fonctionne bien pour détecter les fraudes évidentes
+        // Pour les transactions normales, il est conservateur (0.1-1% fraude) ce qui est correct
+        riskScore = Math.round(heuristicScoreRaw * config.heuristic_weight + mlScore * config.ml_weight)
+        features.final_score = riskScore
+        features.ml_weight = config.ml_weight
+        features.heuristic_weight = config.heuristic_weight
+        
+        console.log('[ML] Scores - Heuristic:', heuristicScoreRaw, 'ML:', mlScore, 'Final:', riskScore)
+        console.log('[ML] Weights used - ML:', config.ml_weight, 'Heuristic:', config.heuristic_weight)
+        console.log('[Fraud Detection Enhanced] ML model active, mixed score:', riskScore)
     } catch (error) {
         console.warn('[Fraud Detection Enhanced] ML model unavailable, using rules only:', error.message)
         features.ml_active = false
+        features.ml_error = error.message
+        features.heuristic_score_raw = heuristicScoreRaw
+        features.final_score = riskScore
     }
 
-    // 14. Décision finale
+    // 14. Décision finale avec seuils configurables
     let decision: FraudAnalysis['decision']
-    if (riskScore <= RISK_THRESHOLDS.LOW) {
+    if (riskScore <= config.threshold_approve) {
         decision = 'approve'
-    } else if (riskScore <= RISK_THRESHOLDS.MEDIUM) {
+    } else if (riskScore <= config.threshold_review) {
         decision = 'review'
     } else {
         decision = 'block'
     }
+    
+    console.log('[Fraud Decision] Thresholds - Approve:', config.threshold_approve, 'Review:', config.threshold_review)
+    console.log('[Fraud Decision] Final decision:', decision, 'with score:', riskScore)
 
     // S'assurer que le score est entre 0 et 100
     riskScore = Math.max(0, Math.min(100, riskScore))
@@ -533,71 +644,94 @@ function getAmountThresholds(transactionType?: string) {
     return thresholds[transactionType || 'P2P'] || thresholds['P2P']
 }
 
-// Helper: Construire features pour le modèle ML
+// Helper: Construire features pour le modèle ML INDÉPENDANT (sans fraud_score ni status)
 function buildMLFeatures(transaction: EnrichedTransactionPayload, features: Record<string, any>, userProfile: any, riskScore: number) {
-    // Créer le vecteur de 19 features dans l'ordre exact attendu par le modèle enrichi
+    // Créer le vecteur de 17 features (SANS fraud_score heuristique ni status)
+    // Le modèle indépendant apprend des patterns sans biais circulaire ni data leakage
     const now = new Date()
     const created = transaction.created_at ? new Date(transaction.created_at) : now
     const executed = transaction.executed_at ? new Date(transaction.executed_at) : now
     
-    return [
+    const mlFeatures = [
         // 1. amount_numeric
         transaction.amount || 0,
         
-        // 2. fraud_score (score heuristique calculé avant ML)
-        riskScore || 0,
+        // ❌ RETIRÉ : fraud_score (pour éviter dépendance circulaire)
         
-        // 3. hour
+        // 2. hour
         created.getHours(),
         
-        // 4. day_of_week (0 = lundi, 6 = dimanche)
+        // 3. day_of_week (0 = lundi, 6 = dimanche)
         created.getDay(),
         
-        // 5. execution_delay (en secondes)
+        // 4. execution_delay (en secondes)
         Math.abs(executed.getTime() - created.getTime()) / 1000,
         
-        // 6. transaction_type_encoded
+        // 5. transaction_type_encoded
         encodeTransactionType(transaction.transaction_type || mapOldTypeToNew(transaction.type)),
         
-        // 7. direction_encoded (0 = outgoing, 1 = incoming)
+        // 6. direction_encoded (0 = outgoing, 1 = incoming)
         transaction.direction === 'incoming' ? 1 : 0,
         
-        // 8. country_encoded
+        // 7. country_encoded
         encodeCountry(transaction.country),
         
-        // 9. city_encoded (simplification : utiliser un hash du nom de ville)
+        // 8. city_encoded (simplification : utiliser un hash du nom de ville)
         encodeCitySimple(transaction.city),
         
-        // 10. provider_encoded
+        // 9. provider_encoded
         encodeProvider(transaction.provider),
         
-        // 11. status_encoded (0 = completed, 1 = pending, 2 = failed)
-        encodeStatus(features.status),
+        // ❌ RETIRÉ : status (data leakage - on ne connaît status qu'APRÈS la transaction)
         
-        // 12. os_name_encoded
+        // 10. os_name_encoded
         encodeOSName(transaction.device_info?.os_name),
         
-        // 13. type_encoded (0 = topup, 1 = transfer, 2 = purchase)
+        // 11. type_encoded (0 = topup, 1 = transfer, 2 = purchase)
         encodeTypeOld(transaction.type),
         
-        // 14. user_avg_amount
+        // 12. user_avg_amount
         features.user_avg_amount || 0,
         
-        // 15. user_std_amount
+        // 13. user_std_amount
         features.user_std_amount || 0,
         
-        // 16. user_tx_count
+        // 14. user_tx_count
         features.transaction_count_24h || features.user_tx_count || 0,
         
-        // 17. user_fraud_ratio
+        // 15. user_fraud_ratio
         features.user_fraud_ratio || 0,
         
-        // 18. amount_deviation
+        // 16. amount_deviation
         features.amount_deviation || 0,
         
-        // 19. device_tx_count
+        // 17. device_tx_count
         features.device_tx_count || 1
     ]
+    
+    // LOG DÉTAILLÉ pour debug (17 features)
+    console.log('[ML Features] Détails (17 features - sans fraud_score ni status):', {
+        amount: mlFeatures[0],
+        hour: mlFeatures[1],
+        day_of_week: mlFeatures[2],
+        execution_delay: mlFeatures[3],
+        transaction_type: mlFeatures[4],
+        direction: mlFeatures[5],
+        country: mlFeatures[6],
+        city: mlFeatures[7],
+        provider: mlFeatures[8],
+        // status: RETIRÉ (data leakage)
+        os_name: mlFeatures[9],
+        type_old: mlFeatures[10],
+        user_avg_amount: mlFeatures[11],
+        user_std_amount: mlFeatures[12],
+        user_tx_count: mlFeatures[13],
+        user_fraud_ratio: mlFeatures[14],
+        amount_deviation: mlFeatures[15],
+        device_tx_count: mlFeatures[16]
+    })
+    
+    return mlFeatures
 }
 
 // Encodage pour ML
@@ -663,14 +797,19 @@ function encodeTypeOld(type?: string): number {
 // Appel au modèle ML enrichi (Hugging Face)
 async function callMLModel(features: number[]): Promise<number> {
     const HF_API_KEY = Deno.env.get('HUGGINGFACE_API_KEY')
-    const HF_MODEL_ID = Deno.env.get('HUGGINGFACE_MODEL_ID') || 'votre-username/epicoin-fraud-detection-enriched'
-    const HF_MODEL_URL = `https://api-inference.huggingface.co/models/${HF_MODEL_ID}`
+    const HF_ENDPOINT_URL = Deno.env.get('HUGGINGFACE_ENDPOINT_URL')
+    const HF_MODEL_ID = Deno.env.get('HUGGINGFACE_MODEL_ID') || 'QuentinJassey/epicoin-fraud-detection-enriched'
+    
+    // Utiliser l'Inference Endpoint si disponible, sinon l'API Inference standard
+    const HF_MODEL_URL = HF_ENDPOINT_URL || `https://api-inference.huggingface.co/models/${HF_MODEL_ID}`
     
     if (!HF_API_KEY) {
         throw new Error('HUGGINGFACE_API_KEY not configured')
     }
+    
+    console.log('[ML] Using endpoint:', HF_ENDPOINT_URL ? 'Dedicated Endpoint' : 'Inference API')
 
-    console.log('[ML] Calling Hugging Face with 19 features:', features.length)
+    console.log('[ML] Calling Hugging Face with 17 features (SANS fraud_score ni status):', features.length)
 
     const response = await fetch(HF_MODEL_URL, {
         method: 'POST',

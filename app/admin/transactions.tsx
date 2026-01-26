@@ -11,6 +11,8 @@ type Transaction = {
     amount: number;
     status: string;
     created_at: string;
+    fraud_score?: number;
+    fraud_features?: Record<string, any>;
     sender?: { email: string; full_name: string };
     receiver?: { email: string; full_name: string };
 };
@@ -29,7 +31,13 @@ export default function AdminTransactions() {
             const { data, error } = await supabase
                 .from('transactions')
                 .select(`
-                    *,
+                    id,
+                    type,
+                    amount,
+                    status,
+                    created_at,
+                    fraud_score,
+                    fraud_features,
                     sender:sender_id(email, full_name),
                     receiver:receiver_id(email, full_name)
                 `)
@@ -63,10 +71,18 @@ export default function AdminTransactions() {
     function getStatusLabel(status: string) {
         switch (status) {
             case 'completed': return { label: 'Complété', bg: 'bg-green-100', text: 'text-green-700' };
+            case 'pending': return { label: 'En attente', bg: 'bg-amber-100', text: 'text-amber-700' };
             case 'pending_review': return { label: 'En attente', bg: 'bg-amber-100', text: 'text-amber-700' };
             case 'failed': return { label: 'Échoué', bg: 'bg-red-100', text: 'text-red-700' };
             default: return { label: status, bg: 'bg-gray-100', text: 'text-gray-700' };
         }
+    }
+
+    function getFraudRiskLevel(score?: number) {
+        if (score === undefined || score === null) return { label: 'N/A', bg: 'bg-gray-50', text: 'text-gray-500', icon: 'help-circle-outline' };
+        if (score <= 30) return { label: 'Faible', bg: 'bg-green-50', text: 'text-green-700', icon: 'shield-checkmark' };
+        if (score <= 70) return { label: 'Moyen', bg: 'bg-amber-50', text: 'text-amber-700', icon: 'warning' };
+        return { label: 'Élevé', bg: 'bg-red-50', text: 'text-red-700', icon: 'alert-circle' };
     }
 
     const totalAmount = transactions.reduce((sum, tx) => sum + (tx.amount || 0), 0);
@@ -104,23 +120,41 @@ export default function AdminTransactions() {
                     renderItem={({ item }) => {
                         const type = getTypeLabel(item.type);
                         const status = getStatusLabel(item.status);
+                        const fraudRisk = getFraudRiskLevel(item.fraud_score);
+                        const mlActive = item.fraud_features?.ml_active === true;
                         
                         return (
                             <View className="bg-white p-4 rounded-xl mb-3 shadow-sm border border-gray-100">
+                                {/* En-tête avec badges */}
                                 <View className="flex-row justify-between items-start mb-3">
-                                    <View className="flex-row gap-2">
+                                    <View className="flex-row gap-2 flex-wrap flex-1 mr-2">
                                         <View className={`${type.bg} px-2 py-1 rounded-full`}>
                                             <Text className={`${type.text} text-xs font-medium`}>{type.label}</Text>
                                         </View>
                                         <View className={`${status.bg} px-2 py-1 rounded-full`}>
                                             <Text className={`${status.text} text-xs font-medium`}>{status.label}</Text>
                                         </View>
+                                        {/* Badge Fraude */}
+                                        <View className={`${fraudRisk.bg} px-2 py-1 rounded-full flex-row items-center`}>
+                                            <Ionicons name={fraudRisk.icon as any} size={10} color={fraudRisk.text.replace('text-', '')} />
+                                            <Text className={`${fraudRisk.text} text-xs font-medium ml-1`}>
+                                                Risque: {item.fraud_score !== undefined ? `${item.fraud_score}/100` : 'N/A'}
+                                            </Text>
+                                        </View>
+                                        {/* Badge ML */}
+                                        {mlActive && (
+                                            <View className="bg-purple-50 px-2 py-1 rounded-full flex-row items-center">
+                                                <Ionicons name="sparkles" size={10} color="#9333ea" />
+                                                <Text className="text-purple-700 text-xs font-medium ml-1">ML</Text>
+                                            </View>
+                                        )}
                                     </View>
                                     <Text className="text-gray-400 text-xs">
                                         {format(new Date(item.created_at), "d MMM 'à' HH:mm", { locale: fr })}
                                     </Text>
                                 </View>
 
+                                {/* Corps de la transaction */}
                                 <View className="flex-row justify-between items-center">
                                     <View className="flex-1 mr-4">
                                         <View className="flex-row items-center mb-1">
@@ -140,6 +174,28 @@ export default function AdminTransactions() {
                                         {item.amount?.toFixed(2)} EPC
                                     </Text>
                                 </View>
+
+                                {/* Détails Fraude (si score > 0) */}
+                                {item.fraud_score !== undefined && item.fraud_score > 0 && (
+                                    <View className="mt-3 pt-3 border-t border-gray-100">
+                                        <View className="flex-row items-center justify-between">
+                                            <View className="flex-row items-center">
+                                                <Ionicons name="shield-outline" size={14} color="#6b7280" />
+                                                <Text className="text-gray-600 text-xs ml-1">Analyse de fraude :</Text>
+                                            </View>
+                                            <View className="flex-row items-center gap-2">
+                                                {mlActive && (
+                                                    <Text className="text-purple-600 text-xs">
+                                                        ML: {item.fraud_features?.ml_score?.toFixed(0) || 'N/A'}
+                                                    </Text>
+                                                )}
+                                                <Text className="text-gray-700 text-xs font-medium">
+                                                    Heuristique: {item.fraud_features?.heuristic_score_raw?.toFixed(0) || item.fraud_score}
+                                                </Text>
+                                            </View>
+                                        </View>
+                                    </View>
+                                )}
                             </View>
                         );
                     }}

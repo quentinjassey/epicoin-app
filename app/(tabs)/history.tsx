@@ -109,9 +109,21 @@ export default function HistoryScreen() {
             }
             return 'Rechargement';
         }
+        
         if (isPurchase) {
-            return tx.metadata?.product_name || 'Achat';
+            const productName = tx.metadata?.product_name || 'Produit';
+            // Ajouter le statut si en attente ou échoué
+            if (tx.status === 'pending') {
+                return `Achat ${productName} (en attente)`;
+            }
+            if (tx.status === 'failed') {
+                const refunded = tx.metadata?.refunded;
+                return refunded ? `Achat ${productName} (remboursé)` : `Achat ${productName} (échoué)`;
+            }
+            return `Achat ${productName}`;
         }
+        
+        // Transfer
         if (isSender) {
             return `Envoyé à ${tx.receiver?.full_name || 'Utilisateur'}`;
         }

@@ -166,9 +166,7 @@ npx expo start --web
 
 ## 🚀 Déploiement
 
-### Option 1 : Mobile (Recommandé)
-
-**Via Expo EAS Build** :
+### Via Expo EAS Build (Production)
 
 ```bash
 # Installer EAS CLI
@@ -182,22 +180,7 @@ eas build:configure
 eas build --platform all --profile preview
 ```
 
-📖 **Guide complet :** `DEPLOYMENT_OPTIONS.md`
-
-### Option 2 : Web (Limité)
-
-**Via Vercel** :
-
-```bash
-# Build web
-npx expo export:web
-
-# Déployer
-npm i -g vercel
-vercel
-```
-
-⚠️ **Note :** La version web a des fonctionnalités limitées (pas de biométrie, notifications, etc.)
+**Coût :** Gratuit (30 builds/mois) pour le tier free
 
 ---
 

@@ -16,6 +16,7 @@ type Transaction = {
     receiver_id: string;
     sender?: { full_name: string };
     receiver?: { full_name: string };
+    metadata?: any;
 };
 
 export default function WalletScreen() {
@@ -36,7 +37,7 @@ export default function WalletScreen() {
                     if (!user) return;
 
                     setCurrentUserId(user.id);
-                    
+
                     // Initial fetch
                     await fetchData(user.id);
 
@@ -90,7 +91,7 @@ export default function WalletScreen() {
             const { data: transactions, error: txError } = await supabase
                 .from('transactions')
                 .select(`
-                    id, type, amount, status, created_at, sender_id, receiver_id,
+                    id, type, amount, status, created_at, sender_id, receiver_id, metadata,
                     sender:sender_id(full_name),
                     receiver:receiver_id(full_name)
                 `)
@@ -125,37 +126,89 @@ export default function WalletScreen() {
 
     function getTransactionDisplay(tx: Transaction) {
         const isSender = tx.sender_id === currentUserId;
-        
-        if (tx.type === 'top_up') {
+        const isTopUp = tx.type === 'topup' || tx.type === 'top_up';
+        const isPurchase = tx.type === 'payment' || tx.type === 'purchase';
+
+        if (isTopUp) {
+            const bonus = tx.metadata?.bonus || 0;
             return {
-                icon: 'arrow-down-circle',
+                icon: 'add-circle',
                 color: '#16a34a',
                 bg: 'bg-green-100',
-                label: 'Rechargement',
+                label: bonus > 0 ? `Rechargement (+${bonus} bonus)` : 'Rechargement',
                 prefix: '+',
                 amountColor: 'text-green-600',
             };
         }
-        
-        if (isSender) {
+
+        if (isPurchase) {
+            const productName = tx.metadata?.product_name || 'Produit';
+            let label = `Achat ${productName}`;
+
+            if (tx.status === 'pending_review') {
+                label += ' (en attente)';
+            } else if (tx.status === 'failed') {
+                const refunded = tx.metadata?.refunded;
+                label += refunded ? ' (remboursé)' : ' (échoué)';
+            }
+
             return {
-                icon: 'arrow-up-circle',
-                color: '#ef4444',
-                bg: 'bg-red-100',
-                label: tx.receiver?.full_name || 'Envoi',
+                icon: 'cart',
+                color: '#f59e0b',
+                bg: 'bg-amber-100',
+                label,
                 prefix: '-',
                 amountColor: 'text-red-500',
             };
         }
-        
+
+        // Transfer
+        if (isSender) {
+            let label = `Envoyé à ${tx.receiver?.full_name || 'Utilisateur'}`;
+            if (tx.status === 'pending_review') {
+                label += ' (en attente)';
+            } else if (tx.status === 'failed') {
+                label += ' (échoué)';
+            }
+
+            return {
+                icon: 'arrow-up-circle',
+                color: '#ef4444',
+                bg: 'bg-red-100',
+                label,
+                prefix: '-',
+                amountColor: 'text-red-500',
+            };
+        }
+
+        let label = `Reçu de ${tx.sender?.full_name || 'Utilisateur'}`;
+        if (tx.status === 'pending_review') {
+            label += ' (en attente)';
+        } else if (tx.status === 'failed') {
+            label += ' (échoué)';
+        }
+
         return {
             icon: 'arrow-down-circle',
             color: '#16a34a',
             bg: 'bg-green-100',
-            label: tx.sender?.full_name || 'Reçu',
+            label,
             prefix: '+',
             amountColor: 'text-green-600',
         };
+    }
+
+    function getStatusBadge(status: string) {
+        switch (status) {
+            case 'completed':
+                return { label: 'Complété', bg: 'bg-green-100', text: 'text-green-700' };
+            case 'pending_review':
+                return { label: 'En attente', bg: 'bg-amber-100', text: 'text-amber-700' };
+            case 'failed':
+                return { label: 'Échoué', bg: 'bg-red-100', text: 'text-red-700' };
+            default:
+                return { label: status, bg: 'bg-gray-100', text: 'text-gray-700' };
+        }
     }
 
     if (loading) {
@@ -167,11 +220,11 @@ export default function WalletScreen() {
     }
 
     return (
-        <ScrollView 
+        <ScrollView
             className="flex-1 bg-gray-50"
             refreshControl={
-                <RefreshControl 
-                    refreshing={refreshing} 
+                <RefreshControl
+                    refreshing={refreshing}
                     onRefresh={onRefresh}
                     tintColor="#0091D3"
                 />
@@ -184,7 +237,7 @@ export default function WalletScreen() {
                         <Text className="text-gray-500 text-base">Bonjour,</Text>
                         <Text className="text-2xl font-bold text-gray-900">{fullName}</Text>
                     </View>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         className="w-12 h-12 bg-epitech-blue rounded-full items-center justify-center"
                         onPress={() => router.push('/(tabs)/profile')}
                     >
@@ -254,25 +307,35 @@ export default function WalletScreen() {
                     <View className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                         {recentTransactions.map((tx, index) => {
                             const display = getTransactionDisplay(tx);
+                            const status = getStatusBadge(tx.status);
                             return (
-                                <View 
+                                <View
                                     key={tx.id}
-                                    className={`p-4 flex-row items-center ${index < recentTransactions.length - 1 ? 'border-b border-gray-100' : ''}`}
+                                    className={`p-4 ${index < recentTransactions.length - 1 ? 'border-b border-gray-100' : ''}`}
                                 >
-                                    <View className={`${display.bg} p-2.5 rounded-full mr-3`}>
-                                        <Ionicons name={display.icon as any} size={20} color={display.color} />
-                                    </View>
-                                    <View className="flex-1">
-                                        <Text className="font-semibold text-gray-900" numberOfLines={1}>
-                                            {display.label}
+                                    <View className="flex-row items-center">
+                                        <View className={`${display.bg} p-2.5 rounded-full mr-3`}>
+                                            <Ionicons name={display.icon as any} size={20} color={display.color} />
+                                        </View>
+                                        <View className="flex-1">
+                                            <Text className="font-semibold text-gray-900" numberOfLines={1}>
+                                                {display.label}
+                                            </Text>
+                                            <View className="flex-row items-center mt-1">
+                                                <Text className="text-gray-400 text-xs">
+                                                    {format(new Date(tx.created_at), "d MMM 'à' HH:mm", { locale: fr })}
+                                                </Text>
+                                                {tx.status !== 'completed' && (
+                                                    <View className={`${status.bg} px-2 py-0.5 rounded-full ml-2`}>
+                                                        <Text className={`${status.text} text-xs font-medium`}>{status.label}</Text>
+                                                    </View>
+                                                )}
+                                            </View>
+                                        </View>
+                                        <Text className={`font-bold ${display.amountColor}`}>
+                                            {display.prefix}{tx.amount.toFixed(2)} EPC
                                         </Text>
-                                        <Text className="text-gray-400 text-xs">
-                                            {format(new Date(tx.created_at), "d MMM 'à' HH:mm", { locale: fr })}
-                                        </Text>
                                     </View>
-                                    <Text className={`font-bold ${display.amountColor}`}>
-                                        {display.prefix}{tx.amount.toFixed(2)} EPC
-                                    </Text>
                                 </View>
                             );
                         })}

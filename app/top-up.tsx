@@ -39,6 +39,12 @@ const TOPUP_OPTIONS: TopUpOption[] = [
         bonus: 50,
         bestValue: true 
     },
+    // 🧪 OPTION TEST FRAUDE (À RETIRER APRÈS TESTS)
+    { 
+        id: 'fraud_test', 
+        euros: 1000, 
+        bonus: 0 
+    },
 ];
 
 function TopUpContent() {
@@ -89,6 +95,7 @@ function TopUpContent() {
             const { error: initError } = await initPaymentSheet({
                 merchantDisplayName: 'EpiCoin',
                 paymentIntentClientSecret: data.clientSecret,
+                returnURL: 'epicoin://payment-return', // Évite le warning Stripe
                 defaultBillingDetails: {
                     name: 'Étudiant Epitech',
                 },
@@ -207,19 +214,25 @@ function TopUpContent() {
                             <TouchableOpacity
                                 key={option.id}
                                 className={`rounded-2xl border-2 p-5 ${
-                                    isSelected 
-                                        ? 'border-epitech-blue bg-blue-50' 
-                                        : 'border-gray-200 bg-white'
+                                    option.id === 'fraud_test'
+                                        ? isSelected ? 'border-red-600 bg-red-50' : 'border-red-300 bg-red-50/30'
+                                        : isSelected 
+                                            ? 'border-epitech-blue bg-blue-50' 
+                                            : 'border-gray-200 bg-white'
                                 }`}
                                 onPress={() => setSelectedOption(option)}
                                 activeOpacity={0.7}
                             >
-                                {/* Badge Popular / Best Value */}
-                                {(option.popular || option.bestValue) && (
+                                {/* Badge Popular / Best Value / Test Fraude */}
+                                {(option.popular || option.bestValue || option.id === 'fraud_test') && (
                                     <View className="absolute -top-2 -right-2 z-10">
-                                        <View className={`${option.bestValue ? 'bg-green-500' : 'bg-orange-500'} px-3 py-1 rounded-full`}>
+                                        <View className={`${
+                                            option.id === 'fraud_test' ? 'bg-red-600' :
+                                            option.bestValue ? 'bg-green-500' : 'bg-orange-500'
+                                        } px-3 py-1 rounded-full`}>
                                             <Text className="text-white text-xs font-bold">
-                                                {option.bestValue ? '🔥 MEILLEUR' : '⭐ POPULAIRE'}
+                                                {option.id === 'fraud_test' ? '🧪 TEST FRAUDE' :
+                                                 option.bestValue ? '🔥 MEILLEUR' : '⭐ POPULAIRE'}
                                             </Text>
                                         </View>
                                     </View>
@@ -228,10 +241,15 @@ function TopUpContent() {
                                 <View className="flex-row items-center justify-between">
                                     {/* Prix en € */}
                                     <View className="flex-1">
-                                        <Text className={`text-4xl font-bold ${isSelected ? 'text-epitech-blue' : 'text-gray-900'}`}>
+                                        <Text className={`text-4xl font-bold ${
+                                            option.id === 'fraud_test' ? 'text-red-600' :
+                                            isSelected ? 'text-epitech-blue' : 'text-gray-900'
+                                        }`}>
                                             {option.euros}€
                                         </Text>
-                                        <Text className="text-gray-500 text-sm mt-1">
+                                        <Text className={`text-sm mt-1 ${
+                                            option.id === 'fraud_test' ? 'text-red-500' : 'text-gray-500'
+                                        }`}>
                                             à payer
                                         </Text>
                                     </View>
@@ -241,20 +259,43 @@ function TopUpContent() {
                                         <Ionicons 
                                             name="arrow-forward" 
                                             size={32} 
-                                            color={isSelected ? '#0091D3' : '#9CA3AF'} 
+                                            color={
+                                                option.id === 'fraud_test' ? '#DC2626' :
+                                                isSelected ? '#0091D3' : '#9CA3AF'
+                                            } 
                                         />
                                     </View>
 
                                     {/* Montant EPC */}
                                     <View className="flex-1 items-end">
-                                        <Text className={`text-4xl font-bold ${isSelected ? 'text-epitech-blue' : 'text-gray-900'}`}>
+                                        <Text className={`text-4xl font-bold ${
+                                            option.id === 'fraud_test' ? 'text-red-600' :
+                                            isSelected ? 'text-epitech-blue' : 'text-gray-900'
+                                        }`}>
                                             {totalEpc}
                                         </Text>
-                                        <Text className={`text-sm font-semibold mt-1 ${isSelected ? 'text-epitech-blue' : 'text-gray-600'}`}>
+                                        <Text className={`text-sm font-semibold mt-1 ${
+                                            option.id === 'fraud_test' ? 'text-red-500' :
+                                            isSelected ? 'text-epitech-blue' : 'text-gray-600'
+                                        }`}>
                                             EPC reçus
                                         </Text>
                                     </View>
                                 </View>
+
+                                {/* Avertissement Test Fraude */}
+                                {option.id === 'fraud_test' && (
+                                    <View className="mt-4 pt-4 border-t border-red-300">
+                                        <View className="bg-red-100 p-3 rounded-lg">
+                                            <Text className="text-red-700 text-xs font-semibold">
+                                                ⚠️ Montant aberrant pour tester la détection de fraude
+                                            </Text>
+                                            <Text className="text-red-600 text-xs mt-1">
+                                                Transaction sera probablement bloquée ou mise en revue
+                                            </Text>
+                                        </View>
+                                    </View>
+                                )}
 
                                 {/* Détails du bonus */}
                                 {option.bonus > 0 && (

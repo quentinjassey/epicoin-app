@@ -1,136 +1,133 @@
 #!/usr/bin/env python3
 """
-Script de déploiement du modèle XGBoost sur Hugging Face
-Usage: python upload_to_huggingface.py
+Script d'upload du modèle ML indépendant vers Hugging Face
 """
 
-from huggingface_hub import HfApi, create_repo
 import os
+import sys
+from huggingface_hub import HfApi, login
 
-def main():
-    print("=" * 60)
-    print("🤗 Déploiement du Modèle sur Hugging Face")
-    print("=" * 60)
+# Configuration
+REPO_ID = "QuentinJassey/epicoin-fraud-detection-enriched"
+FILES_TO_UPLOAD = [
+    "fraud_model_independent.pkl",
+    "scaler_independent.pkl",
+    "label_encoders_independent.pkl",
+    "model_metadata_independent.json"
+]
+
+print("=" * 80)
+print("📤 Upload du Modèle ML Indépendant vers Hugging Face")
+print("=" * 80)
+print()
+
+# 1. Vérifier que les fichiers existent
+print("📂 Vérification des fichiers...")
+missing_files = []
+for file in FILES_TO_UPLOAD:
+    if not os.path.exists(file):
+        missing_files.append(file)
+        print(f"  ❌ {file} - MANQUANT")
+    else:
+        size_mb = os.path.getsize(file) / (1024 * 1024)
+        print(f"  ✅ {file} ({size_mb:.2f} MB)")
+
+if missing_files:
+    print(f"\n❌ {len(missing_files)} fichier(s) manquant(s) !")
+    print("💡 Lancez d'abord : python3 train_independent_model.py")
+    sys.exit(1)
+
+print()
+
+# 2. Vérifier le token Hugging Face
+hf_token = os.getenv("HUGGINGFACE_TOKEN")
+if not hf_token:
+    print("⚠️  HUGGINGFACE_TOKEN non configuré !")
+    print()
+    print("📝 Deux options :")
+    print()
+    print("Option 1 : Login interactif")
+    print("   huggingface-cli login")
+    print()
+    print("Option 2 : Variable d'environnement")
+    print("   export HUGGINGFACE_TOKEN='ton_token'")
     print()
     
-    # Demander les credentials à l'utilisateur
-    print("📝 Informations requises:")
-    print("   1. Token HF: https://huggingface.co/settings/tokens")
-    print("   2. Username HF: https://huggingface.co/settings/account")
-    print()
-    
-    HF_TOKEN = input("Enter your Hugging Face token: ").strip()
-    USERNAME = input("Enter your Hugging Face username: ").strip()
-    REPO_NAME = "epicoin-fraud-xgboost"
-    
-    if not HF_TOKEN or not USERNAME:
-        print("❌ Token et username requis!")
-        return
-    
-    api = HfApi()
-    
-    # Créer le repository
-    print(f"\n📦 Création du repository: {USERNAME}/{REPO_NAME}")
+    # Essayer le login interactif
     try:
-        create_repo(
-            repo_id=f"{USERNAME}/{REPO_NAME}",
-            token=HF_TOKEN,
-            repo_type="model",
-            private=False
-        )
-        print(f"✅ Repository créé: {USERNAME}/{REPO_NAME}")
+        print("🔐 Tentative de login interactif...")
+        login()
+        print("✅ Login réussi !")
     except Exception as e:
-        print(f"ℹ️  Repository existe déjà ou erreur: {e}")
-    
-    # Uploader les fichiers du modèle
-    print(f"\n📤 Upload des fichiers...")
-    files = ["xgboost.pkl", "scaler.pkl", "metadata.json"]
-    
-    for file in files:
-        file_path = f"trained_models/{file}"
-        if not os.path.exists(file_path):
-            print(f"⚠️  Fichier introuvable: {file_path}")
-            continue
-        
-        try:
-            api.upload_file(
-                path_or_fileobj=file_path,
-                path_in_repo=file,
-                repo_id=f"{USERNAME}/{REPO_NAME}",
-                token=HF_TOKEN
-            )
-            print(f"✅ Uploaded: {file}")
-        except Exception as e:
-            print(f"❌ Erreur upload {file}: {e}")
-    
-    # Créer un README pour le modèle
-    readme_content = f"""---
-tags:
-- fraud-detection
-- xgboost
-- financial-transactions
-license: mit
----
+        print(f"❌ Erreur de login : {e}")
+        print()
+        print("💡 Obtenir un token :")
+        print("   1. Aller sur https://huggingface.co/settings/tokens")
+        print("   2. Créer un token avec droits 'write'")
+        print("   3. Lancer : huggingface-cli login")
+        sys.exit(1)
+else:
+    print("✅ HUGGINGFACE_TOKEN configuré")
+    try:
+        login(token=hf_token)
+        print("✅ Login réussi !")
+    except Exception as e:
+        print(f"❌ Erreur de login : {e}")
+        sys.exit(1)
 
-# Epicoin Fraud Detection - XGBoost Model
+print()
 
-Modèle de détection de fraude pour transactions financières.
+# 3. Upload des fichiers
+print(f"📤 Upload vers {REPO_ID}...")
+print()
 
-## Métriques
+api = HfApi()
 
-- **Recall:** 99.7%
-- **Precision:** 96.5%
-- **F1-Score:** 98.1%
-- **Latency P95:** 0.23ms
-
-## Dataset
-
-Entraîné sur PaySim (6.3M transactions).
-
-## Usage
-
-```python
-import requests
-
-API_URL = "https://api-inference.huggingface.co/models/{USERNAME}/{REPO_NAME}"
-headers = {{"Authorization": "Bearer YOUR_HF_TOKEN"}}
-
-payload = {{
-    "inputs": {{
-        "amount": 5000,
-        "oldbalanceOrg": 10000,
-        "newbalanceOrig": 5000,
-        "type_encoded": 1
-    }}
-}}
-
-response = requests.post(API_URL, headers=headers, json=payload)
-print(response.json())
-```
-"""
-    
+for file in FILES_TO_UPLOAD:
+    print(f"  📤 Upload de {file}...")
     try:
         api.upload_file(
-            path_or_fileobj=readme_content.encode(),
-            path_in_repo="README.md",
-            repo_id=f"{USERNAME}/{REPO_NAME}",
-            token=HF_TOKEN
+            path_or_fileobj=file,
+            path_in_repo=file,
+            repo_id=REPO_ID,
+            repo_type="model",
+            commit_message=f"Update {file} - Modèle indépendant (sans fraud_score)"
         )
-        print(f"✅ README créé")
+        print(f"     ✅ {file} uploadé avec succès")
     except Exception as e:
-        print(f"ℹ️  README: {e}")
-    
-    # Résumé
-    print("\n" + "=" * 60)
-    print("🎉 DÉPLOIEMENT TERMINÉ!")
-    print("=" * 60)
-    print(f"\n📍 Model URL: https://huggingface.co/{USERNAME}/{REPO_NAME}")
-    print(f"📍 API URL: https://api-inference.huggingface.co/models/{USERNAME}/{REPO_NAME}")
-    print(f"\n🔑 Token pour Supabase: {HF_TOKEN}")
-    print(f"🔗 URL pour Supabase: https://api-inference.huggingface.co/models/{USERNAME}/{REPO_NAME}")
-    print("\n⚠️  ATTENTION: Il peut y avoir un délai de 2-3 minutes avant que le modèle soit prêt.")
-    print("    Testez avec: curl -H 'Authorization: Bearer {HF_TOKEN}' {API_URL}")
-    print()
+        print(f"     ❌ Erreur : {e}")
+        print()
+        print("💡 Vérifiez que :")
+        print("   1. Le repository existe : https://huggingface.co/" + REPO_ID)
+        print("   2. Vous avez les droits d'écriture")
+        print("   3. Votre token est valide")
+        sys.exit(1)
 
-if __name__ == "__main__":
-    main()
+print()
+print("=" * 80)
+print("✅ SUCCÈS ! Tous les fichiers ont été uploadés")
+print("=" * 80)
+print()
+print("📝 Prochaines étapes :")
+print()
+print("1️⃣  Mettre à jour handler.py sur Hugging Face")
+print("   Remplacer les noms de fichiers :")
+print("   - fraud_model_enriched.pkl → fraud_model_independent.pkl")
+print("   - scaler_enriched.pkl → scaler_independent.pkl")
+print("   - label_encoders_enriched.pkl → label_encoders_independent.pkl")
+print()
+print("2️⃣  Mettre à jour index.ts localement")
+print("   Dans buildMLFeatures(), enlever fraud_score (feature #2)")
+print("   → Passer de 19 features à 18 features")
+print()
+print("3️⃣  Redéployer la fonction fraud-detection")
+print("   cd /Users/quent/Documents/PGD\\ 5/epicoin-app")
+print("   npx supabase functions deploy fraud-detection --no-verify-jwt")
+print()
+print("4️⃣  Tester avec une transaction réelle")
+print("   Le ML devrait maintenant retourner des scores plus nuancés !")
+print()
+print("🔗 Liens utiles :")
+print(f"   - Repository : https://huggingface.co/{REPO_ID}")
+print(f"   - Files : https://huggingface.co/{REPO_ID}/tree/main")
+print()

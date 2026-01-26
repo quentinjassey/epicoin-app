@@ -274,14 +274,16 @@ export default function FraudDetailScreen() {
         </View>
 
         <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Expéditeur :</Text>
+          <Text style={styles.detailLabel}>
+            {alert.transaction.type === 'topup' || alert.transaction.type === 'top_up' ? 'Utilisateur :' : 'Expéditeur :'}
+          </Text>
           <View>
             <Text style={styles.detailValue}>{alert.transaction.sender_name || 'N/A'}</Text>
             <Text style={styles.detailValueSmall}>{alert.transaction.sender_email}</Text>
           </View>
         </View>
 
-        {alert.transaction.receiver_email && (
+        {alert.transaction.receiver_email && alert.transaction.type !== 'topup' && alert.transaction.type !== 'top_up' && alert.transaction.type !== 'purchase' && (
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Destinataire :</Text>
             <View>
@@ -381,10 +383,10 @@ export default function FraudDetailScreen() {
         </View>
       )}
 
-      {/* Scores ML */}
+      {/* Analyse ML Détaillée */}
       {alert.transaction.fraud_features && (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Analyse Machine Learning</Text>
+          <Text style={styles.cardTitle}>🤖 Analyse Machine Learning</Text>
           
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>ML Actif :</Text>
@@ -395,32 +397,121 @@ export default function FraudDetailScreen() {
             </Text>
           </View>
 
-          {alert.transaction.fraud_features.ml_score !== undefined && (
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Score ML :</Text>
-              <Text style={styles.detailValue}>
-                {alert.transaction.fraud_features.ml_score.toFixed(2)}
-              </Text>
-            </View>
-          )}
+          {alert.transaction.fraud_features.ml_active ? (
+            <>
+              {/* Scores séparés */}
+              {alert.transaction.fraud_features.heuristic_score_raw !== undefined && (
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Score Heuristique :</Text>
+                  <Text style={styles.detailValue}>
+                    {Math.round(alert.transaction.fraud_features.heuristic_score_raw)}/100
+                  </Text>
+                </View>
+              )}
 
-          {alert.transaction.fraud_features.heuristic_score !== undefined && (
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Score Heuristique :</Text>
-              <Text style={styles.detailValue}>
-                {alert.transaction.fraud_features.heuristic_score.toFixed(2)}
-              </Text>
-            </View>
-          )}
+              {alert.transaction.fraud_features.ml_score !== undefined && (
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Score ML :</Text>
+                  <Text style={styles.detailValue}>
+                    {Math.round(alert.transaction.fraud_features.ml_score)}/100
+                  </Text>
+                </View>
+              )}
 
-          {alert.transaction.fraud_score !== undefined && (
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Score Final :</Text>
-              <Text style={[styles.detailValue, styles.amountValue]}>
-                {alert.transaction.fraud_score}/100
-              </Text>
-            </View>
+              {alert.transaction.fraud_features.heuristic_weight !== undefined && (
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Pondération :</Text>
+                  <Text style={styles.detailValue}>
+                    {Math.round(alert.transaction.fraud_features.heuristic_weight * 100)}% règles + {Math.round(alert.transaction.fraud_features.ml_weight * 100)}% ML
+                  </Text>
+                </View>
+              )}
+
+              {alert.transaction.fraud_score !== undefined && (
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Score Final (mixé) :</Text>
+                  <Text style={[styles.detailValue, styles.amountValue]}>
+                    {alert.transaction.fraud_score}/100
+                  </Text>
+                </View>
+              )}
+
+              {/* Modèle utilisé */}
+              {alert.transaction.fraud_features.ml_model_endpoint && (
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Endpoint ML :</Text>
+                  <Text style={[styles.detailValue, styles.detailValueSmall]}>
+                    {alert.transaction.fraud_features.ml_model_endpoint.includes('endpoints.huggingface.cloud') 
+                      ? 'Dedicated Endpoint' 
+                      : 'Inference API'}
+                  </Text>
+                </View>
+              )}
+
+              {alert.transaction.fraud_features.ml_model_id && (
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Modèle :</Text>
+                  <Text style={[styles.detailValue, styles.detailValueSmall]} numberOfLines={2}>
+                    {alert.transaction.fraud_features.ml_model_id}
+                  </Text>
+                </View>
+              )}
+
+              {alert.transaction.fraud_features.ml_timestamp && (
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Timestamp ML :</Text>
+                  <Text style={[styles.detailValue, styles.detailValueSmall]}>
+                    {new Date(alert.transaction.fraud_features.ml_timestamp).toLocaleString('fr-FR')}
+                  </Text>
+                </View>
+              )}
+
+              {/* Features ML (dans un bloc collapsible/scrollable) */}
+              {alert.transaction.fraud_features.ml_features_sent && (
+                <View style={styles.notesBox}>
+                  <Text style={styles.notesLabel}>Features ML (19 valeurs) :</Text>
+                  <Text style={[styles.notesText, { fontSize: 10, fontFamily: 'monospace' }]} numberOfLines={10}>
+                    {JSON.stringify(alert.transaction.fraud_features.ml_features_sent, null, 2)}
+                  </Text>
+                </View>
+              )}
+            </>
+          ) : (
+            <>
+              {/* ML inactif - afficher l'erreur si disponible */}
+              {alert.transaction.fraud_features.ml_error && (
+                <View style={styles.notesBox}>
+                  <Text style={styles.notesLabel}>Erreur ML :</Text>
+                  <Text style={[styles.notesText, { color: '#DC2626' }]}>
+                    {alert.transaction.fraud_features.ml_error}
+                  </Text>
+                </View>
+              )}
+              
+              {alert.transaction.fraud_features.heuristic_score_raw !== undefined && (
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Score Heuristique seul :</Text>
+                  <Text style={styles.detailValue}>
+                    {Math.round(alert.transaction.fraud_features.heuristic_score_raw)}/100
+                  </Text>
+                </View>
+              )}
+            </>
           )}
+        </View>
+      )}
+
+      {/* Note sur le Score ML */}
+      {alert.transaction.fraud_features?.ml_active && alert.transaction.fraud_features?.ml_score > 90 && (
+        <View style={styles.card}>
+          <View style={[styles.notesBox, { backgroundColor: '#FEF3C7', borderColor: '#F59E0B', borderWidth: 1 }]}>
+            <Text style={[styles.notesLabel, { color: '#92400E' }]}>⚠️ Note sur le Score ML</Text>
+            <Text style={[styles.notesText, { color: '#78350F' }]}>
+              Le score ML est très élevé ({alert.transaction.fraud_features.ml_score.toFixed(0)}/100). 
+              Cela peut indiquer que les features envoyées au modèle ne sont pas correctement normalisées. 
+              Le modèle a été entraîné sur des données synthétiques et peut nécessiter un réentraînement avec des données réelles.
+            </Text>
+          </View>
         </View>
       )}
 
@@ -463,6 +554,32 @@ export default function FraudDetailScreen() {
               <Text style={styles.notesText}>{alert.resolution_notes}</Text>
             </View>
           )}
+        </View>
+      )}
+
+      {/* Ajustement Seuil de Risque */}
+      {alert.status === 'pending' && (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>⚙️ Ajuster le Seuil d'Acceptation</Text>
+          <Text style={styles.cardSubtitle}>
+            Score actuel: {alert.risk_score}/100 - Seuil: 30 (bas) / 70 (élevé)
+          </Text>
+          
+          <View style={{ marginTop: 12 }}>
+            <Text style={styles.detailLabel}>
+              Si vous estimez que ce type de transaction devrait être accepté automatiquement à l'avenir:
+            </Text>
+            <TouchableOpacity 
+              style={[styles.actionButton, { backgroundColor: '#3b82f6', marginTop: 8 }]}
+              onPress={() => Alert.alert(
+                'Ajustement du Seuil',
+                'Cette fonctionnalité permettra d\'ajuster les seuils de détection. Pour l\'instant, les seuils sont: \n\n• 0-30: Acceptation automatique\n• 31-70: Revue manuelle\n• 71-100: Blocage automatique\n\nContactez un développeur pour modifier ces valeurs dans FRAUD_RULES_REFERENCE.md',
+                [{ text: 'Compris' }]
+              )}
+            >
+              <Text style={styles.actionButtonText}>📊 Ajuster les Seuils</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       )}
 

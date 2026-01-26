@@ -38,6 +38,14 @@ export default function AdminDashboard() {
             description: 'Examiner les transactions suspectes.'
         },
         {
+            title: 'Configuration fraude',
+            icon: 'settings-outline' as const,
+            route: '/admin/fraud-config',
+            color: 'bg-purple-100',
+            iconColor: '#9333ea',
+            description: 'Personnaliser les seuils et poids de détection.'
+        },
+        {
             title: 'Métriques & Export',
             icon: 'stats-chart-outline' as const,
             route: '/admin/metrics',

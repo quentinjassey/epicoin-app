@@ -516,8 +516,8 @@ if __name__ == '__main__':
     
     # Générer les transactions et les utilisateurs
     transactions, users = generate_all_transactions(
-        num_transactions=1200,  # Générer 1200 pour avoir ~1000 après filtrage
-        num_users=60
+        num_transactions=5000,  # Générer 5000 transactions pour meilleur entraînement
+        num_users=150  # Plus d'utilisateurs pour plus de diversité
     )
     
     # Option 1: Exporter en CSV pour vérification

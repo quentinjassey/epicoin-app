@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, RefreshControl, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Modal, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../lib/supabase';
 
 type FraudAlert = {
@@ -32,6 +33,8 @@ export default function FraudAlertsScreen() {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [processing, setProcessing] = useState<string | null>(null);
+    const [selectedAlert, setSelectedAlert] = useState<FraudAlert | null>(null);
+    const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
         fetchAlerts();
@@ -96,41 +99,32 @@ export default function FraudAlertsScreen() {
         setProcessing(alertId);
         
         try {
-            // 1. Mettre à jour le statut de l'alerte
-            const { error: alertError } = await supabase
-                .from('fraud_alerts')
-                .update({ status: decision })
-                .eq('id', alertId);
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                throw new Error('Utilisateur non authentifié');
+            }
 
-            if (alertError) throw alertError;
+            // Utiliser les fonctions SQL appropriées
+            const functionName = decision === 'approved' ? 'approve_fraud_alert' : 'reject_fraud_alert';
+            const { data, error } = await supabase.rpc(functionName, {
+                p_alert_id: alertId,
+                p_admin_id: user.id,
+                p_notes: decision === 'approved' 
+                    ? 'Transaction approuvée manuellement' 
+                    : 'Transaction rejetée manuellement'
+            });
 
-            // 2. Mettre à jour le statut de la transaction
-            const { error: txError } = await supabase
-                .from('transactions')
-                .update({ status: decision === 'approved' ? 'completed' : 'failed' })
-                .eq('id', transactionId);
-
-            if (txError) throw txError;
-
-            // 3. Si approuvé, exécuter le transfert
-            if (decision === 'approved') {
-                const { data: tx } = await supabase
-                    .from('transactions')
-                    .select('sender_id, receiver_id, amount')
-                    .eq('id', transactionId)
-                    .single();
-
-                if (tx) {
-                    await supabase.rpc('decrement_balance', { user_id: tx.sender_id, amount: tx.amount });
-                    await supabase.rpc('increment_balance', { user_id: tx.receiver_id, amount: tx.amount });
-                }
+            if (error) throw error;
+            
+            if (!data.success) {
+                throw new Error(data.message || 'Erreur lors du traitement');
             }
 
             Alert.alert(
                 'Succès', 
                 decision === 'approved' 
-                    ? 'Transaction approuvée et exécutée' 
-                    : 'Transaction rejetée'
+                    ? 'Transaction approuvée et exécutée avec succès' 
+                    : 'Transaction rejetée et utilisateur remboursé si nécessaire'
             );
             fetchAlerts();
         } catch (error: any) {
@@ -245,6 +239,16 @@ export default function FraudAlertsScreen() {
                         </View>
                     </View>
                 </View>
+
+                {/* Bouton Voir Détails */}
+                <TouchableOpacity
+                    className="bg-gray-100 py-3 rounded-xl items-center flex-row justify-center mb-3 border border-gray-200"
+                    onPress={() => router.push(`/admin/fraud-detail?id=${item.id}`)}
+                >
+                    <Ionicons name="eye-outline" size={20} color="#374151" />
+                    <Text className="text-gray-700 font-semibold ml-2">Voir les détails complets</Text>
+                    <Ionicons name="chevron-forward" size={16} color="#9ca3af" style={{ marginLeft: 4 }} />
+                </TouchableOpacity>
 
                 {/* Actions */}
                 <View className="flex-row gap-3">

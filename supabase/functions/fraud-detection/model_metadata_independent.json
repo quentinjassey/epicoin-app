@@ -1,0 +1,30 @@
+{
+  "model_type": "XGBOOST",
+  "num_features": 17,
+  "feature_names": [
+    "amount_numeric",
+    "hour",
+    "day_of_week",
+    "execution_delay",
+    "transaction_type_encoded",
+    "direction_encoded",
+    "country_encoded",
+    "city_encoded",
+    "provider_encoded",
+    "os_name_encoded",
+    "type_encoded",
+    "user_avg_amount",
+    "user_std_amount",
+    "user_tx_count",
+    "user_fraud_ratio",
+    "amount_deviation",
+    "device_tx_count"
+  ],
+  "accuracy": 0.9686746987951808,
+  "auc_roc": 0.9838458826700953,
+  "latency_ms": 0.18851058397558518,
+  "training_samples": 4977,
+  "test_samples": 1245,
+  "fraud_ratio": 0.0663773706203793,
+  "includes_heuristic_score": false
+}
