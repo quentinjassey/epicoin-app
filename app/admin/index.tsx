@@ -1,93 +1,157 @@
-import { Ionicons } from '@expo/vector-icons';
+import { SymbolView } from 'expo-symbols';
 import { router } from 'expo-router';
 import React from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Colors } from '@/constants/NativeColors';
 
 export default function AdminDashboard() {
     const MENU_ITEMS = [
         {
             title: 'Gestion des produits',
-            icon: 'cube-outline' as const,
+            icon: 'cube.fill',
             route: '/admin/products',
-            color: 'bg-blue-100',
-            iconColor: '#2563eb',
+            color: 'rgba(59, 130, 246, 0.15)',
+            iconColor: Colors.systemBlue,
             description: 'Ajouter, modifier ou supprimer les articles.'
         },
         {
             title: 'Gestion des utilisateurs',
-            icon: 'people-outline' as const,
+            icon: 'person.3.fill',
             route: '/admin/users',
-            color: 'bg-green-100',
-            iconColor: '#16a34a',
+            color: 'rgba(16, 185, 129, 0.15)',
+            iconColor: Colors.systemGreen,
             description: 'Voir les profils et les soldes des étudiants.'
         },
         {
             title: 'Journal des transactions',
-            icon: 'list-outline' as const,
+            icon: 'list.bullet.rectangle',
             route: '/admin/transactions',
-            color: 'bg-purple-100',
-            iconColor: '#9333ea',
+            color: 'rgba(139, 92, 246, 0.15)',
+            iconColor: Colors.systemPurple,
             description: 'Surveiller toutes les transactions du système.'
         },
         {
             title: 'Alertes de fraude',
-            icon: 'warning-outline' as const,
+            icon: 'exclamationmark.triangle.fill',
             route: '/admin/fraud',
-            color: 'bg-red-100',
-            iconColor: '#dc2626',
+            color: 'rgba(239, 68, 68, 0.15)',
+            iconColor: Colors.systemRed,
             description: 'Examiner les transactions suspectes.'
         },
         {
             title: 'Configuration fraude',
-            icon: 'settings-outline' as const,
+            icon: 'slider.horizontal.3',
             route: '/admin/fraud-config',
-            color: 'bg-purple-100',
-            iconColor: '#9333ea',
+            color: 'rgba(139, 92, 246, 0.15)',
+            iconColor: Colors.systemPurple,
             description: 'Personnaliser les seuils et poids de détection.'
         },
         {
             title: 'Métriques & Export',
-            icon: 'stats-chart-outline' as const,
+            icon: 'chart.bar.fill',
             route: '/admin/metrics',
-            color: 'bg-orange-100',
-            iconColor: '#ea580c',
+            color: 'rgba(245, 158, 11, 0.15)',
+            iconColor: Colors.systemOrange,
             description: 'Statistiques opérationnelles et export des logs.'
         },
     ];
 
     return (
-        <ScrollView className="flex-1 bg-gray-50">
-            <View className="p-6">
-                <View className="bg-epitech-blue rounded-2xl p-6 mb-6">
-                    <View className="flex-row items-center mb-2">
-                        <Ionicons name="shield-checkmark" size={24} color="white" />
-                        <Text className="text-white font-bold text-xl ml-2">Administration</Text>
+        <ScrollView 
+            contentInsetAdjustmentBehavior="automatic"
+            style={{ flex: 1, backgroundColor: Colors.systemGroupedBackground }}
+            contentContainerStyle={{ padding: 24 }}
+        >
+            <View style={{
+                backgroundColor: Colors.epitechBlue,
+                borderRadius: 16,
+                borderCurve: 'continuous',
+                padding: 24,
+                marginBottom: 24,
+            }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <SymbolView name="checkmark.shield.fill" size={24} tintColor="#fff" />
+                        <Text style={{
+                            color: '#fff',
+                            fontWeight: '700',
+                            fontSize: 20,
+                            marginLeft: 8,
+                        }}>
+                            Administration
+                        </Text>
                     </View>
-                    <Text className="text-blue-100">
-                        Gérez l'écosystème EpiPay depuis ce panel.
-                    </Text>
+                    <TouchableOpacity
+                        onPress={() => router.back()}
+                        style={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                            padding: 8,
+                            borderRadius: 20,
+                            borderCurve: 'continuous',
+                        }}
+                    >
+                        <SymbolView name="xmark" size={18} tintColor="#fff" />
+                    </TouchableOpacity>
                 </View>
+                <Text style={{ color: 'rgba(255, 255, 255, 0.75)', fontSize: 15 }}>
+                    Gérez l'écosystème EpiPay depuis ce panel.
+                </Text>
+            </View>
 
-                <Text className="text-gray-500 text-sm font-medium uppercase mb-3">Menu</Text>
-                
-                <View className="gap-3">
-                    {MENU_ITEMS.map((item) => (
-                        <TouchableOpacity
-                            key={item.title}
-                            className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex-row items-center active:bg-gray-50"
-                            onPress={() => router.push(item.route as any)}
-                        >
-                            <View className={`p-4 rounded-xl ${item.color} mr-4`}>
-                                <Ionicons name={item.icon} size={24} color={item.iconColor} />
-                            </View>
-                            <View className="flex-1">
-                                <Text className="text-lg font-bold text-gray-900">{item.title}</Text>
-                                <Text className="text-gray-500 text-sm mt-0.5">{item.description}</Text>
-                            </View>
-                            <Ionicons name="chevron-forward" size={20} color="#d1d5db" />
-                        </TouchableOpacity>
-                    ))}
-                </View>
+            <Text style={{
+                color: Colors.secondaryLabel,
+                fontSize: 13,
+                fontWeight: '600',
+                textTransform: 'uppercase',
+                marginBottom: 12,
+                letterSpacing: 0.5,
+            }}>
+                Menu
+            </Text>
+            
+            <View style={{ gap: 12 }}>
+                {MENU_ITEMS.map((item) => (
+                    <TouchableOpacity
+                        key={item.title}
+                        style={{
+                            backgroundColor: Colors.secondarySystemGroupedBackground,
+                            padding: 20,
+                            borderRadius: 16,
+                            borderCurve: 'continuous',
+                            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                        }}
+                        onPress={() => router.push(item.route as any)}
+                    >
+                        <View style={{
+                            padding: 16,
+                            borderRadius: 12,
+                            borderCurve: 'continuous',
+                            backgroundColor: item.color,
+                            marginRight: 16,
+                        }}>
+                            <SymbolView name={item.icon as any} size={24} tintColor={item.iconColor} />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <Text style={{
+                                fontSize: 17,
+                                fontWeight: '700',
+                                color: Colors.label,
+                                marginBottom: 2,
+                            }}>
+                                {item.title}
+                            </Text>
+                            <Text style={{
+                                color: Colors.secondaryLabel,
+                                fontSize: 13,
+                            }}>
+                                {item.description}
+                            </Text>
+                        </View>
+                        <SymbolView name="chevron.right" size={14} tintColor={Colors.quaternaryLabel} />
+                    </TouchableOpacity>
+                ))}
             </View>
         </ScrollView>
     );

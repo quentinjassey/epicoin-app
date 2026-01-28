@@ -1,407 +1,463 @@
-import { Ionicons } from '@expo/vector-icons';
-import { StripeProvider, useStripe } from '@stripe/stripe-react-native';
-import { router } from 'expo-router';
-import React, { useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { supabase } from '../lib/supabase';
-import { collectTransactionContext } from '../lib/transactionContext';
+import { Colors } from "@/constants/NativeColors";
+import { StripeProvider, useStripe } from "@stripe/stripe-react-native";
+import { router } from "expo-router";
+import { SymbolView } from "expo-symbols";
+import React, { useState } from "react";
+import {
+    ActivityIndicator,
+    Alert,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import { supabase } from "../lib/supabase";
+import { collectTransactionContext } from "../lib/transactionContext";
 
 const CONVERSION_RATE = 5; // 1€ = 5 EPC
+const STRIPE_PUBLISHABLE_KEY =
+  process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || "";
 
 interface TopUpOption {
-    id: string;
-    euros: number;
-    bonus: number;
-    popular?: boolean;
-    bestValue?: boolean;
+  id: string;
+  euros: number;
+  bonus: number;
+  popular?: boolean;
+  bestValue?: boolean;
 }
 
 const TOPUP_OPTIONS: TopUpOption[] = [
-    { 
-        id: 'starter', 
-        euros: 5, 
-        bonus: 0 
-    },
-    { 
-        id: 'standard', 
-        euros: 10, 
-        bonus: 5,
-        popular: true 
-    },
-    { 
-        id: 'premium', 
-        euros: 20, 
-        bonus: 15 
-    },
-    { 
-        id: 'ultimate', 
-        euros: 50, 
-        bonus: 50,
-        bestValue: true 
-    },
-    // 🧪 OPTION TEST FRAUDE (À RETIRER APRÈS TESTS)
-    { 
-        id: 'fraud_test', 
-        euros: 1000, 
-        bonus: 0 
-    },
+  { id: "starter", euros: 5, bonus: 0 },
+  { id: "standard", euros: 10, bonus: 5, popular: true },
+  { id: "premium", euros: 20, bonus: 15 },
+  { id: "ultimate", euros: 50, bonus: 50, bestValue: true },
 ];
 
 function TopUpContent() {
-    const [selectedOption, setSelectedOption] = useState<TopUpOption | null>(null);
-    const [loading, setLoading] = useState(false);
-    const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  const [selectedOption, setSelectedOption] = useState<TopUpOption | null>(
+    null,
+  );
+  const [loading, setLoading] = useState(false);
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
-    function getBaseEpc(euros: number): number {
-        return euros * CONVERSION_RATE;
-    }
+  function getBaseEpc(euros: number): number {
+    return euros * CONVERSION_RATE;
+  }
 
-    function getTotalEpc(euros: number, bonus: number): number {
-        return getBaseEpc(euros) + bonus;
-    }
+  function getTotalEpc(euros: number, bonus: number): number {
+    return getBaseEpc(euros) + bonus;
+  }
 
-    async function handlePayment() {
-        if (!selectedOption) return;
+  async function handlePayment() {
+    if (!selectedOption) return;
 
-        setLoading(true);
+    setLoading(true);
 
-        try {
-            // Collecter le contexte
-            const context = await collectTransactionContext();
+    try {
+      const context = await collectTransactionContext();
+      const totalEpc = getTotalEpc(selectedOption.euros, selectedOption.bonus);
 
-            const totalEpc = getTotalEpc(selectedOption.euros, selectedOption.bonus);
+      const { data, error } = await supabase.functions.invoke(
+        "create-payment-intent",
+        {
+          body: {
+            amount: selectedOption.euros,
+            bonus: selectedOption.bonus,
+            epc_amount: totalEpc,
+            context: {
+              country: context.location_info.country,
+              city: context.location_info.city,
+              device_info: context.device_info,
+            },
+          },
+        },
+      );
 
-            // Créer le Payment Intent avec le bonus
-            const { data, error } = await supabase.functions.invoke('create-payment-intent', {
-                body: { 
-                    amount: selectedOption.euros,
-                    bonus: selectedOption.bonus,
-                    epc_amount: totalEpc,
-                    context: {
-                        country: context.location_info.country,
-                        city: context.location_info.city,
-                        device_info: context.device_info,
-                    }
-                },
-            });
+      if (error || !data?.clientSecret) {
+        Alert.alert(
+          "Erreur",
+          "Impossible d'initialiser le paiement. Veuillez réessayer.",
+        );
+        setLoading(false);
+        return;
+      }
 
-            if (error || !data?.clientSecret) {
-                Alert.alert('Erreur', 'Impossible d\'initialiser le paiement. Veuillez réessayer.');
-                setLoading(false);
-                return;
-            }
+      const { error: initError } = await initPaymentSheet({
+        merchantDisplayName: "EpiCoin",
+        paymentIntentClientSecret: data.clientSecret,
+        returnURL: "epicoin://payment-return",
+        defaultBillingDetails: {
+          name: "Étudiant Epitech",
+        },
+      });
 
-            // Initialiser Stripe Payment Sheet
-            const { error: initError } = await initPaymentSheet({
-                merchantDisplayName: 'EpiCoin',
-                paymentIntentClientSecret: data.clientSecret,
-                returnURL: 'epicoin://payment-return', // Évite le warning Stripe
-                defaultBillingDetails: {
-                    name: 'Étudiant Epitech',
-                },
-                appearance: {
-                    colors: {
-                        primary: '#0091D3',
-                    },
-                },
-            });
+      if (initError) {
+        Alert.alert("Erreur", `Erreur d'initialisation: ${initError.message}`);
+        setLoading(false);
+        return;
+      }
 
-            if (initError) {
-                Alert.alert('Erreur', initError.message);
-                setLoading(false);
-                return;
-            }
+      const { error: presentError } = await presentPaymentSheet();
 
-            // Présenter le Payment Sheet
-            const { error: presentError } = await presentPaymentSheet();
-
-            if (presentError) {
-                if (presentError.code !== 'Canceled') {
-                    Alert.alert('Paiement échoué', presentError.message);
-                }
-                setLoading(false);
-                return;
-            }
-
-            // Confirmer le paiement
-            const { data: confirmData, error: confirmError } = await supabase.functions.invoke('confirm-payment', {
-                body: { payment_intent_id: data.id },
-            });
-
-            if (confirmError) {
-                console.error('Confirm error:', confirmError);
-                Alert.alert(
-                    'Vérification échouée', 
-                    'Le paiement a réussi mais la vérification a échoué. Contactez le support si votre solde n\'est pas crédité.'
-                );
-                setLoading(false);
-                return;
-            }
-
-            // Gérer les différents statuts
-            if (confirmData) {
-                if (confirmData.status === 'blocked') {
-                    Alert.alert(
-                        '🚨 Transaction Bloquée',
-                        'Cette transaction a été bloquée par notre système de sécurité. Un remboursement sera initié.',
-                        [{ text: 'Compris', onPress: () => router.back() }]
-                    );
-                } else if (confirmData.status === 'pending_review') {
-                    Alert.alert(
-                        '⚠️ Vérification Requise',
-                        `Votre rechargement de ${totalEpc} EPC est en attente de vérification de sécurité. Vous serez notifié une fois validé.`,
-                        [{ text: 'Compris', onPress: () => router.back() }]
-                    );
-                } else if (confirmData.status === 'completed' || confirmData.success) {
-                    Alert.alert(
-                        '✅ Rechargement Réussi !',
-                        `${totalEpc} EPC ont été ajoutés à votre portefeuille.`,
-                        [{ text: 'Super !', onPress: () => router.back() }]
-                    );
-                } else {
-                    Alert.alert(
-                        'Erreur',
-                        confirmData.message || 'Une erreur est survenue. Contactez le support si nécessaire.',
-                        [{ text: 'OK', onPress: () => router.back() }]
-                    );
-                }
-            }
-
-        } catch (error: any) {
-            console.error('Top-up error:', error);
-            Alert.alert(
-                'Erreur',
-                'Une erreur est survenue. Contactez le support si votre solde n\'est pas crédité.'
-            );
-        } finally {
-            setLoading(false);
+      if (presentError) {
+        if (presentError.code !== "Canceled") {
+          Alert.alert("Erreur de paiement", presentError.message);
         }
+        setLoading(false);
+        return;
+      }
+
+      const { data: confirmData, error: confirmError } =
+        await supabase.functions.invoke("confirm-payment", {
+          body: { payment_intent_id: data.id },
+        });
+
+      if (confirmError || !confirmData?.success) {
+        Alert.alert("Erreur", "Impossible de confirmer le paiement.");
+        setLoading(false);
+        return;
+      }
+
+      if (confirmData.status === "pending_review") {
+        Alert.alert(
+          "Vérification de sécurité",
+          "Votre rechargement a été signalé pour vérification. Vous serez notifié une fois validé.",
+          [{ text: "OK", onPress: () => router.back() }],
+        );
+      } else {
+        Alert.alert(
+          "Rechargement réussi",
+          `${totalEpc} EPC ont été ajoutés à votre compte${selectedOption.bonus > 0 ? ` (dont ${selectedOption.bonus} de bonus)` : ""} !`,
+          [{ text: "Super !", onPress: () => router.back() }],
+        );
+      }
+    } catch (error: any) {
+      Alert.alert("Erreur", error.message);
+    } finally {
+      setLoading(false);
     }
+  }
 
-    return (
-        <ScrollView className="flex-1 bg-gradient-to-b from-blue-50 to-white">
-            <View className="p-6">
-                {/* Header */}
-                <View className="mb-6">
-                    <Text className="text-3xl font-bold text-gray-900 mb-2">Recharger</Text>
-                    <Text className="text-gray-500 text-base">
-                        Choisissez le montant à ajouter à votre portefeuille
+  return (
+    <ScrollView
+      contentInsetAdjustmentBehavior="automatic"
+      style={{ flex: 1, backgroundColor: Colors.systemGroupedBackground }}
+      contentContainerStyle={{ padding: 24, paddingTop: 100 }}
+    >
+      <View style={{ marginBottom: 32 }}>
+        <Text
+          style={{
+            fontSize: 28,
+            fontWeight: "700",
+            color: Colors.label,
+            marginBottom: 8,
+          }}
+        >
+          Recharger votre compte
+        </Text>
+        <Text
+          style={{
+            fontSize: 15,
+            color: Colors.secondaryLabel,
+            lineHeight: 20,
+          }}
+        >
+          Choisissez un montant et profitez de bonus exclusifs
+        </Text>
+      </View>
+
+      <View style={{ gap: 12, marginBottom: 32 }}>
+        {TOPUP_OPTIONS.map((option) => {
+          const baseEpc = getBaseEpc(option.euros);
+          const totalEpc = getTotalEpc(option.euros, option.bonus);
+          const isSelected = selectedOption?.id === option.id;
+
+          return (
+            <TouchableOpacity
+              key={option.id}
+              onPress={() => setSelectedOption(option)}
+              style={{
+                backgroundColor: isSelected
+                  ? Colors.epitechBlue
+                  : Colors.secondarySystemGroupedBackground,
+                borderRadius: 16,
+                borderCurve: "continuous",
+                padding: 20,
+                borderWidth: isSelected ? 2 : 0,
+                borderColor: Colors.epitechBlue,
+                boxShadow: isSelected
+                  ? "0 4px 12px rgba(0, 145, 211, 0.25)"
+                  : "0 1px 3px rgba(0, 0, 0, 0.06)",
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <View style={{ flex: 1 }}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginBottom: 8,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 32,
+                        fontWeight: "700",
+                        color: isSelected ? "#fff" : Colors.label,
+                        marginRight: 8,
+                        fontVariant: ["tabular-nums"],
+                      }}
+                    >
+                      {option.euros}€
                     </Text>
-                </View>
-
-                {/* Conversion Info */}
-                <View className="bg-blue-50 rounded-2xl p-4 mb-6 border border-blue-100">
-                    <View className="flex-row items-center">
-                        <View className="bg-blue-100 p-2 rounded-full mr-3">
-                            <Ionicons name="information-circle" size={24} color="#0091D3" />
-                        </View>
-                        <View className="flex-1">
-                            <Text className="text-blue-900 font-semibold">Taux de conversion</Text>
-                            <Text className="text-blue-700">1€ = {CONVERSION_RATE} EPC</Text>
-                        </View>
-                    </View>
-                </View>
-
-                {/* Options de rechargement */}
-                <View className="space-y-3">
-                    {TOPUP_OPTIONS.map((option) => {
-                        const isSelected = selectedOption?.id === option.id;
-                        const baseEpc = getBaseEpc(option.euros);
-                        const totalEpc = getTotalEpc(option.euros, option.bonus);
-                        const savings = option.bonus > 0 ? ((option.bonus / baseEpc) * 100).toFixed(0) : 0;
-
-                        return (
-                            <TouchableOpacity
-                                key={option.id}
-                                className={`rounded-2xl border-2 p-5 ${
-                                    option.id === 'fraud_test'
-                                        ? isSelected ? 'border-red-600 bg-red-50' : 'border-red-300 bg-red-50/30'
-                                        : isSelected 
-                                            ? 'border-epitech-blue bg-blue-50' 
-                                            : 'border-gray-200 bg-white'
-                                }`}
-                                onPress={() => setSelectedOption(option)}
-                                activeOpacity={0.7}
-                            >
-                                {/* Badge Popular / Best Value / Test Fraude */}
-                                {(option.popular || option.bestValue || option.id === 'fraud_test') && (
-                                    <View className="absolute -top-2 -right-2 z-10">
-                                        <View className={`${
-                                            option.id === 'fraud_test' ? 'bg-red-600' :
-                                            option.bestValue ? 'bg-green-500' : 'bg-orange-500'
-                                        } px-3 py-1 rounded-full`}>
-                                            <Text className="text-white text-xs font-bold">
-                                                {option.id === 'fraud_test' ? '🧪 TEST FRAUDE' :
-                                                 option.bestValue ? '🔥 MEILLEUR' : '⭐ POPULAIRE'}
-                                            </Text>
-                                        </View>
-                                    </View>
-                                )}
-
-                                <View className="flex-row items-center justify-between">
-                                    {/* Prix en € */}
-                                    <View className="flex-1">
-                                        <Text className={`text-4xl font-bold ${
-                                            option.id === 'fraud_test' ? 'text-red-600' :
-                                            isSelected ? 'text-epitech-blue' : 'text-gray-900'
-                                        }`}>
-                                            {option.euros}€
-                                        </Text>
-                                        <Text className={`text-sm mt-1 ${
-                                            option.id === 'fraud_test' ? 'text-red-500' : 'text-gray-500'
-                                        }`}>
-                                            à payer
-                                        </Text>
-                                    </View>
-
-                                    {/* Flèche */}
-                                    <View className="mx-4">
-                                        <Ionicons 
-                                            name="arrow-forward" 
-                                            size={32} 
-                                            color={
-                                                option.id === 'fraud_test' ? '#DC2626' :
-                                                isSelected ? '#0091D3' : '#9CA3AF'
-                                            } 
-                                        />
-                                    </View>
-
-                                    {/* Montant EPC */}
-                                    <View className="flex-1 items-end">
-                                        <Text className={`text-4xl font-bold ${
-                                            option.id === 'fraud_test' ? 'text-red-600' :
-                                            isSelected ? 'text-epitech-blue' : 'text-gray-900'
-                                        }`}>
-                                            {totalEpc}
-                                        </Text>
-                                        <Text className={`text-sm font-semibold mt-1 ${
-                                            option.id === 'fraud_test' ? 'text-red-500' :
-                                            isSelected ? 'text-epitech-blue' : 'text-gray-600'
-                                        }`}>
-                                            EPC reçus
-                                        </Text>
-                                    </View>
-                                </View>
-
-                                {/* Avertissement Test Fraude */}
-                                {option.id === 'fraud_test' && (
-                                    <View className="mt-4 pt-4 border-t border-red-300">
-                                        <View className="bg-red-100 p-3 rounded-lg">
-                                            <Text className="text-red-700 text-xs font-semibold">
-                                                ⚠️ Montant aberrant pour tester la détection de fraude
-                                            </Text>
-                                            <Text className="text-red-600 text-xs mt-1">
-                                                Transaction sera probablement bloquée ou mise en revue
-                                            </Text>
-                                        </View>
-                                    </View>
-                                )}
-
-                                {/* Détails du bonus */}
-                                {option.bonus > 0 && (
-                                    <View className="mt-4 pt-4 border-t border-gray-200">
-                                        <View className="flex-row items-center justify-between">
-                                            <View className="flex-1">
-                                                <Text className="text-gray-600 text-sm">Montant de base</Text>
-                                                <Text className="text-gray-900 font-medium">{baseEpc} EPC</Text>
-                                            </View>
-                                            <View className="mx-2">
-                                                <Ionicons name="add" size={16} color="#10B981" />
-                                            </View>
-                                            <View className="flex-1 items-end">
-                                                <Text className="text-green-600 text-sm font-semibold">Bonus +{savings}%</Text>
-                                                <Text className="text-green-600 font-bold">+{option.bonus} EPC</Text>
-                                            </View>
-                                        </View>
-                                    </View>
-                                )}
-
-                                {/* Radio button */}
-                                <View className="absolute top-5 right-5">
-                                    <View className={`w-6 h-6 rounded-full border-2 ${
-                                        isSelected 
-                                            ? 'border-epitech-blue bg-epitech-blue' 
-                                            : 'border-gray-300 bg-white'
-                                    } items-center justify-center`}>
-                                        {isSelected && (
-                                            <View className="w-3 h-3 rounded-full bg-white" />
-                                        )}
-                                    </View>
-                                </View>
-                            </TouchableOpacity>
-                        );
-                    })}
-                </View>
-
-                {/* Récapitulatif */}
-                {selectedOption && (
-                    <View className="mt-6 bg-gray-50 rounded-2xl p-5 border border-gray-200">
-                        <Text className="text-gray-900 font-bold text-lg mb-4">Récapitulatif</Text>
-                        
-                        <View className="flex-row justify-between mb-3">
-                            <Text className="text-gray-600">Vous payez</Text>
-                            <Text className="text-gray-900 font-bold text-lg">{selectedOption.euros}€</Text>
-                        </View>
-
-                        <View className="flex-row justify-between mb-3">
-                            <Text className="text-gray-600">Vous recevez</Text>
-                            <Text className="text-epitech-blue font-bold text-xl">
-                                {getTotalEpc(selectedOption.euros, selectedOption.bonus)} EPC
-                            </Text>
-                        </View>
-
-                        {selectedOption.bonus > 0 && (
-                            <View className="flex-row justify-between pt-3 border-t border-gray-300">
-                                <Text className="text-green-600 font-medium">Dont bonus offert</Text>
-                                <Text className="text-green-600 font-bold">+{selectedOption.bonus} EPC 🎁</Text>
-                            </View>
-                        )}
-                    </View>
-                )}
-
-                {/* Bouton Payer */}
-                <TouchableOpacity
-                    className={`mt-6 p-5 rounded-2xl items-center shadow-lg flex-row justify-center ${
-                        !selectedOption || loading 
-                            ? 'bg-gray-300' 
-                            : 'bg-epitech-blue'
-                    }`}
-                    disabled={!selectedOption || loading}
-                    onPress={handlePayment}
-                >
-                    {loading ? (
-                        <ActivityIndicator color="#fff" size="large" />
-                    ) : (
-                        <>
-                            <Ionicons name="card-outline" size={28} color="white" style={{ marginRight: 10 }} />
-                            <Text className="text-white font-bold text-xl">
-                                {selectedOption 
-                                    ? `Payer ${selectedOption.euros}€` 
-                                    : 'Choisissez un montant'}
-                            </Text>
-                        </>
+                    {(option.popular || option.bestValue) && (
+                      <View
+                        style={{
+                          backgroundColor: isSelected
+                            ? "rgba(255, 255, 255, 0.25)"
+                            : Colors.systemOrange,
+                          paddingHorizontal: 8,
+                          paddingVertical: 4,
+                          borderRadius: 8,
+                          borderCurve: "continuous",
+                        }}
+                      >
+                        <Text
+                          style={{
+                            color: isSelected ? "#fff" : "#fff",
+                            fontSize: 11,
+                            fontWeight: "700",
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          {option.popular ? "Populaire" : "Meilleure valeur"}
+                        </Text>
+                      </View>
                     )}
-                </TouchableOpacity>
+                  </View>
 
-                {/* Sécurité */}
-                <View className="mt-6 flex-row items-center justify-center">
-                    <Ionicons name="shield-checkmark" size={20} color="#10B981" />
-                    <Text className="text-gray-500 ml-2">Paiement 100% sécurisé par Stripe</Text>
+                  <Text
+                    style={{
+                      fontSize: 15,
+                      color: isSelected
+                        ? "rgba(255, 255, 255, 0.75)"
+                        : Colors.secondaryLabel,
+                      marginBottom: 4,
+                    }}
+                  >
+                    {baseEpc} EPC{" "}
+                    {option.bonus > 0 ? `+ ${option.bonus} bonus` : ""}
+                  </Text>
+
+                  <Text
+                    style={{
+                      fontSize: 20,
+                      fontWeight: "700",
+                      color: isSelected
+                        ? Colors.epitechYellow
+                        : Colors.epitechBlue,
+                      fontVariant: ["tabular-nums"],
+                    }}
+                  >
+                    = {totalEpc} EPC
+                  </Text>
                 </View>
 
-                <View className="mt-2 flex-row items-center justify-center">
-                    <Ionicons name="lock-closed" size={16} color="#9CA3AF" />
-                    <Text className="text-gray-400 text-sm ml-2">Vos données sont protégées</Text>
-                </View>
+                {isSelected && (
+                  <SymbolView
+                    name="checkmark.circle.fill"
+                    size={32}
+                    tintColor="#fff"
+                  />
+                )}
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+      {selectedOption && (
+        <View
+          style={{
+            backgroundColor: Colors.secondarySystemGroupedBackground,
+            borderRadius: 16,
+            borderCurve: "continuous",
+            padding: 20,
+            marginBottom: 24,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginBottom: 12,
+            }}
+          >
+            <SymbolView
+              name="info.circle.fill"
+              size={20}
+              tintColor={Colors.systemBlue}
+            />
+            <Text
+              style={{
+                fontSize: 15,
+                fontWeight: "600",
+                color: Colors.label,
+                marginLeft: 8,
+              }}
+            >
+              Récapitulatif
+            </Text>
+          </View>
+          <View style={{ gap: 8 }}>
+            <View
+              style={{ flexDirection: "row", justifyContent: "space-between" }}
+            >
+              <Text style={{ color: Colors.secondaryLabel }}>Montant</Text>
+              <Text
+                style={{
+                  fontWeight: "600",
+                  color: Colors.label,
+                  fontVariant: ["tabular-nums"],
+                }}
+              >
+                {selectedOption.euros}€
+              </Text>
             </View>
-        </ScrollView>
-    );
+            <View
+              style={{ flexDirection: "row", justifyContent: "space-between" }}
+            >
+              <Text style={{ color: Colors.secondaryLabel }}>EPC de base</Text>
+              <Text
+                style={{
+                  fontWeight: "600",
+                  color: Colors.label,
+                  fontVariant: ["tabular-nums"],
+                }}
+              >
+                {getBaseEpc(selectedOption.euros)} EPC
+              </Text>
+            </View>
+            {selectedOption.bonus > 0 && (
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Text style={{ color: Colors.systemGreen }}>Bonus</Text>
+                <Text
+                  style={{
+                    fontWeight: "600",
+                    color: Colors.systemGreen,
+                    fontVariant: ["tabular-nums"],
+                  }}
+                >
+                  +{selectedOption.bonus} EPC
+                </Text>
+              </View>
+            )}
+            <View
+              style={{
+                height: 1,
+                backgroundColor: Colors.separator,
+                marginVertical: 8,
+              }}
+            />
+            <View
+              style={{ flexDirection: "row", justifyContent: "space-between" }}
+            >
+              <Text
+                style={{ fontSize: 17, fontWeight: "700", color: Colors.label }}
+              >
+                Total
+              </Text>
+              <Text
+                style={{
+                  fontSize: 20,
+                  fontWeight: "700",
+                  color: Colors.epitechBlue,
+                  fontVariant: ["tabular-nums"],
+                }}
+              >
+                {getTotalEpc(selectedOption.euros, selectedOption.bonus)} EPC
+              </Text>
+            </View>
+          </View>
+        </View>
+      )}
+
+      <TouchableOpacity
+        style={{
+          backgroundColor: selectedOption
+            ? Colors.epitechBlue
+            : Colors.systemFill,
+          borderRadius: 14,
+          borderCurve: "continuous",
+          padding: 16,
+          alignItems: "center",
+          flexDirection: "row",
+          justifyContent: "center",
+        }}
+        onPress={handlePayment}
+        disabled={!selectedOption || loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <>
+            <SymbolView name="creditcard.fill" size={20} tintColor="#fff" />
+            <Text
+              style={{
+                color: "#fff",
+                fontSize: 17,
+                fontWeight: "700",
+                marginLeft: 8,
+              }}
+            >
+              Payer {selectedOption ? `${selectedOption.euros}€` : ""}
+            </Text>
+          </>
+        )}
+      </TouchableOpacity>
+
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          marginTop: 24,
+        }}
+      >
+        <SymbolView
+          name="lock.shield.fill"
+          size={16}
+          tintColor={Colors.tertiaryLabel}
+        />
+        <Text
+          style={{
+            color: Colors.tertiaryLabel,
+            fontSize: 13,
+            marginLeft: 8,
+          }}
+        >
+          Paiement sécurisé par Stripe
+        </Text>
+      </View>
+    </ScrollView>
+  );
 }
 
 export default function TopUpScreen() {
-    return (
-        <StripeProvider publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''}>
-            <TopUpContent />
-        </StripeProvider>
-    );
+  return (
+    <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY}>
+      <TopUpContent />
+    </StripeProvider>
+  );
 }

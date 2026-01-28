@@ -1,8 +1,9 @@
-import { Ionicons } from '@expo/vector-icons';
+import { SymbolView } from 'expo-symbols';
 import { Link, router } from 'expo-router';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../lib/supabase';
+import { Colors } from '@/constants/NativeColors';
 
 const CAMPUSES = [
     { id: 'paris', name: 'Paris', icon: '🗼' },
@@ -30,7 +31,6 @@ export default function SignUp() {
     const [showPassword, setShowPassword] = useState(false);
 
     async function signUpWithEmail() {
-        // Validation
         if (!fullName || !email || !password || !confirmPassword || !campus) {
             Alert.alert('Erreur', 'Veuillez remplir tous les champs');
             return;
@@ -68,7 +68,7 @@ export default function SignUp() {
             setLoading(false);
         } else {
             Alert.alert(
-                'Inscription réussie ! 🎉', 
+                'Inscription réussie',
                 'Vérifiez votre boîte mail pour confirmer votre compte.',
                 [{ text: 'OK', onPress: () => router.replace('/(auth)/sign-in') }]
             );
@@ -81,176 +81,332 @@ export default function SignUp() {
     return (
         <KeyboardAvoidingView 
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            className="flex-1"
+            style={{ flex: 1, backgroundColor: Colors.systemBackground }}
         >
-            <ScrollView className="flex-1 bg-white" contentContainerStyle={{ flexGrow: 1 }}>
-                <View className="flex-1 justify-center items-center p-6 py-12">
-                    {/* Header */}
-                    <View className="mb-6 items-center">
-                        <View className="bg-epitech-blue w-16 h-16 rounded-2xl items-center justify-center mb-3 shadow-lg shadow-blue-200">
-                            <Ionicons name="wallet" size={32} color="white" />
+            <ScrollView 
+                contentInsetAdjustmentBehavior="automatic"
+                contentContainerStyle={{
+                    flexGrow: 1,
+                    justifyContent: 'center',
+                    padding: 24,
+                    paddingVertical: 48,
+                }}
+            >
+                <View style={{ marginBottom: 24, alignItems: 'center' }}>
+                    <View style={{
+                        backgroundColor: Colors.epitechBlue,
+                        width: 64,
+                        height: 64,
+                        borderRadius: 16,
+                        borderCurve: 'continuous',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginBottom: 12,
+                        boxShadow: '0 4px 12px rgba(0, 145, 211, 0.25)',
+                    }}>
+                        <SymbolView name="wallet.pass.fill" size={32} tintColor="#fff" />
+                    </View>
+                    <Text style={{
+                        fontSize: 24,
+                        fontWeight: '700',
+                        color: Colors.label,
+                        marginBottom: 4,
+                    }}>
+                        Créer un compte
+                    </Text>
+                    <Text style={{
+                        color: Colors.secondaryLabel,
+                        fontSize: 15,
+                    }}>
+                        Rejoignez l'économie EpiPay
+                    </Text>
+                </View>
+
+                <View style={{ width: '100%', maxWidth: 400, alignSelf: 'center' }}>
+                    <View style={{ marginBottom: 16 }}>
+                        <Text style={{
+                            color: Colors.secondaryLabel,
+                            fontWeight: '600',
+                            marginBottom: 8,
+                            fontSize: 15,
+                        }}>
+                            Nom complet
+                        </Text>
+                        <View style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            backgroundColor: Colors.secondarySystemBackground,
+                            borderRadius: 12,
+                            borderCurve: 'continuous',
+                            paddingHorizontal: 16,
+                        }}>
+                            <SymbolView name="person.fill" size={20} tintColor={Colors.tertiaryLabel} />
+                            <TextInput
+                                style={{
+                                    flex: 1,
+                                    padding: 16,
+                                    color: Colors.label,
+                                    fontSize: 16,
+                                }}
+                                placeholder="Jean Dupont"
+                                placeholderTextColor={Colors.tertiaryLabel}
+                                value={fullName}
+                                onChangeText={setFullName}
+                            />
                         </View>
-                        <Text className="text-2xl font-bold text-gray-900">Créer un compte</Text>
-                        <Text className="text-gray-500 mt-1">Rejoignez l'économie EpiPay</Text>
                     </View>
 
-                    <View className="w-full max-w-sm">
-                        {/* Full Name */}
-                        <View className="mb-4">
-                            <Text className="text-gray-600 font-medium mb-2">Nom complet</Text>
-                            <View className="flex-row items-center border border-gray-300 rounded-xl bg-gray-50 px-4">
-                                <Ionicons name="person-outline" size={20} color="#9ca3af" />
-                                <TextInput
-                                    className="flex-1 p-4 text-gray-900"
-                                    placeholder="Jean Dupont"
-                                    value={fullName}
-                                    onChangeText={setFullName}
-                                    placeholderTextColor="#9ca3af"
-                                />
-                            </View>
+                    <View style={{ marginBottom: 16 }}>
+                        <Text style={{
+                            color: Colors.secondaryLabel,
+                            fontWeight: '600',
+                            marginBottom: 8,
+                            fontSize: 15,
+                        }}>
+                            Email
+                        </Text>
+                        <View style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            backgroundColor: Colors.secondarySystemBackground,
+                            borderRadius: 12,
+                            borderCurve: 'continuous',
+                            paddingHorizontal: 16,
+                        }}>
+                            <SymbolView name="envelope.fill" size={20} tintColor={Colors.tertiaryLabel} />
+                            <TextInput
+                                style={{
+                                    flex: 1,
+                                    padding: 16,
+                                    color: Colors.label,
+                                    fontSize: 16,
+                                }}
+                                placeholder="prenom.nom@epitech.digital"
+                                placeholderTextColor={Colors.tertiaryLabel}
+                                value={email}
+                                onChangeText={setEmail}
+                                autoCapitalize="none"
+                                keyboardType="email-address"
+                            />
                         </View>
+                    </View>
 
-                        {/* Email */}
-                        <View className="mb-4">
-                            <Text className="text-gray-600 font-medium mb-2">Email Epitech</Text>
-                            <View className="flex-row items-center border border-gray-300 rounded-xl bg-gray-50 px-4">
-                                <Ionicons name="mail-outline" size={20} color="#9ca3af" />
-                                <TextInput
-                                    className="flex-1 p-4 text-gray-900"
-                                    placeholder="prenom.nom@epitech.digital"
-                                    value={email}
-                                    onChangeText={setEmail}
-                                    autoCapitalize="none"
-                                    keyboardType="email-address"
-                                    placeholderTextColor="#9ca3af"
+                    <View style={{ marginBottom: 16 }}>
+                        <Text style={{
+                            color: Colors.secondaryLabel,
+                            fontWeight: '600',
+                            marginBottom: 8,
+                            fontSize: 15,
+                        }}>
+                            Campus
+                        </Text>
+                        <TouchableOpacity
+                            onPress={() => setShowCampusModal(true)}
+                            style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                backgroundColor: Colors.secondarySystemBackground,
+                                borderRadius: 12,
+                                borderCurve: 'continuous',
+                                paddingHorizontal: 16,
+                                paddingVertical: 16,
+                            }}
+                        >
+                            <SymbolView name="location.fill" size={20} tintColor={Colors.tertiaryLabel} />
+                            <Text style={{
+                                flex: 1,
+                                marginLeft: 16,
+                                color: campus ? Colors.label : Colors.tertiaryLabel,
+                                fontSize: 16,
+                            }}>
+                                {selectedCampus ? `${selectedCampus.icon} ${selectedCampus.name}` : 'Sélectionner un campus'}
+                            </Text>
+                            <SymbolView name="chevron.down" size={16} tintColor={Colors.tertiaryLabel} />
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={{ marginBottom: 16 }}>
+                        <Text style={{
+                            color: Colors.secondaryLabel,
+                            fontWeight: '600',
+                            marginBottom: 8,
+                            fontSize: 15,
+                        }}>
+                            Mot de passe
+                        </Text>
+                        <View style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            backgroundColor: Colors.secondarySystemBackground,
+                            borderRadius: 12,
+                            borderCurve: 'continuous',
+                            paddingHorizontal: 16,
+                        }}>
+                            <SymbolView name="lock.fill" size={20} tintColor={Colors.tertiaryLabel} />
+                            <TextInput
+                                style={{
+                                    flex: 1,
+                                    padding: 16,
+                                    color: Colors.label,
+                                    fontSize: 16,
+                                }}
+                                placeholder="Min. 6 caractères"
+                                placeholderTextColor={Colors.tertiaryLabel}
+                                value={password}
+                                onChangeText={setPassword}
+                                secureTextEntry={!showPassword}
+                            />
+                            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                                <SymbolView 
+                                    name={showPassword ? 'eye.slash.fill' : 'eye.fill'} 
+                                    size={20}
+                                    tintColor={Colors.tertiaryLabel}
                                 />
-                            </View>
-                        </View>
-
-                        {/* Campus */}
-                        <View className="mb-4">
-                            <Text className="text-gray-600 font-medium mb-2">Campus</Text>
-                            <TouchableOpacity
-                                className="flex-row items-center border border-gray-300 rounded-xl bg-gray-50 px-4 py-4"
-                                onPress={() => setShowCampusModal(true)}
-                            >
-                                <Ionicons name="location-outline" size={20} color="#9ca3af" />
-                                <Text className={`flex-1 ml-3 ${campus ? 'text-gray-900' : 'text-gray-400'}`}>
-                                    {selectedCampus ? `${selectedCampus.icon} ${selectedCampus.name}` : 'Sélectionner votre campus'}
-                                </Text>
-                                <Ionicons name="chevron-down" size={20} color="#9ca3af" />
                             </TouchableOpacity>
                         </View>
+                    </View>
 
-                        {/* Password */}
-                        <View className="mb-4">
-                            <Text className="text-gray-600 font-medium mb-2">Mot de passe</Text>
-                            <View className="flex-row items-center border border-gray-300 rounded-xl bg-gray-50 px-4">
-                                <Ionicons name="lock-closed-outline" size={20} color="#9ca3af" />
-                                <TextInput
-                                    className="flex-1 p-4 text-gray-900"
-                                    placeholder="Minimum 6 caractères"
-                                    value={password}
-                                    onChangeText={setPassword}
-                                    secureTextEntry={!showPassword}
-                                    placeholderTextColor="#9ca3af"
-                                />
-                                <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                                    <Ionicons 
-                                        name={showPassword ? 'eye-off-outline' : 'eye-outline'} 
-                                        size={20} 
-                                        color="#9ca3af" 
-                                    />
-                                </TouchableOpacity>
-                            </View>
+                    <View style={{ marginBottom: 24 }}>
+                        <Text style={{
+                            color: Colors.secondaryLabel,
+                            fontWeight: '600',
+                            marginBottom: 8,
+                            fontSize: 15,
+                        }}>
+                            Confirmer le mot de passe
+                        </Text>
+                        <View style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            backgroundColor: Colors.secondarySystemBackground,
+                            borderRadius: 12,
+                            borderCurve: 'continuous',
+                            paddingHorizontal: 16,
+                        }}>
+                            <SymbolView name="lock.fill" size={20} tintColor={Colors.tertiaryLabel} />
+                            <TextInput
+                                style={{
+                                    flex: 1,
+                                    padding: 16,
+                                    color: Colors.label,
+                                    fontSize: 16,
+                                }}
+                                placeholder="Confirmer"
+                                placeholderTextColor={Colors.tertiaryLabel}
+                                value={confirmPassword}
+                                onChangeText={setConfirmPassword}
+                                secureTextEntry
+                            />
                         </View>
+                    </View>
 
-                        {/* Confirm Password */}
-                        <View className="mb-6">
-                            <Text className="text-gray-600 font-medium mb-2">Confirmer le mot de passe</Text>
-                            <View className="flex-row items-center border border-gray-300 rounded-xl bg-gray-50 px-4">
-                                <Ionicons name="lock-closed-outline" size={20} color="#9ca3af" />
-                                <TextInput
-                                    className="flex-1 p-4 text-gray-900"
-                                    placeholder="Retapez votre mot de passe"
-                                    value={confirmPassword}
-                                    onChangeText={setConfirmPassword}
-                                    secureTextEntry={!showPassword}
-                                    placeholderTextColor="#9ca3af"
-                                />
-                            </View>
-                        </View>
+                    <TouchableOpacity
+                        style={{
+                            backgroundColor: loading ? Colors.systemFill : Colors.epitechBlue,
+                            borderRadius: 12,
+                            borderCurve: 'continuous',
+                            padding: 16,
+                            alignItems: 'center',
+                            boxShadow: loading ? 'none' : '0 2px 8px rgba(0, 145, 211, 0.25)',
+                        }}
+                        onPress={signUpWithEmail}
+                        disabled={loading}
+                    >
+                        {loading ? (
+                            <ActivityIndicator color="#fff" />
+                        ) : (
+                            <Text style={{
+                                color: '#fff',
+                                fontSize: 17,
+                                fontWeight: '700',
+                            }}>
+                                S'inscrire
+                            </Text>
+                        )}
+                    </TouchableOpacity>
 
-                        {/* Submit */}
-                        <TouchableOpacity
-                            className={`rounded-xl p-4 items-center shadow-lg flex-row justify-center ${loading ? 'bg-gray-300' : 'bg-epitech-blue shadow-blue-200'}`}
-                            onPress={signUpWithEmail}
-                            disabled={loading}
-                        >
-                            {loading ? (
-                                <ActivityIndicator color="#fff" />
-                            ) : (
-                                <>
-                                    <Ionicons name="person-add-outline" size={22} color="white" style={{ marginRight: 8 }} />
-                                    <Text className="text-white font-bold text-lg">S'inscrire</Text>
-                                </>
-                            )}
-                        </TouchableOpacity>
-
-                        {/* Sign in link */}
-                        <View className="flex-row justify-center mt-6">
-                            <Text className="text-gray-600">Déjà un compte ? </Text>
-                            <Link href="/(auth)/sign-in" asChild>
-                                <TouchableOpacity>
-                                    <Text className="text-epitech-blue font-bold">Se connecter</Text>
-                                </TouchableOpacity>
-                            </Link>
-                        </View>
+                    <View style={{
+                        flexDirection: 'row',
+                        justifyContent: 'center',
+                        marginTop: 24,
+                    }}>
+                        <Text style={{ color: Colors.secondaryLabel, fontSize: 15 }}>
+                            Déjà un compte ?{' '}
+                        </Text>
+                        <Link href="/(auth)/sign-in" asChild>
+                            <TouchableOpacity>
+                                <Text style={{
+                                    color: Colors.epitechBlue,
+                                    fontWeight: '600',
+                                    fontSize: 15,
+                                }}>
+                                    Se connecter
+                                </Text>
+                            </TouchableOpacity>
+                        </Link>
                     </View>
                 </View>
             </ScrollView>
 
-            {/* Campus Modal */}
             <Modal
                 visible={showCampusModal}
-                transparent={true}
                 animationType="slide"
+                presentationStyle="formSheet"
                 onRequestClose={() => setShowCampusModal(false)}
             >
-                <View className="flex-1 justify-end bg-black/50">
-                    <View className="bg-white rounded-t-3xl max-h-[70%]">
-                        <View className="flex-row justify-between items-center p-6 border-b border-gray-100">
-                            <Text className="text-xl font-bold text-gray-900">Choisir un campus</Text>
-                            <TouchableOpacity 
-                                onPress={() => setShowCampusModal(false)}
-                                className="bg-gray-100 p-2 rounded-full"
-                            >
-                                <Ionicons name="close" size={24} color="#374151" />
-                            </TouchableOpacity>
-                        </View>
-
-                        <ScrollView className="px-4">
-                            {CAMPUSES.map((item) => (
-                                <TouchableOpacity
-                                    key={item.id}
-                                    className={`p-4 border-b border-gray-100 flex-row items-center ${campus === item.name ? 'bg-blue-50' : ''}`}
-                                    onPress={() => {
-                                        setCampus(item.name);
-                                        setShowCampusModal(false);
-                                    }}
-                                >
-                                    <Text className="text-2xl mr-3">{item.icon}</Text>
-                                    <Text className={`text-lg flex-1 ${campus === item.name ? 'text-epitech-blue font-bold' : 'text-gray-700'}`}>
-                                        {item.name}
-                                    </Text>
-                                    {campus === item.name && (
-                                        <Ionicons name="checkmark-circle" size={24} color="#0091D3" />
-                                    )}
-                                </TouchableOpacity>
-                            ))}
-                            <View className="h-8" />
-                        </ScrollView>
+                <View style={{ flex: 1, backgroundColor: Colors.systemGroupedBackground }}>
+                    <View style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: 16,
+                        paddingTop: 24,
+                        backgroundColor: Colors.secondarySystemBackground,
+                        borderBottomWidth: 1,
+                        borderBottomColor: Colors.separator,
+                    }}>
+                        <Text style={{ fontSize: 20, fontWeight: '700', color: Colors.label }}>
+                            Choisir votre campus
+                        </Text>
+                        <TouchableOpacity onPress={() => setShowCampusModal(false)}>
+                            <SymbolView name="xmark.circle.fill" size={28} tintColor={Colors.tertiaryLabel} />
+                        </TouchableOpacity>
                     </View>
+
+                    <ScrollView contentContainerStyle={{ padding: 16, gap: 8 }}>
+                        {CAMPUSES.map((c) => (
+                            <TouchableOpacity
+                                key={c.id}
+                                onPress={() => {
+                                    setCampus(c.name);
+                                    setShowCampusModal(false);
+                                }}
+                                style={{
+                                    backgroundColor: campus === c.name 
+                                        ? Colors.epitechBlue 
+                                        : Colors.secondarySystemGroupedBackground,
+                                    borderRadius: 12,
+                                    borderCurve: 'continuous',
+                                    padding: 16,
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Text style={{ fontSize: 24, marginRight: 12 }}>{c.icon}</Text>
+                                <Text style={{
+                                    flex: 1,
+                                    fontSize: 17,
+                                    fontWeight: '600',
+                                    color: campus === c.name ? '#fff' : Colors.label,
+                                }}>
+                                    {c.name}
+                                </Text>
+                                {campus === c.name && (
+                                    <SymbolView name="checkmark.circle.fill" size={24} tintColor="#fff" />
+                                )}
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
                 </View>
             </Modal>
         </KeyboardAvoidingView>

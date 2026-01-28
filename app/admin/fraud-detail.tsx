@@ -1,824 +1,669 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert, RefreshControl, ActivityIndicator } from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
-import { supabase } from '@/lib/supabase';
+import { SymbolView } from 'expo-symbols';
+import { router, useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { supabase } from '../../lib/supabase';
+import { Colors } from '@/constants/NativeColors';
 
-interface FraudAlert {
-  id: string;
-  risk_score: number;
-  reason: string;
-  fraud_features: Record<string, any>;
-  status: 'pending' | 'approved' | 'rejected';
-  created_at: string;
-  reviewed_by?: string;
-  reviewed_at?: string;
-  resolution_notes?: string;
-  transaction: {
+type FraudAlert = {
     id: string;
-    amount: number;
-    type: string;
-    scope?: string;
-    transaction_type?: string;
-    direction?: string;
-    country?: string;
-    city?: string;
-    provider?: string;
-    device_info?: Record<string, any>;
-    fraud_score?: number;
-    fraud_features?: Record<string, any>;
-    sender_email: string;
-    sender_name?: string;
-    receiver_email?: string;
-    receiver_name?: string;
-    metadata: Record<string, any>;
-  };
-}
+    risk_score: number;
+    reason: string;
+    status: string;
+    created_at: string;
+    fraud_features: Record<string, any>;
+    transactions: any;
+};
 
 export default function FraudDetailScreen() {
-  const params = useLocalSearchParams();
-  const alertId = params.id as string;
+    const { id } = useLocalSearchParams();
+    const [alert, setAlert] = useState<FraudAlert | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
 
-  const [alert, setAlert] = useState<FraudAlert | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    fetchAlertDetail();
-  }, [alertId]);
-
-  const fetchAlertDetail = async () => {
-    try {
-      setLoading(true);
-
-      // Récupérer l'alerte avec détails transaction enrichis
-      const { data: alertData, error: alertError } = await supabase
-        .from('fraud_alerts')
-        .select(`
-          *,
-          transaction:transactions(
-            id,
-            amount,
-            type,
-            scope,
-            transaction_type,
-            direction,
-            country,
-            city,
-            provider,
-            device_info,
-            fraud_score,
-            fraud_features,
-            metadata,
-            sender:sender_id(email, full_name),
-            receiver:receiver_id(email, full_name)
-          )
-        `)
-        .eq('id', alertId)
-        .single();
-
-      if (alertError) throw alertError;
-
-      // Formater les données
-      const formattedAlert = {
-        ...alertData,
-        transaction: {
-          id: alertData.transaction.id,
-          amount: parseFloat(alertData.transaction.amount),
-          type: alertData.transaction.type,
-          scope: alertData.transaction.scope,
-          transaction_type: alertData.transaction.transaction_type,
-          direction: alertData.transaction.direction,
-          country: alertData.transaction.country,
-          city: alertData.transaction.city,
-          provider: alertData.transaction.provider,
-          device_info: alertData.transaction.device_info,
-          fraud_score: alertData.transaction.fraud_score,
-          fraud_features: alertData.transaction.fraud_features,
-          sender_email: alertData.transaction.sender.email,
-          sender_name: alertData.transaction.sender.full_name,
-          receiver_email: alertData.transaction.receiver?.email,
-          receiver_name: alertData.transaction.receiver?.full_name,
-          metadata: alertData.transaction.metadata,
-        },
-      };
-
-      setAlert(formattedAlert);
-    } catch (error) {
-      console.error('Error fetching alert:', error);
-      Alert.alert('Erreur', 'Impossible de charger les détails de l\'alerte');
-      router.back();
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  const handleApprove = () => {
-    Alert.alert(
-      'Approuver la transaction',
-      'Cette transaction sera exécutée immédiatement. Confirmez-vous cette action ?',
-      [
-        { text: 'Annuler', style: 'cancel' },
-        { 
-          text: 'Approuver', 
-          style: 'default',
-          onPress: () => processDecision('approve')
+    useEffect(() => {
+        if (id) {
+            fetchAlert();
         }
-      ]
-    );
-  };
+    }, [id]);
 
-  const handleReject = () => {
-    Alert.prompt(
-      'Rejeter la transaction',
-      'Indiquez la raison du rejet (visible par l\'utilisateur) :',
-      [
-        { text: 'Annuler', style: 'cancel' },
-        { 
-          text: 'Rejeter', 
-          style: 'destructive',
-          onPress: (notes?: string) => processDecision('reject', notes)
+    async function fetchAlert() {
+        try {
+            const { data, error } = await supabase
+                .from('fraud_alerts')
+                .select(`
+                    *,
+                    transactions (
+                        id,
+                        amount,
+                        type,
+                        status,
+                        created_at,
+                        sender:sender_id(email, full_name),
+                        receiver:receiver_id(email, full_name)
+                    )
+                `)
+                .eq('id', id)
+                .single();
+
+            if (error) throw error;
+            setAlert(data);
+        } catch (error: any) {
+            Alert.alert('Erreur', error.message);
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
         }
-      ],
-      'plain-text',
-      '',
-      'default'
-    );
-  };
-
-  const processDecision = async (decision: 'approve' | 'reject', notes?: string) => {
-    try {
-      setSubmitting(true);
-
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
-      const functionName = decision === 'approve' ? 'approve_fraud_alert' : 'reject_fraud_alert';
-      const params = decision === 'approve' 
-        ? { p_alert_id: alertId, p_admin_id: user.id, p_notes: notes || '' }
-        : { p_alert_id: alertId, p_admin_id: user.id, p_notes: notes || 'Rejeté par admin' };
-
-      const { data, error } = await supabase.rpc(functionName, params);
-
-      if (error) throw error;
-      if (!data.success) throw new Error(data.message);
-
-      Alert.alert(
-        'Succès',
-        decision === 'approve' 
-          ? 'Transaction approuvée et exécutée avec succès'
-          : 'Transaction rejetée',
-        [{ text: 'OK', onPress: () => router.back() }]
-      );
-
-    } catch (error: any) {
-      console.error('Error processing decision:', error);
-      Alert.alert('Erreur', error.message || 'Impossible de traiter la décision');
-    } finally {
-      setSubmitting(false);
     }
-  };
 
-  const getRiskLevelColor = (score: number) => {
-    if (score >= 71) return '#DC2626'; // red-600
-    if (score >= 31) return '#F59E0B'; // amber-500
-    return '#10B981'; // green-500
-  };
+    async function handleDecision(decision: 'approved' | 'rejected') {
+        if (!alert) return;
 
-  const getRiskLevelText = (score: number) => {
-    if (score >= 71) return 'ÉLEVÉ';
-    if (score >= 31) return 'MOYEN';
-    return 'FAIBLE';
-  };
+        setSubmitting(true);
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error('Non authentifié');
 
-  if (loading) {
+            const functionName = decision === 'approved' ? 'approve_fraud_alert' : 'reject_fraud_alert';
+            const { data, error } = await supabase.rpc(functionName, {
+                p_alert_id: alert.id,
+                p_admin_id: user.id,
+                p_notes: decision === 'approved' ? 'Approuvé manuellement' : 'Rejeté manuellement'
+            });
+
+            if (error) throw error;
+
+            Alert.alert(
+                'Succès', 
+                `Transaction ${decision === 'approved' ? 'approuvée' : 'rejetée'}`,
+                [{ text: 'OK', onPress: () => router.back() }]
+            );
+        } catch (error: any) {
+            Alert.alert('Erreur', error.message);
+        } finally {
+            setSubmitting(false);
+        }
+    }
+
+    if (loading) {
+        return (
+            <View style={{
+                flex: 1,
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: Colors.systemGroupedBackground,
+            }}>
+                <ActivityIndicator size="large" color={Colors.epitechBlue} />
+            </View>
+        );
+    }
+
+    if (!alert) {
+        return (
+            <View style={{ flex: 1, backgroundColor: Colors.systemGroupedBackground, padding: 24 }}>
+                <Text style={{ color: Colors.secondaryLabel, textAlign: 'center' }}>
+                    Alerte introuvable
+                </Text>
+            </View>
+        );
+    }
+
+    const riskColor = alert.risk_score >= 80 
+        ? Colors.systemRed 
+        : alert.risk_score >= 60 
+        ? Colors.systemOrange 
+        : Colors.systemYellow;
+
+    const mlScore = alert.fraud_features?.ml_score ?? 0;
+    const heuristicScore = alert.fraud_features?.heuristic_score ?? alert.fraud_features?.heuristic_score_raw ?? 0;
+    const factors = alert.fraud_features?.risk_factors || {};
+    const reasons = alert.fraud_features?.reasons || [];
+
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#3B82F6" />
-        <Text style={styles.loadingText}>Chargement...</Text>
-      </View>
-    );
-  }
+        <ScrollView
+            contentInsetAdjustmentBehavior="automatic"
+            style={{ flex: 1, backgroundColor: Colors.systemGroupedBackground }}
+            contentContainerStyle={{ padding: 24 }}
+            refreshControl={
+                <RefreshControl 
+                    refreshing={refreshing} 
+                    onRefresh={() => { setRefreshing(true); fetchAlert(); }}
+                    tintColor={Colors.epitechBlue}
+                />
+            }
+        >
+            {/* Risk Score */}
+            <View style={{
+                backgroundColor: Colors.secondarySystemGroupedBackground,
+                borderRadius: 16,
+                borderCurve: 'continuous',
+                padding: 24,
+                marginBottom: 24,
+                alignItems: 'center',
+            }}>
+                <SymbolView 
+                    name="exclamationmark.triangle.fill" 
+                    size={48}
+                    tintColor={riskColor}
+                    style={{ marginBottom: 16 }}
+                />
+                <Text style={{ fontSize: 15, color: Colors.secondaryLabel, marginBottom: 8 }}>
+                    Score de risque global
+                </Text>
+                <Text style={{
+                    fontSize: 56,
+                    fontWeight: '700',
+                    color: riskColor,
+                    fontVariant: ['tabular-nums'],
+                }}>
+                    {alert.risk_score}/100
+                </Text>
 
-  if (!alert) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.errorText}>Alerte introuvable</Text>
-      </View>
-    );
-  }
-
-  return (
-    <ScrollView 
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={fetchAlertDetail} />
-      }
-    >
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Alerte de Fraude</Text>
-        <View style={[styles.statusBadge, { 
-          backgroundColor: alert.status === 'pending' ? '#FEF3C7' : alert.status === 'approved' ? '#D1FAE5' : '#FEE2E2'
-        }]}>
-          <Text style={[styles.statusText, {
-            color: alert.status === 'pending' ? '#92400E' : alert.status === 'approved' ? '#065F46' : '#991B1B'
-          }]}>
-            {alert.status === 'pending' ? 'EN ATTENTE' : alert.status === 'approved' ? 'APPROUVÉE' : 'REJETÉE'}
-          </Text>
-        </View>
-      </View>
-
-      {/* Risk Score */}
-      <View style={[styles.riskScoreCard, { borderColor: getRiskLevelColor(alert.risk_score) }]}>
-        <View style={styles.riskScoreHeader}>
-          <Text style={styles.riskScoreLabel}>Score de Risque</Text>
-          <Text style={[styles.riskScoreLevel, { color: getRiskLevelColor(alert.risk_score) }]}>
-            {getRiskLevelText(alert.risk_score)}
-          </Text>
-        </View>
-        <Text style={[styles.riskScoreValue, { color: getRiskLevelColor(alert.risk_score) }]}>
-          {alert.risk_score}/100
-        </Text>
-        <View style={styles.riskScoreBar}>
-          <View 
-            style={[
-              styles.riskScoreBarFill, 
-              { 
-                width: `${alert.risk_score}%`,
-                backgroundColor: getRiskLevelColor(alert.risk_score)
-              }
-            ]} 
-          />
-        </View>
-      </View>
-
-      {/* Transaction Details */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Détails de la Transaction</Text>
-        
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Type :</Text>
-          <Text style={styles.detailValue}>
-            {alert.transaction.type === 'transfer' ? 'Transfert' : 
-             alert.transaction.type === 'purchase' ? 'Achat' : 'Rechargement'}
-          </Text>
-        </View>
-
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Montant :</Text>
-          <Text style={[styles.detailValue, styles.amountValue]}>
-            {alert.transaction.amount.toFixed(2)} EPC
-          </Text>
-        </View>
-
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>
-            {alert.transaction.type === 'topup' || alert.transaction.type === 'top_up' ? 'Utilisateur :' : 'Expéditeur :'}
-          </Text>
-          <View>
-            <Text style={styles.detailValue}>{alert.transaction.sender_name || 'N/A'}</Text>
-            <Text style={styles.detailValueSmall}>{alert.transaction.sender_email}</Text>
-          </View>
-        </View>
-
-        {alert.transaction.receiver_email && alert.transaction.type !== 'topup' && alert.transaction.type !== 'top_up' && alert.transaction.type !== 'purchase' && (
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Destinataire :</Text>
-            <View>
-              <Text style={styles.detailValue}>{alert.transaction.receiver_name || 'N/A'}</Text>
-              <Text style={styles.detailValueSmall}>{alert.transaction.receiver_email}</Text>
+                {/* Progress bar */}
+                <View style={{
+                    width: '100%',
+                    height: 12,
+                    backgroundColor: Colors.systemFill,
+                    borderRadius: 6,
+                    borderCurve: 'continuous',
+                    overflow: 'hidden',
+                    marginTop: 16,
+                }}>
+                    <View style={{
+                        width: `${alert.risk_score}%`,
+                        height: '100%',
+                        backgroundColor: riskColor,
+                    }} />
+                </View>
             </View>
-          </View>
-        )}
 
-        {alert.transaction.scope && (
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Portée :</Text>
-            <Text style={styles.detailValue}>
-              {alert.transaction.scope === 'intra_campus' ? 'Intra-campus' : 'Inter-campus'}
-            </Text>
-          </View>
-        )}
+            {/* Scores détaillés ML vs Heuristique */}
+            <View style={{
+                backgroundColor: Colors.secondarySystemGroupedBackground,
+                borderRadius: 16,
+                borderCurve: 'continuous',
+                padding: 20,
+                marginBottom: 24,
+            }}>
+                <Text style={{
+                    fontSize: 17,
+                    fontWeight: '700',
+                    color: Colors.label,
+                    marginBottom: 16,
+                }}>
+                    Détails des scores
+                </Text>
+                
+                <View style={{ gap: 16 }}>
+                    <View>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+                            <Text style={{ color: Colors.secondaryLabel }}>Machine Learning (ML)</Text>
+                            <Text style={{
+                                fontWeight: '700',
+                                color: Colors.systemPurple,
+                                fontSize: 17,
+                                fontVariant: ['tabular-nums'],
+                            }}>
+                                {mlScore.toFixed(1)}/100
+                            </Text>
+                        </View>
+                        <View style={{
+                            height: 8,
+                            backgroundColor: Colors.systemFill,
+                            borderRadius: 4,
+                            borderCurve: 'continuous',
+                            overflow: 'hidden',
+                        }}>
+                            <View style={{
+                                width: `${mlScore}%`,
+                                height: '100%',
+                                backgroundColor: Colors.systemPurple,
+                            }} />
+                        </View>
+                    </View>
 
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Date :</Text>
-          <Text style={styles.detailValue}>
-            {new Date(alert.created_at).toLocaleString('fr-FR')}
-          </Text>
-        </View>
-      </View>
-
-      {/* Données Enrichies - Localisation & Provider */}
-      {(alert.transaction.country || alert.transaction.city || alert.transaction.provider || alert.transaction.transaction_type) && (
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Informations Contextuelles</Text>
-          
-          {alert.transaction.transaction_type && (
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Type Transaction :</Text>
-              <Text style={styles.detailValue}>{alert.transaction.transaction_type}</Text>
+                    <View>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+                            <Text style={{ color: Colors.secondaryLabel }}>Heuristique (Règles)</Text>
+                            <Text style={{
+                                fontWeight: '700',
+                                color: Colors.systemBlue,
+                                fontSize: 17,
+                                fontVariant: ['tabular-nums'],
+                            }}>
+                                {heuristicScore.toFixed(1)}/100
+                            </Text>
+                        </View>
+                        <View style={{
+                            height: 8,
+                            backgroundColor: Colors.systemFill,
+                            borderRadius: 4,
+                            borderCurve: 'continuous',
+                            overflow: 'hidden',
+                        }}>
+                            <View style={{
+                                width: `${heuristicScore}%`,
+                                height: '100%',
+                                backgroundColor: Colors.systemBlue,
+                            }} />
+                        </View>
+                    </View>
+                </View>
             </View>
-          )}
 
-          {alert.transaction.direction && (
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Direction :</Text>
-              <Text style={styles.detailValue}>
-                {alert.transaction.direction === 'incoming' ? 'Entrante' : 'Sortante'}
-              </Text>
+            {/* Détails de l'analyse */}
+            <View style={{
+                backgroundColor: Colors.secondarySystemGroupedBackground,
+                borderRadius: 16,
+                borderCurve: 'continuous',
+                padding: 20,
+                marginBottom: 24,
+            }}>
+                <Text style={{
+                    fontSize: 17,
+                    fontWeight: '700',
+                    color: Colors.label,
+                    marginBottom: 16,
+                }}>
+                    Détails de l'analyse
+                </Text>
+                <View style={{ gap: 8 }}>
+                    {/* Montant et balance */}
+                    {alert.fraud_features?.user_balance !== undefined && (
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
+                            <Text style={{ color: Colors.secondaryLabel }}>Solde utilisateur</Text>
+                            <Text style={{ color: Colors.label, fontWeight: '600', fontVariant: ['tabular-nums'] }}>
+                                {alert.fraud_features.user_balance.toFixed(2)} EPC
+                            </Text>
+                        </View>
+                    )}
+                    {alert.fraud_features?.amount_to_balance_ratio !== undefined && (
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
+                            <Text style={{ color: Colors.secondaryLabel }}>Ratio montant/solde</Text>
+                            <Text style={{ 
+                                color: alert.fraud_features.amount_to_balance_ratio > 0.8 ? Colors.systemRed : Colors.label, 
+                                fontWeight: '600',
+                                fontVariant: ['tabular-nums']
+                            }}>
+                                {(alert.fraud_features.amount_to_balance_ratio * 100).toFixed(0)}%
+                            </Text>
+                        </View>
+                    )}
+                    
+                    {/* Activité utilisateur */}
+                    {alert.fraud_features?.transaction_count_24h !== undefined && (
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
+                            <Text style={{ color: Colors.secondaryLabel }}>Transactions 24h</Text>
+                            <Text style={{ 
+                                color: alert.fraud_features.transaction_count_24h > 10 ? Colors.systemOrange : Colors.label,
+                                fontWeight: '600',
+                                fontVariant: ['tabular-nums']
+                            }}>
+                                {alert.fraud_features.transaction_count_24h}
+                            </Text>
+                        </View>
+                    )}
+                    {alert.fraud_features?.transaction_count_30d !== undefined && (
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
+                            <Text style={{ color: Colors.secondaryLabel }}>Transactions 30j</Text>
+                            <Text style={{ color: Colors.label, fontWeight: '600', fontVariant: ['tabular-nums'] }}>
+                                {alert.fraud_features.transaction_count_30d}
+                            </Text>
+                        </View>
+                    )}
+                    
+                    {/* Âge du compte */}
+                    {alert.fraud_features?.user_age_days !== undefined && (
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
+                            <Text style={{ color: Colors.secondaryLabel }}>Âge du compte</Text>
+                            <Text style={{ 
+                                color: alert.fraud_features.user_age_days < 7 ? Colors.systemOrange : Colors.label,
+                                fontWeight: '600'
+                            }}>
+                                {alert.fraud_features.user_age_days} jour{alert.fraud_features.user_age_days > 1 ? 's' : ''}
+                            </Text>
+                        </View>
+                    )}
+                    
+                    {/* Géographie */}
+                    {alert.fraud_features?.country && (
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
+                            <Text style={{ color: Colors.secondaryLabel }}>Pays</Text>
+                            <Text style={{ color: Colors.label, fontWeight: '600' }}>
+                                {alert.fraud_features.country}
+                            </Text>
+                        </View>
+                    )}
+                    
+                    {/* Device */}
+                    {alert.fraud_features?.device_id && (
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
+                            <Text style={{ color: Colors.secondaryLabel }}>Device ID</Text>
+                            <Text style={{ color: Colors.tertiaryLabel, fontSize: 12, fontFamily: 'monospace' }}>
+                                {alert.fraud_features.device_id.slice(0, 12)}...
+                            </Text>
+                        </View>
+                    )}
+                    
+                    {/* Heure */}
+                    {alert.fraud_features?.transaction_hour !== undefined && (
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
+                            <Text style={{ color: Colors.secondaryLabel }}>Heure de la transaction</Text>
+                            <Text style={{ 
+                                color: (alert.fraud_features.transaction_hour >= 2 && alert.fraud_features.transaction_hour <= 6) 
+                                    ? Colors.systemOrange 
+                                    : Colors.label,
+                                fontWeight: '600',
+                                fontVariant: ['tabular-nums']
+                            }}>
+                                {alert.fraud_features.transaction_hour}h
+                            </Text>
+                        </View>
+                    )}
+                    
+                    {/* Moyenne utilisateur */}
+                    {alert.fraud_features?.user_avg_amount !== undefined && alert.fraud_features?.user_avg_amount > 0 && (
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
+                            <Text style={{ color: Colors.secondaryLabel }}>Montant moyen utilisateur</Text>
+                            <Text style={{ color: Colors.label, fontWeight: '600', fontVariant: ['tabular-nums'] }}>
+                                {alert.fraud_features.user_avg_amount.toFixed(2)} EPC
+                            </Text>
+                        </View>
+                    )}
+                    
+                    {/* ML actif */}
+                    {alert.fraud_features?.ml_active !== undefined && (
+                        <View style={{ 
+                            marginTop: 12, 
+                            paddingTop: 12, 
+                            borderTopWidth: 1, 
+                            borderTopColor: Colors.separator 
+                        }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                <SymbolView 
+                                    name={alert.fraud_features.ml_active ? "checkmark.circle.fill" : "xmark.circle.fill"}
+                                    size={16}
+                                    tintColor={alert.fraud_features.ml_active ? Colors.systemGreen : Colors.systemOrange}
+                                />
+                                <Text style={{ color: Colors.secondaryLabel, fontSize: 14 }}>
+                                    Modèle ML : {alert.fraud_features.ml_active ? 'Actif' : 'Inactif (règles uniquement)'}
+                                </Text>
+                            </View>
+                            {alert.fraud_features.ml_model_id && (
+                                <Text style={{ 
+                                    color: Colors.tertiaryLabel, 
+                                    fontSize: 11, 
+                                    marginTop: 4,
+                                    fontFamily: 'monospace'
+                                }}>
+                                    {alert.fraud_features.ml_model_id}
+                                </Text>
+                            )}
+                        </View>
+                    )}
+                </View>
             </View>
-          )}
 
-          {alert.transaction.provider && (
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Fournisseur :</Text>
-              <Text style={styles.detailValue}>{alert.transaction.provider}</Text>
-            </View>
-          )}
-
-          {(alert.transaction.city || alert.transaction.country) && (
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Localisation :</Text>
-              <Text style={styles.detailValue}>
-                {alert.transaction.city && alert.transaction.country 
-                  ? `${alert.transaction.city}, ${alert.transaction.country}`
-                  : alert.transaction.city || alert.transaction.country || 'N/A'}
-              </Text>
-            </View>
-          )}
-        </View>
-      )}
-
-      {/* Informations Appareil */}
-      {alert.transaction.device_info && Object.keys(alert.transaction.device_info).length > 0 && (
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Appareil Utilisé</Text>
-          
-          {alert.transaction.device_info.device_model && (
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Modèle :</Text>
-              <Text style={styles.detailValue}>{alert.transaction.device_info.device_model}</Text>
-            </View>
-          )}
-
-          {alert.transaction.device_info.os_name && (
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Système :</Text>
-              <Text style={styles.detailValue}>
-                {alert.transaction.device_info.os_name} {alert.transaction.device_info.os_version || ''}
-              </Text>
-            </View>
-          )}
-
-          {alert.transaction.device_info.device_id && (
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>ID Appareil :</Text>
-              <Text style={[styles.detailValue, styles.detailValueSmall]}>
-                {alert.transaction.device_info.device_id.substring(0, 16)}...
-              </Text>
-            </View>
-          )}
-        </View>
-      )}
-
-      {/* Analyse ML Détaillée */}
-      {alert.transaction.fraud_features && (
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>🤖 Analyse Machine Learning</Text>
-          
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>ML Actif :</Text>
-            <Text style={[styles.detailValue, { 
-              color: alert.transaction.fraud_features.ml_active ? '#10B981' : '#F59E0B'
-            }]}>
-              {alert.transaction.fraud_features.ml_active ? 'Oui' : 'Non'}
-            </Text>
-          </View>
-
-          {alert.transaction.fraud_features.ml_active ? (
-            <>
-              {/* Scores séparés */}
-              {alert.transaction.fraud_features.heuristic_score_raw !== undefined && (
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Score Heuristique :</Text>
-                  <Text style={styles.detailValue}>
-                    {Math.round(alert.transaction.fraud_features.heuristic_score_raw)}/100
-                  </Text>
+            {/* Transaction Details */}
+            {alert.transactions && (
+                <View style={{
+                    backgroundColor: Colors.secondarySystemGroupedBackground,
+                    borderRadius: 16,
+                    borderCurve: 'continuous',
+                    padding: 20,
+                    marginBottom: 24,
+                    gap: 12,
+                }}>
+                    <Text style={{
+                        fontSize: 17,
+                        fontWeight: '700',
+                        color: Colors.label,
+                        marginBottom: 8,
+                    }}>
+                        Détails de la transaction
+                    </Text>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <Text style={{ color: Colors.secondaryLabel }}>Montant</Text>
+                        <Text style={{
+                            fontWeight: '700',
+                            color: Colors.label,
+                            fontSize: 17,
+                            fontVariant: ['tabular-nums'],
+                        }}>
+                            {alert.transactions.amount?.toFixed(2)} EPC
+                        </Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <Text style={{ color: Colors.secondaryLabel }}>Type</Text>
+                        <Text style={{ color: Colors.label, fontWeight: '600' }}>
+                            {alert.transactions.type}
+                        </Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <Text style={{ color: Colors.secondaryLabel }}>Statut</Text>
+                        <Text style={{ color: Colors.label, fontWeight: '600' }}>
+                            {alert.transactions.status}
+                        </Text>
+                    </View>
+                    {alert.transactions.sender && (
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                            <Text style={{ color: Colors.secondaryLabel }}>Émetteur</Text>
+                            <View style={{ flex: 1, alignItems: 'flex-end', marginLeft: 16 }}>
+                                <Text style={{ color: Colors.label, fontWeight: '600' }} numberOfLines={1}>
+                                    {alert.transactions.sender?.full_name || 'N/A'}
+                                </Text>
+                                <Text style={{ color: Colors.tertiaryLabel, fontSize: 12 }}>
+                                    {alert.transactions.sender?.email}
+                                </Text>
+                            </View>
+                        </View>
+                    )}
+                    {alert.transactions.receiver && (
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                            <Text style={{ color: Colors.secondaryLabel }}>Destinataire</Text>
+                            <View style={{ flex: 1, alignItems: 'flex-end', marginLeft: 16 }}>
+                                <Text style={{ color: Colors.label, fontWeight: '600' }} numberOfLines={1}>
+                                    {alert.transactions.receiver?.full_name || 'N/A'}
+                                </Text>
+                                <Text style={{ color: Colors.tertiaryLabel, fontSize: 12 }}>
+                                    {alert.transactions.receiver?.email}
+                                </Text>
+                            </View>
+                        </View>
+                    )}
                 </View>
-              )}
-
-              {alert.transaction.fraud_features.ml_score !== undefined && (
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Score ML :</Text>
-                  <Text style={styles.detailValue}>
-                    {Math.round(alert.transaction.fraud_features.ml_score)}/100
-                  </Text>
-                </View>
-              )}
-
-              {alert.transaction.fraud_features.heuristic_weight !== undefined && (
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Pondération :</Text>
-                  <Text style={styles.detailValue}>
-                    {Math.round(alert.transaction.fraud_features.heuristic_weight * 100)}% règles + {Math.round(alert.transaction.fraud_features.ml_weight * 100)}% ML
-                  </Text>
-                </View>
-              )}
-
-              {alert.transaction.fraud_score !== undefined && (
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Score Final (mixé) :</Text>
-                  <Text style={[styles.detailValue, styles.amountValue]}>
-                    {alert.transaction.fraud_score}/100
-                  </Text>
-                </View>
-              )}
-
-              {/* Modèle utilisé */}
-              {alert.transaction.fraud_features.ml_model_endpoint && (
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Endpoint ML :</Text>
-                  <Text style={[styles.detailValue, styles.detailValueSmall]}>
-                    {alert.transaction.fraud_features.ml_model_endpoint.includes('endpoints.huggingface.cloud') 
-                      ? 'Dedicated Endpoint' 
-                      : 'Inference API'}
-                  </Text>
-                </View>
-              )}
-
-              {alert.transaction.fraud_features.ml_model_id && (
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Modèle :</Text>
-                  <Text style={[styles.detailValue, styles.detailValueSmall]} numberOfLines={2}>
-                    {alert.transaction.fraud_features.ml_model_id}
-                  </Text>
-                </View>
-              )}
-
-              {alert.transaction.fraud_features.ml_timestamp && (
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Timestamp ML :</Text>
-                  <Text style={[styles.detailValue, styles.detailValueSmall]}>
-                    {new Date(alert.transaction.fraud_features.ml_timestamp).toLocaleString('fr-FR')}
-                  </Text>
-                </View>
-              )}
-
-              {/* Features ML (dans un bloc collapsible/scrollable) */}
-              {alert.transaction.fraud_features.ml_features_sent && (
-                <View style={styles.notesBox}>
-                  <Text style={styles.notesLabel}>Features ML (19 valeurs) :</Text>
-                  <Text style={[styles.notesText, { fontSize: 10, fontFamily: 'monospace' }]} numberOfLines={10}>
-                    {JSON.stringify(alert.transaction.fraud_features.ml_features_sent, null, 2)}
-                  </Text>
-                </View>
-              )}
-            </>
-          ) : (
-            <>
-              {/* ML inactif - afficher l'erreur si disponible */}
-              {alert.transaction.fraud_features.ml_error && (
-                <View style={styles.notesBox}>
-                  <Text style={styles.notesLabel}>Erreur ML :</Text>
-                  <Text style={[styles.notesText, { color: '#DC2626' }]}>
-                    {alert.transaction.fraud_features.ml_error}
-                  </Text>
-                </View>
-              )}
-              
-              {alert.transaction.fraud_features.heuristic_score_raw !== undefined && (
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Score Heuristique seul :</Text>
-                  <Text style={styles.detailValue}>
-                    {Math.round(alert.transaction.fraud_features.heuristic_score_raw)}/100
-                  </Text>
-                </View>
-              )}
-            </>
-          )}
-        </View>
-      )}
-
-      {/* Note sur le Score ML */}
-      {alert.transaction.fraud_features?.ml_active && alert.transaction.fraud_features?.ml_score > 90 && (
-        <View style={styles.card}>
-          <View style={[styles.notesBox, { backgroundColor: '#FEF3C7', borderColor: '#F59E0B', borderWidth: 1 }]}>
-            <Text style={[styles.notesLabel, { color: '#92400E' }]}>⚠️ Note sur le Score ML</Text>
-            <Text style={[styles.notesText, { color: '#78350F' }]}>
-              Le score ML est très élevé ({alert.transaction.fraud_features.ml_score.toFixed(0)}/100). 
-              Cela peut indiquer que les features envoyées au modèle ne sont pas correctement normalisées. 
-              Le modèle a été entraîné sur des données synthétiques et peut nécessiter un réentraînement avec des données réelles.
-            </Text>
-          </View>
-        </View>
-      )}
-
-      {/* Fraud Features (Top 5) */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Facteurs de Risque</Text>
-        <Text style={styles.cardSubtitle}>Raison principale : {alert.reason}</Text>
-        
-        {alert.fraud_features && Object.keys(alert.fraud_features).length > 0 && (
-          <View style={styles.featuresGrid}>
-            {Object.entries(alert.fraud_features)
-              .slice(0, 8)
-              .map(([key, value]) => (
-                <View key={key} style={styles.featureItem}>
-                  <Text style={styles.featureKey}>{key.replace(/_/g, ' ')}</Text>
-                  <Text style={styles.featureValue}>
-                    {typeof value === 'number' ? value.toFixed(2) : String(value)}
-                  </Text>
-                </View>
-              ))}
-          </View>
-        )}
-      </View>
-
-      {/* Review Info (if reviewed) */}
-      {alert.status !== 'pending' && (
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Informations de Revue</Text>
-          
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Révisé le :</Text>
-            <Text style={styles.detailValue}>
-              {alert.reviewed_at ? new Date(alert.reviewed_at).toLocaleString('fr-FR') : 'N/A'}
-            </Text>
-          </View>
-
-          {alert.resolution_notes && (
-            <View style={styles.notesBox}>
-              <Text style={styles.notesLabel}>Notes :</Text>
-              <Text style={styles.notesText}>{alert.resolution_notes}</Text>
-            </View>
-          )}
-        </View>
-      )}
-
-      {/* Ajustement Seuil de Risque */}
-      {alert.status === 'pending' && (
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>⚙️ Ajuster le Seuil d'Acceptation</Text>
-          <Text style={styles.cardSubtitle}>
-            Score actuel: {alert.risk_score}/100 - Seuil: 30 (bas) / 70 (élevé)
-          </Text>
-          
-          <View style={{ marginTop: 12 }}>
-            <Text style={styles.detailLabel}>
-              Si vous estimez que ce type de transaction devrait être accepté automatiquement à l'avenir:
-            </Text>
-            <TouchableOpacity 
-              style={[styles.actionButton, { backgroundColor: '#3b82f6', marginTop: 8 }]}
-              onPress={() => Alert.alert(
-                'Ajustement du Seuil',
-                'Cette fonctionnalité permettra d\'ajuster les seuils de détection. Pour l\'instant, les seuils sont: \n\n• 0-30: Acceptation automatique\n• 31-70: Revue manuelle\n• 71-100: Blocage automatique\n\nContactez un développeur pour modifier ces valeurs dans FRAUD_RULES_REFERENCE.md',
-                [{ text: 'Compris' }]
-              )}
-            >
-              <Text style={styles.actionButtonText}>📊 Ajuster les Seuils</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
-
-      {/* Actions (if pending) */}
-      {alert.status === 'pending' && (
-        <View style={styles.actionsCard}>
-          <TouchableOpacity 
-            style={[styles.actionButton, styles.rejectButton]}
-            onPress={handleReject}
-            disabled={submitting}
-          >
-            {submitting ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.actionButtonText}>❌ Rejeter</Text>
             )}
-          </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={[styles.actionButton, styles.approveButton]}
-            onPress={handleApprove}
-            disabled={submitting}
-          >
-            {submitting ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.actionButtonText}>✅ Approuver</Text>
+            {/* Reasons détaillées */}
+            {reasons.length > 0 && (
+                <View style={{
+                    backgroundColor: Colors.secondarySystemGroupedBackground,
+                    borderRadius: 16,
+                    borderCurve: 'continuous',
+                    padding: 20,
+                    marginBottom: 24,
+                }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+                        <SymbolView 
+                            name="exclamationmark.triangle.fill" 
+                            size={20}
+                            tintColor={Colors.systemOrange}
+                            style={{ marginRight: 8 }}
+                        />
+                        <Text style={{
+                            fontSize: 17,
+                            fontWeight: '700',
+                            color: Colors.label,
+                        }}>
+                            Raisons détectées ({reasons.length})
+                        </Text>
+                    </View>
+                    
+                    <View style={{ gap: 12 }}>
+                        {reasons.map((reason: any, index: number) => {
+                            const severityColor = 
+                                reason.severity === 'high' ? Colors.systemRed :
+                                reason.severity === 'medium' ? Colors.systemOrange :
+                                Colors.systemYellow;
+                            
+                            const severityIcon = 
+                                reason.severity === 'high' ? 'exclamationmark.circle.fill' :
+                                reason.severity === 'medium' ? 'exclamationmark.triangle.fill' :
+                                'info.circle.fill';
+                            
+                            return (
+                                <View key={index} style={{
+                                    backgroundColor: Colors.systemFill,
+                                    padding: 16,
+                                    borderRadius: 12,
+                                    borderCurve: 'continuous',
+                                    borderLeftWidth: 4,
+                                    borderLeftColor: severityColor,
+                                }}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 8 }}>
+                                        <SymbolView 
+                                            name={severityIcon}
+                                            size={18}
+                                            tintColor={severityColor}
+                                            style={{ marginRight: 8, marginTop: 2 }}
+                                        />
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={{
+                                                fontSize: 15,
+                                                fontWeight: '600',
+                                                color: Colors.label,
+                                                marginBottom: 4,
+                                            }}>
+                                                {reason.description}
+                                            </Text>
+                                            <View style={{ flexDirection: 'row', gap: 12, marginTop: 4 }}>
+                                                <View style={{
+                                                    backgroundColor: Colors.secondarySystemGroupedBackground,
+                                                    paddingHorizontal: 8,
+                                                    paddingVertical: 4,
+                                                    borderRadius: 6,
+                                                }}>
+                                                    <Text style={{
+                                                        fontSize: 12,
+                                                        color: Colors.secondaryLabel,
+                                                        fontWeight: '600',
+                                                    }}>
+                                                        Poids: {(reason.weight * 100).toFixed(0)}%
+                                                    </Text>
+                                                </View>
+                                                <View style={{
+                                                    backgroundColor: Colors.secondarySystemGroupedBackground,
+                                                    paddingHorizontal: 8,
+                                                    paddingVertical: 4,
+                                                    borderRadius: 6,
+                                                }}>
+                                                    <Text style={{
+                                                        fontSize: 12,
+                                                        color: severityColor,
+                                                        fontWeight: '600',
+                                                        textTransform: 'capitalize',
+                                                    }}>
+                                                        {reason.severity === 'high' ? 'Élevé' :
+                                                         reason.severity === 'medium' ? 'Moyen' : 'Faible'}
+                                                    </Text>
+                                                </View>
+                                            </View>
+                                        </View>
+                                    </View>
+                                </View>
+                            );
+                        })}
+                    </View>
+                </View>
             )}
-          </TouchableOpacity>
-        </View>
-      )}
 
-      {/* Transaction ID */}
-      <Text style={styles.transactionId}>
-        ID Transaction : {alert.transaction.id}
-      </Text>
-      <Text style={styles.transactionId}>
-        ID Alerte : {alert.id}
-      </Text>
+            {/* Reason texte (fallback si pas de reasons détaillées) */}
+            {reasons.length === 0 && alert.reason && (
+                <View style={{
+                    backgroundColor: Colors.secondarySystemGroupedBackground,
+                    borderRadius: 16,
+                    borderCurve: 'continuous',
+                    padding: 20,
+                    marginBottom: 24,
+                }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                        <SymbolView 
+                            name="info.circle.fill" 
+                            size={20}
+                            tintColor={Colors.systemBlue}
+                            style={{ marginRight: 8 }}
+                        />
+                        <Text style={{
+                            fontSize: 17,
+                            fontWeight: '700',
+                            color: Colors.label,
+                        }}>
+                            Justification de l'alerte
+                        </Text>
+                    </View>
+                    <Text style={{ color: Colors.secondaryLabel, fontSize: 15, lineHeight: 22 }}>
+                        {alert.reason}
+                    </Text>
+                </View>
+            )}
 
-      <View style={{ height: 40 }} />
-    </ScrollView>
-  );
+            {/* Actions */}
+            {alert.status === 'pending' && (
+                <View style={{ flexDirection: 'row', gap: 12 }}>
+                    <TouchableOpacity
+                        style={{
+                            flex: 1,
+                            backgroundColor: Colors.systemGreen,
+                            borderRadius: 14,
+                            borderCurve: 'continuous',
+                            padding: 16,
+                            alignItems: 'center',
+                            flexDirection: 'row',
+                            justifyContent: 'center',
+                        }}
+                        onPress={() => handleDecision('approved')}
+                        disabled={submitting}
+                    >
+                        {submitting ? (
+                            <ActivityIndicator color="#fff" />
+                        ) : (
+                            <>
+                                <SymbolView name="checkmark.circle.fill" size={20} tintColor="#fff" />
+                                <Text style={{ color: '#fff', fontSize: 17, fontWeight: '700', marginLeft: 8 }}>
+                                    Approuver
+                                </Text>
+                            </>
+                        )}
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={{
+                            flex: 1,
+                            backgroundColor: Colors.systemRed,
+                            borderRadius: 14,
+                            borderCurve: 'continuous',
+                            padding: 16,
+                            alignItems: 'center',
+                            flexDirection: 'row',
+                            justifyContent: 'center',
+                        }}
+                        onPress={() => handleDecision('rejected')}
+                        disabled={submitting}
+                    >
+                        {submitting ? (
+                            <ActivityIndicator color="#fff" />
+                        ) : (
+                            <>
+                                <SymbolView name="xmark.circle.fill" size={20} tintColor="#fff" />
+                                <Text style={{ color: '#fff', fontSize: 17, fontWeight: '700', marginLeft: 8 }}>
+                                    Rejeter
+                                </Text>
+                            </>
+                        )}
+                    </TouchableOpacity>
+                </View>
+            )}
+        </ScrollView>
+    );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F9FAFB',
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 16,
-    color: '#6B7280',
-  },
-  errorText: {
-    fontSize: 16,
-    color: '#DC2626',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#111827',
-  },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  riskScoreCard: {
-    backgroundColor: '#fff',
-    margin: 16,
-    padding: 20,
-    borderRadius: 12,
-    borderWidth: 3,
-  },
-  riskScoreHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  riskScoreLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#6B7280',
-  },
-  riskScoreLevel: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  riskScoreValue: {
-    fontSize: 48,
-    fontWeight: '700',
-    marginBottom: 12,
-  },
-  riskScoreBar: {
-    height: 8,
-    backgroundColor: '#E5E7EB',
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  riskScoreBarFill: {
-    height: '100%',
-    borderRadius: 4,
-  },
-  card: {
-    backgroundColor: '#fff',
-    marginHorizontal: 16,
-    marginBottom: 16,
-    padding: 16,
-    borderRadius: 12,
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 12,
-  },
-  cardSubtitle: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginBottom: 12,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  detailLabel: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '500',
-    width: '35%',
-  },
-  detailValue: {
-    fontSize: 14,
-    color: '#111827',
-    fontWeight: '600',
-    width: '65%',
-    textAlign: 'right',
-  },
-  detailValueSmall: {
-    fontSize: 12,
-    color: '#9CA3AF',
-    textAlign: 'right',
-    marginTop: 2,
-  },
-  amountValue: {
-    fontSize: 18,
-    color: '#3B82F6',
-  },
-  featuresGrid: {
-    marginTop: 8,
-  },
-  featureItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
-  },
-  featureKey: {
-    fontSize: 13,
-    color: '#6B7280',
-    textTransform: 'capitalize',
-  },
-  featureValue: {
-    fontSize: 13,
-    color: '#111827',
-    fontWeight: '600',
-  },
-  notesBox: {
-    backgroundColor: '#F9FAFB',
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 8,
-  },
-  notesLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 4,
-  },
-  notesText: {
-    fontSize: 13,
-    color: '#6B7280',
-    lineHeight: 18,
-  },
-  actionsCard: {
-    flexDirection: 'row',
-    gap: 12,
-    marginHorizontal: 16,
-    marginBottom: 16,
-  },
-  actionButton: {
-    flex: 1,
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  rejectButton: {
-    backgroundColor: '#DC2626',
-  },
-  approveButton: {
-    backgroundColor: '#10B981',
-  },
-  actionButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  transactionId: {
-    fontSize: 11,
-    color: '#9CA3AF',
-    textAlign: 'center',
-    marginBottom: 4,
-  },
-});
-

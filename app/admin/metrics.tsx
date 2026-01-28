@@ -1,391 +1,460 @@
-import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View, Alert } from 'react-native';
-import { supabase } from '../../lib/supabase';
-import * as FileSystem from 'expo-file-system';
+import { SymbolView } from 'expo-symbols';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { supabase } from '../../lib/supabase';
+import { Colors } from '@/constants/NativeColors';
 
-interface Metrics {
+type FraudStats = {
+    period_days: number;
+    alerts: {
+        pending_count: number;
+        approved_count: number;
+        rejected_count: number;
+        avg_risk_score: number;
+        max_risk_score: number;
+        total_alerts: number;
+    };
+    transactions: {
+        high_risk_count: number;
+        medium_risk_count: number;
+        low_risk_count: number;
+        avg_fraud_score: number;
+    };
+};
+
+type DetailedMetrics = {
     total_transactions: number;
-    success_count: number;
-    pending_count: number;
-    failed_count: number;
-    blocked_count: number;
-    avg_fraud_score: number;
     total_volume: number;
-    avg_latency?: number;
-    p95_latency?: number;
-}
-
-interface TransactionMetrics {
-    type: string;
-    count: number;
-    total_amount: number;
+    average_transaction: number;
+    fraud_rate: number;
+    high_risk_count: number;
+    medium_risk_count: number;
+    low_risk_count: number;
+    alerts_pending: number;
+    alerts_approved: number;
+    alerts_rejected: number;
     avg_fraud_score: number;
-}
+    max_fraud_score: number;
+};
 
-export default function AdminMetrics() {
-    const [metrics, setMetrics] = useState<Metrics | null>(null);
-    const [transactionMetrics, setTransactionMetrics] = useState<TransactionMetrics[]>([]);
+export default function MetricsScreen() {
+    const [metrics, setMetrics] = useState<DetailedMetrics | null>(null);
     const [loading, setLoading] = useState(true);
     const [exporting, setExporting] = useState(false);
+    const [period, setPeriod] = useState(7);
 
     useEffect(() => {
         fetchMetrics();
-    }, []);
+    }, [period]);
 
-    const fetchMetrics = async () => {
+    async function fetchMetrics() {
         try {
-            setLoading(true);
+            // Récupérer les statistiques de fraude
+            const { data: fraudData, error: fraudError } = await supabase.rpc('get_fraud_stats', { days_ago: period });
+            if (fraudError) throw fraudError;
 
-            // Métriques globales
-            const { data: globalData, error: globalError } = await supabase
-                .rpc('get_fraud_stats');
-
-            if (globalError) throw globalError;
-
-            // Métriques par type de transaction (30 derniers jours)
+            // Récupérer le volume total et nombre de transactions
             const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - period);
 
-            const { data: txData, error: txError } = await supabase
+            const { data: transactions, error: txError } = await supabase
                 .from('transactions')
-                .select('type, amount, fraud_score, status')
+                .select('amount, fraud_score')
                 .gte('created_at', thirtyDaysAgo.toISOString());
 
             if (txError) throw txError;
 
-            // Calculer métriques par type
-            const metricsByType = txData?.reduce((acc: any, tx: any) => {
-                if (!acc[tx.type]) {
-                    acc[tx.type] = {
-                        type: tx.type,
-                        count: 0,
-                        total_amount: 0,
-                        total_fraud_score: 0
-                    };
-                }
-                acc[tx.type].count += 1;
-                acc[tx.type].total_amount += parseFloat(tx.amount || 0);
-                acc[tx.type].total_fraud_score += tx.fraud_score || 0;
-                return acc;
-            }, {});
+            // Calculer les métriques détaillées
+            const totalTransactions = transactions?.length || 0;
+            const totalVolume = transactions?.reduce((sum, tx) => sum + (parseFloat(tx.amount) || 0), 0) || 0;
+            const averageTransaction = totalTransactions > 0 ? totalVolume / totalTransactions : 0;
 
-            const typeMetrics = Object.values(metricsByType || {}).map((m: any) => ({
-                type: m.type,
-                count: m.count,
-                total_amount: m.total_amount,
-                avg_fraud_score: Math.round(m.total_fraud_score / m.count)
-            }));
-
-            // Calculer métriques globales manuellement si RPC pas dispo
-            const totalTx = txData?.length || 0;
-            const successCount = txData?.filter((tx: any) => tx.status === 'completed').length || 0;
-            const pendingCount = txData?.filter((tx: any) => tx.status === 'pending_review').length || 0;
-            const failedCount = txData?.filter((tx: any) => tx.status === 'failed').length || 0;
-            const blockedCount = txData?.filter((tx: any) => tx.status === 'blocked').length || 0;
-            const avgFraudScore = txData?.reduce((sum: number, tx: any) => sum + (tx.fraud_score || 0), 0) / totalTx || 0;
-            const totalVolume = txData?.reduce((sum: number, tx: any) => sum + parseFloat(tx.amount || 0), 0) || 0;
+            const stats = fraudData as FraudStats;
+            const totalRiskTransactions = (stats.transactions.high_risk_count || 0) + 
+                                         (stats.transactions.medium_risk_count || 0) + 
+                                         (stats.transactions.low_risk_count || 0);
+            const fraudRate = totalTransactions > 0 ? (totalRiskTransactions / totalTransactions) * 100 : 0;
 
             setMetrics({
-                total_transactions: totalTx,
-                success_count: successCount,
-                pending_count: pendingCount,
-                failed_count: failedCount,
-                blocked_count: blockedCount,
-                avg_fraud_score: Math.round(avgFraudScore),
-                total_volume: totalVolume
+                total_transactions: totalTransactions,
+                total_volume: totalVolume,
+                average_transaction: averageTransaction,
+                fraud_rate: fraudRate,
+                high_risk_count: stats.transactions.high_risk_count || 0,
+                medium_risk_count: stats.transactions.medium_risk_count || 0,
+                low_risk_count: stats.transactions.low_risk_count || 0,
+                alerts_pending: stats.alerts.pending_count || 0,
+                alerts_approved: stats.alerts.approved_count || 0,
+                alerts_rejected: stats.alerts.rejected_count || 0,
+                avg_fraud_score: stats.transactions.avg_fraud_score || 0,
+                max_fraud_score: stats.alerts.max_risk_score || 0,
             });
-
-            setTransactionMetrics(typeMetrics as TransactionMetrics[]);
         } catch (error: any) {
-            console.error('Error fetching metrics:', error);
-            Alert.alert('Erreur', 'Impossible de charger les métriques');
+            Alert.alert('Erreur', error.message);
         } finally {
             setLoading(false);
         }
-    };
+    }
 
-    const exportLogs = async () => {
+    async function exportLogs() {
+        setExporting(true);
         try {
-            setExporting(true);
-
-            // Récupérer les transactions des 30 derniers jours
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-            const { data: transactions, error } = await supabase
+            const { data: transactions, error: txError } = await supabase
                 .from('transactions')
                 .select('*')
-                .gte('created_at', thirtyDaysAgo.toISOString())
-                .order('created_at', { ascending: false });
+                .gte('created_at', thirtyDaysAgo.toISOString());
 
-            if (error) throw error;
-
-            // Récupérer les alertes de fraude
-            const { data: alerts, error: alertsError } = await supabase
+            const { data: fraudAlerts, error: fraudError } = await supabase
                 .from('fraud_alerts')
                 .select('*')
-                .gte('created_at', thirtyDaysAgo.toISOString())
-                .order('created_at', { ascending: false });
+                .gte('created_at', thirtyDaysAgo.toISOString());
 
-            if (alertsError) throw alertsError;
+            if (txError || fraudError) throw txError || fraudError;
 
-            // Créer le fichier JSON
             const exportData = {
                 export_date: new Date().toISOString(),
                 period: '30_days',
-                metrics: metrics,
-                transactions: transactions,
-                fraud_alerts: alerts,
-                transaction_metrics: transactionMetrics
+                transactions: transactions || [],
+                fraud_alerts: fraudAlerts || [],
             };
 
-            const jsonString = JSON.stringify(exportData, null, 2);
-            const fileName = `epipay_logs_${new Date().toISOString().split('T')[0]}.json`;
-            
-            // Utiliser cacheDirectory (contournement TypeScript pour expo-file-system v19)
-            const dir = (FileSystem as any).cacheDirectory || (FileSystem as any).documentDirectory || '';
-            const filePath = `${dir}${fileName}`;
+            const fileName = `epipay_export_${Date.now()}.json`;
+            const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
 
-            await FileSystem.writeAsStringAsync(filePath, jsonString);
+            await FileSystem.writeAsStringAsync(
+                fileUri,
+                JSON.stringify(exportData, null, 2)
+            );
 
-            // Partager le fichier
             if (await Sharing.isAvailableAsync()) {
-                await Sharing.shareAsync(filePath, {
-                    mimeType: 'application/json',
-                    dialogTitle: 'Exporter les logs EpiPay'
-                });
-                Alert.alert('Succès', 'Logs exportés avec succès');
+                await Sharing.shareAsync(fileUri);
+                Alert.alert('Succès', 'Export partagé avec succès');
             } else {
-                Alert.alert('Erreur', 'Le partage de fichiers n\'est pas disponible');
+                Alert.alert('Succès', `Export enregistré : ${fileName}`);
             }
         } catch (error: any) {
-            console.error('Error exporting logs:', error);
-            Alert.alert('Erreur', 'Impossible d\'exporter les logs');
+            Alert.alert('Erreur', error.message);
         } finally {
             setExporting(false);
         }
-    };
+    }
 
     if (loading) {
         return (
-            <View className="flex-1 bg-gray-50 justify-center items-center">
-                <ActivityIndicator size="large" color="#0066cc" />
+            <View style={{
+                flex: 1,
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: Colors.systemGroupedBackground,
+            }}>
+                <ActivityIndicator size="large" color={Colors.epitechBlue} />
             </View>
         );
     }
 
-    const successRate = metrics ? (metrics.success_count / metrics.total_transactions) * 100 : 0;
-    const fraudRate = metrics ? ((metrics.blocked_count + metrics.pending_count) / metrics.total_transactions) * 100 : 0;
-
     return (
-        <ScrollView className="flex-1 bg-gray-50">
-            <View className="p-6">
-                {/* Header */}
-                <View className="flex-row items-center justify-between mb-6">
-                    <View>
-                        <Text className="text-2xl font-bold text-gray-900">Métriques</Text>
-                        <Text className="text-gray-500 mt-1">30 derniers jours</Text>
-                    </View>
+        <ScrollView 
+            contentInsetAdjustmentBehavior="automatic"
+            style={{ flex: 1, backgroundColor: Colors.systemGroupedBackground }}
+            contentContainerStyle={{ padding: 16 }}
+        >
+            {/* Sélecteur de période */}
+            <View style={{ 
+                flexDirection: 'row', 
+                gap: 8, 
+                marginBottom: 16,
+                backgroundColor: Colors.secondarySystemGroupedBackground,
+                borderRadius: 10,
+                padding: 4,
+            }}>
+                {[7, 30, 90].map((days) => (
                     <TouchableOpacity
-                        onPress={() => router.back()}
-                        className="bg-white p-3 rounded-xl shadow-sm"
+                        key={days}
+                        style={{
+                            flex: 1,
+                            paddingVertical: 8,
+                            paddingHorizontal: 12,
+                            borderRadius: 8,
+                            backgroundColor: period === days ? Colors.epitechBlue : 'transparent',
+                        }}
+                        onPress={() => setPeriod(days)}
                     >
-                        <Ionicons name="close" size={24} color="#6b7280" />
+                        <Text style={{
+                            color: period === days ? '#fff' : Colors.label,
+                            fontWeight: period === days ? '700' : '500',
+                            textAlign: 'center',
+                            fontSize: 15,
+                        }}>
+                            {days}j
+                        </Text>
                     </TouchableOpacity>
-                </View>
+                ))}
+            </View>
 
-                {/* Export Button */}
-                <TouchableOpacity
-                    onPress={exportLogs}
-                    disabled={exporting}
-                    className="bg-epitech-blue p-4 rounded-xl mb-6 flex-row items-center justify-center"
-                >
-                    {exporting ? (
-                        <ActivityIndicator color="white" />
-                    ) : (
-                        <>
-                            <Ionicons name="download-outline" size={20} color="white" />
-                            <Text className="text-white font-bold ml-2">Exporter les logs (JSON)</Text>
-                        </>
-                    )}
-                </TouchableOpacity>
+            {metrics && (
+                <>
+                    {/* Métriques principales */}
+                    <Text style={{ 
+                        fontSize: 13, 
+                        fontWeight: '700', 
+                        textTransform: 'uppercase',
+                        color: Colors.secondaryLabel,
+                        marginBottom: 8,
+                        marginLeft: 4,
+                    }}>
+                        Vue d'ensemble
+                    </Text>
 
-                {/* Vue d'ensemble */}
-                <View className="bg-white rounded-2xl p-6 mb-6 shadow-sm">
-                    <Text className="text-lg font-bold text-gray-900 mb-4">Vue d'ensemble</Text>
-                    
-                    <View className="gap-3">
-                        <View className="flex-row justify-between items-center py-2">
-                            <Text className="text-gray-600">Total transactions</Text>
-                            <Text className="font-bold text-xl text-gray-900">{metrics?.total_transactions || 0}</Text>
+                    <View style={{ gap: 12, marginBottom: 24 }}>
+                        <View style={{
+                            backgroundColor: Colors.secondarySystemGroupedBackground,
+                            borderRadius: 12,
+                            borderCurve: 'continuous',
+                            padding: 16,
+                        }}>
+                            <Text style={{ color: Colors.secondaryLabel, fontSize: 13, marginBottom: 4 }}>
+                                Total Transactions
+                            </Text>
+                            <Text style={{
+                                fontSize: 32,
+                                fontWeight: '700',
+                                color: Colors.label,
+                                fontVariant: ['tabular-nums'],
+                            }}>
+                                {metrics.total_transactions}
+                            </Text>
                         </View>
 
-                        <View className="flex-row justify-between items-center py-2">
-                            <Text className="text-gray-600">Volume total</Text>
-                            <Text className="font-bold text-xl text-epitech-blue">{metrics?.total_volume.toFixed(0)} EPC</Text>
+                        <View style={{ flexDirection: 'row', gap: 12 }}>
+                            <View style={{
+                                flex: 1,
+                                backgroundColor: Colors.secondarySystemGroupedBackground,
+                                borderRadius: 12,
+                                borderCurve: 'continuous',
+                                padding: 16,
+                            }}>
+                                <Text style={{ color: Colors.secondaryLabel, fontSize: 13, marginBottom: 4 }}>
+                                    Volume Total
+                                </Text>
+                                <Text style={{
+                                    fontSize: 24,
+                                    fontWeight: '700',
+                                    color: Colors.epitechBlue,
+                                    fontVariant: ['tabular-nums'],
+                                }}>
+                                    {metrics.total_volume.toFixed(0)} EPC
+                                </Text>
+                            </View>
+
+                            <View style={{
+                                flex: 1,
+                                backgroundColor: Colors.secondarySystemGroupedBackground,
+                                borderRadius: 12,
+                                borderCurve: 'continuous',
+                                padding: 16,
+                            }}>
+                                <Text style={{ color: Colors.secondaryLabel, fontSize: 13, marginBottom: 4 }}>
+                                    Moyenne/TX
+                                </Text>
+                                <Text style={{
+                                    fontSize: 24,
+                                    fontWeight: '700',
+                                    color: Colors.label,
+                                    fontVariant: ['tabular-nums'],
+                                }}>
+                                    {metrics.average_transaction.toFixed(0)} EPC
+                                </Text>
+                            </View>
+                        </View>
+                    </View>
+
+                    {/* Métriques de fraude */}
+                    <Text style={{ 
+                        fontSize: 13, 
+                        fontWeight: '700', 
+                        textTransform: 'uppercase',
+                        color: Colors.secondaryLabel,
+                        marginBottom: 8,
+                        marginLeft: 4,
+                    }}>
+                        Détection de fraude
+                    </Text>
+
+                    <View style={{ gap: 12, marginBottom: 24 }}>
+                        <View style={{ flexDirection: 'row', gap: 12 }}>
+                            <View style={{
+                                flex: 1,
+                                backgroundColor: Colors.secondarySystemGroupedBackground,
+                                borderRadius: 12,
+                                borderCurve: 'continuous',
+                                padding: 16,
+                            }}>
+                                <Text style={{ color: Colors.secondaryLabel, fontSize: 13, marginBottom: 4 }}>
+                                    Taux de Fraude
+                                </Text>
+                                <Text style={{
+                                    fontSize: 28,
+                                    fontWeight: '700',
+                                    color: metrics.fraud_rate > 5 ? Colors.systemRed : Colors.systemGreen,
+                                    fontVariant: ['tabular-nums'],
+                                }}>
+                                    {metrics.fraud_rate.toFixed(1)}%
+                                </Text>
+                            </View>
+
+                            <View style={{
+                                flex: 1,
+                                backgroundColor: Colors.secondarySystemGroupedBackground,
+                                borderRadius: 12,
+                                borderCurve: 'continuous',
+                                padding: 16,
+                            }}>
+                                <Text style={{ color: Colors.secondaryLabel, fontSize: 13, marginBottom: 4 }}>
+                                    Score Moyen
+                                </Text>
+                                <Text style={{
+                                    fontSize: 28,
+                                    fontWeight: '700',
+                                    color: metrics.avg_fraud_score > 50 ? Colors.systemOrange : Colors.systemGreen,
+                                    fontVariant: ['tabular-nums'],
+                                }}>
+                                    {metrics.avg_fraud_score.toFixed(1)}
+                                </Text>
+                            </View>
                         </View>
 
-                        <View className="flex-row justify-between items-center py-2">
-                            <Text className="text-gray-600">Score fraude moyen</Text>
-                            <View className="flex-row items-center">
-                                <View 
-                                    className={`px-3 py-1 rounded-full ${
-                                        (metrics?.avg_fraud_score || 0) > 70 ? 'bg-red-100' :
-                                        (metrics?.avg_fraud_score || 0) > 30 ? 'bg-yellow-100' : 'bg-green-100'
-                                    }`}
-                                >
-                                    <Text className={`font-bold ${
-                                        (metrics?.avg_fraud_score || 0) > 70 ? 'text-red-700' :
-                                        (metrics?.avg_fraud_score || 0) > 30 ? 'text-yellow-700' : 'text-green-700'
-                                    }`}>
-                                        {metrics?.avg_fraud_score || 0}/100
+                        <View style={{
+                            backgroundColor: Colors.secondarySystemGroupedBackground,
+                            borderRadius: 12,
+                            borderCurve: 'continuous',
+                            padding: 16,
+                            gap: 12,
+                        }}>
+                            <Text style={{ fontSize: 15, fontWeight: '700', color: Colors.label, marginBottom: 4 }}>
+                                Répartition des risques
+                            </Text>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.systemRed }} />
+                                    <Text style={{ color: Colors.secondaryLabel, fontSize: 15 }}>Risque élevé</Text>
+                                </View>
+                                <Text style={{ fontWeight: '700', color: Colors.systemRed, fontSize: 17, fontVariant: ['tabular-nums'] }}>
+                                    {metrics.high_risk_count}
+                                </Text>
+                            </View>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.systemOrange }} />
+                                    <Text style={{ color: Colors.secondaryLabel, fontSize: 15 }}>Risque moyen</Text>
+                                </View>
+                                <Text style={{ fontWeight: '700', color: Colors.systemOrange, fontSize: 17, fontVariant: ['tabular-nums'] }}>
+                                    {metrics.medium_risk_count}
+                                </Text>
+                            </View>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.systemYellow }} />
+                                    <Text style={{ color: Colors.secondaryLabel, fontSize: 15 }}>Risque faible</Text>
+                                </View>
+                                <Text style={{ fontWeight: '700', color: Colors.systemYellow, fontSize: 17, fontVariant: ['tabular-nums'] }}>
+                                    {metrics.low_risk_count}
+                                </Text>
+                            </View>
+                        </View>
+                    </View>
+
+                    {/* Alertes */}
+                    <Text style={{ 
+                        fontSize: 13, 
+                        fontWeight: '700', 
+                        textTransform: 'uppercase',
+                        color: Colors.secondaryLabel,
+                        marginBottom: 8,
+                        marginLeft: 4,
+                    }}>
+                        Alertes de fraude
+                    </Text>
+
+                    <View style={{
+                        backgroundColor: Colors.secondarySystemGroupedBackground,
+                        borderRadius: 12,
+                        borderCurve: 'continuous',
+                        padding: 16,
+                        marginBottom: 24,
+                        gap: 12,
+                    }}>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                <SymbolView name="clock" size={16} tintColor={Colors.systemOrange} />
+                                <Text style={{ color: Colors.secondaryLabel, fontSize: 15 }}>En attente</Text>
+                            </View>
+                            <Text style={{ fontWeight: '700', color: Colors.systemOrange, fontSize: 17, fontVariant: ['tabular-nums'] }}>
+                                {metrics.alerts_pending}
+                            </Text>
+                        </View>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                <SymbolView name="checkmark.circle" size={16} tintColor={Colors.systemGreen} />
+                                <Text style={{ color: Colors.secondaryLabel, fontSize: 15 }}>Approuvées</Text>
+                            </View>
+                            <Text style={{ fontWeight: '700', color: Colors.systemGreen, fontSize: 17, fontVariant: ['tabular-nums'] }}>
+                                {metrics.alerts_approved}
+                            </Text>
+                        </View>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                <SymbolView name="xmark.circle" size={16} tintColor={Colors.systemRed} />
+                                <Text style={{ color: Colors.secondaryLabel, fontSize: 15 }}>Rejetées</Text>
+                            </View>
+                            <Text style={{ fontWeight: '700', color: Colors.systemRed, fontSize: 17, fontVariant: ['tabular-nums'] }}>
+                                {metrics.alerts_rejected}
+                            </Text>
+                        </View>
+                        {metrics.max_fraud_score > 0 && (
+                            <>
+                                <View style={{ height: 1, backgroundColor: Colors.separator, marginVertical: 4 }} />
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <Text style={{ color: Colors.secondaryLabel, fontSize: 13 }}>Score max détecté</Text>
+                                    <Text style={{ fontWeight: '700', color: Colors.systemRed, fontSize: 17, fontVariant: ['tabular-nums'] }}>
+                                        {metrics.max_fraud_score.toFixed(1)}
                                     </Text>
                                 </View>
-                            </View>
-                        </View>
+                            </>
+                        )}
                     </View>
-                </View>
+                </>
+            )}
 
-                {/* Statut des transactions */}
-                <View className="bg-white rounded-2xl p-6 mb-6 shadow-sm">
-                    <Text className="text-lg font-bold text-gray-900 mb-4">Statut des transactions</Text>
-                    
-                    <View className="gap-3">
-                        <View className="flex-row items-center">
-                            <View className="flex-1">
-                                <View className="flex-row justify-between mb-1">
-                                    <Text className="text-gray-600">Réussies</Text>
-                                    <Text className="font-bold text-green-600">{successRate.toFixed(1)}%</Text>
-                                </View>
-                                <View className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                                    <View 
-                                        className="h-full bg-green-500 rounded-full" 
-                                        style={{ width: `${successRate}%` }}
-                                    />
-                                </View>
-                                <Text className="text-gray-400 text-xs mt-1">{metrics?.success_count} transactions</Text>
-                            </View>
-                        </View>
-
-                        <View className="flex-row items-center">
-                            <View className="flex-1">
-                                <View className="flex-row justify-between mb-1">
-                                    <Text className="text-gray-600">Suspicion fraude</Text>
-                                    <Text className="font-bold text-red-600">{fraudRate.toFixed(1)}%</Text>
-                                </View>
-                                <View className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                                    <View 
-                                        className="h-full bg-red-500 rounded-full" 
-                                        style={{ width: `${fraudRate}%` }}
-                                    />
-                                </View>
-                                <Text className="text-gray-400 text-xs mt-1">
-                                    {(metrics?.blocked_count || 0) + (metrics?.pending_count || 0)} transactions
-                                </Text>
-                            </View>
-                        </View>
-
-                        <View className="flex-row justify-between pt-3 border-t border-gray-100">
-                            <View className="items-center flex-1">
-                                <Text className="text-gray-500 text-sm">En attente</Text>
-                                <Text className="font-bold text-xl text-yellow-600">{metrics?.pending_count || 0}</Text>
-                            </View>
-                            <View className="items-center flex-1 border-x border-gray-100">
-                                <Text className="text-gray-500 text-sm">Bloquées</Text>
-                                <Text className="font-bold text-xl text-red-600">{metrics?.blocked_count || 0}</Text>
-                            </View>
-                            <View className="items-center flex-1">
-                                <Text className="text-gray-500 text-sm">Échouées</Text>
-                                <Text className="font-bold text-xl text-gray-600">{metrics?.failed_count || 0}</Text>
-                            </View>
-                        </View>
-                    </View>
-                </View>
-
-                {/* Par type de transaction */}
-                <View className="bg-white rounded-2xl p-6 mb-6 shadow-sm">
-                    <Text className="text-lg font-bold text-gray-900 mb-4">Par type de transaction</Text>
-                    
-                    <View className="gap-4">
-                        {transactionMetrics.map((tm) => (
-                            <View key={tm.type} className="bg-gray-50 p-4 rounded-xl">
-                                <View className="flex-row items-center justify-between mb-2">
-                                    <Text className="font-bold text-gray-900 uppercase">{tm.type}</Text>
-                                    <View className={`px-2 py-1 rounded ${
-                                        tm.avg_fraud_score > 70 ? 'bg-red-100' :
-                                        tm.avg_fraud_score > 30 ? 'bg-yellow-100' : 'bg-green-100'
-                                    }`}>
-                                        <Text className={`text-xs font-bold ${
-                                            tm.avg_fraud_score > 70 ? 'text-red-700' :
-                                            tm.avg_fraud_score > 30 ? 'text-yellow-700' : 'text-green-700'
-                                        }`}>
-                                            Score: {tm.avg_fraud_score}
-                                        </Text>
-                                    </View>
-                                </View>
-                                <View className="flex-row justify-between">
-                                    <Text className="text-gray-600 text-sm">{tm.count} transactions</Text>
-                                    <Text className="text-gray-600 text-sm font-medium">{tm.total_amount.toFixed(0)} EPC</Text>
-                                </View>
-                            </View>
-                        ))}
-                    </View>
-                </View>
-
-                {/* Critères d'acceptation (contrat) */}
-                <View className="bg-white rounded-2xl p-6 mb-6 shadow-sm">
-                    <Text className="text-lg font-bold text-gray-900 mb-4">Critères d'acceptation</Text>
-                    
-                    <View className="gap-3">
-                        <View className="flex-row items-center justify-between">
-                            <Text className="text-gray-600">Taux de réussite</Text>
-                            <View className="flex-row items-center">
-                                <Ionicons 
-                                    name={successRate >= 95 ? "checkmark-circle" : "alert-circle"} 
-                                    size={20} 
-                                    color={successRate >= 95 ? "#16a34a" : "#dc2626"} 
-                                />
-                                <Text className={`ml-2 font-bold ${successRate >= 95 ? 'text-green-600' : 'text-red-600'}`}>
-                                    {successRate.toFixed(1)}% {successRate >= 95 ? '✓' : '✗'}
-                                </Text>
-                            </View>
-                        </View>
-
-                        <View className="flex-row items-center justify-between">
-                            <Text className="text-gray-600">Taux faux positifs</Text>
-                            <View className="flex-row items-center">
-                                <Ionicons 
-                                    name={fraudRate <= 15 ? "checkmark-circle" : "alert-circle"} 
-                                    size={20} 
-                                    color={fraudRate <= 15 ? "#16a34a" : "#dc2626"} 
-                                />
-                                <Text className={`ml-2 font-bold ${fraudRate <= 15 ? 'text-green-600' : 'text-red-600'}`}>
-                                    {fraudRate.toFixed(1)}% {fraudRate <= 15 ? '✓' : '✗'}
-                                </Text>
-                            </View>
-                        </View>
-
-                        <View className="flex-row items-center justify-between">
-                            <Text className="text-gray-600">Latence analyse fraude</Text>
-                            <View className="flex-row items-center">
-                                <Ionicons name="checkmark-circle" size={20} color="#16a34a" />
-                                <Text className="ml-2 font-bold text-green-600">~200ms ✓</Text>
-                            </View>
-                        </View>
-                    </View>
-                </View>
-
-                <TouchableOpacity
-                    onPress={fetchMetrics}
-                    className="bg-gray-100 p-4 rounded-xl flex-row items-center justify-center"
-                >
-                    <Ionicons name="refresh" size={20} color="#6b7280" />
-                    <Text className="text-gray-600 font-medium ml-2">Actualiser</Text>
-                </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+                style={{
+                    backgroundColor: Colors.epitechBlue,
+                    borderRadius: 14,
+                    borderCurve: 'continuous',
+                    padding: 16,
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    marginBottom: 24,
+                }}
+                onPress={exportLogs}
+                disabled={exporting}
+            >
+                {exporting ? (
+                    <ActivityIndicator color="#fff" />
+                ) : (
+                    <>
+                        <SymbolView name="square.and.arrow.up" size={20} tintColor="#fff" />
+                        <Text style={{ color: '#fff', fontSize: 17, fontWeight: '700', marginLeft: 8 }}>
+                            Exporter les logs (30j)
+                        </Text>
+                    </>
+                )}
+            </TouchableOpacity>
         </ScrollView>
     );
 }

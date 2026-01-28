@@ -1,8 +1,17 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Colors } from '@/constants/NativeColors';
+import { SymbolView } from 'expo-symbols';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Modal, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+    ActivityIndicator,
+    Alert,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from 'react-native';
 import { supabase } from '../lib/supabase';
 import { collectTransactionContext, buildTransactionPayload } from '../lib/transactionContext';
 
@@ -12,461 +21,469 @@ type UserProfile = {
     full_name: string;
 };
 
-type BiometricType = 'faceid' | 'touchid' | 'fingerprint' | 'none';
-
 export default function SendScreen() {
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
     const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
     const [amount, setAmount] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [showConfirmModal, setShowConfirmModal] = useState(false);
-    const [authMethod, setAuthMethod] = useState<'biometric' | 'password' | null>(null);
-    const [biometricType, setBiometricType] = useState<BiometricType>('none');
-    const [password, setPassword] = useState('');
-    const [verifying, setVerifying] = useState(false);
+    const [note, setNote] = useState('');
+    const [balance, setBalance] = useState<number>(0);
+    const [searching, setSearching] = useState(false);
+    const [processing, setProcessing] = useState(false);
+    const [biometricAvailable, setBiometricAvailable] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
+        checkBiometric();
+        fetchBalance();
+    }, []);
+
+    useEffect(() => {
         if (searchQuery.length > 2 && !selectedUser) {
-            searchUsers(searchQuery);
+            const timer = setTimeout(() => searchUsers(searchQuery), 300);
+            return () => clearTimeout(timer);
         } else {
             setSearchResults([]);
         }
-    }, [searchQuery]);
+    }, [searchQuery, selectedUser]);
 
-    useEffect(() => {
-        checkBiometricAvailability();
-    }, []);
-
-    async function checkBiometricAvailability() {
+    async function checkBiometric() {
         const hasHardware = await LocalAuthentication.hasHardwareAsync();
         const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-        
-        if (hasHardware && isEnrolled) {
-            setAuthMethod('biometric');
-            
-            // Détermine le type de biométrie disponible
-            const supportedTypes = await LocalAuthentication.supportedAuthenticationTypesAsync();
-            
-            if (Platform.OS === 'ios') {
-                if (supportedTypes.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)) {
-                    setBiometricType('faceid');
-                } else if (supportedTypes.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)) {
-                    setBiometricType('touchid');
-                }
-            } else {
-                // Android
-                if (supportedTypes.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)) {
-                    setBiometricType('fingerprint');
-                }
-            }
-        } else {
-            setAuthMethod('password');
-            setBiometricType('none');
-        }
+        setBiometricAvailable(hasHardware && isEnrolled);
     }
-    
-    function getBiometricLabel(): string {
-        switch (biometricType) {
-            case 'faceid':
-                return 'Face ID';
-            case 'touchid':
-                return 'Touch ID';
-            case 'fingerprint':
-                return 'Empreinte digitale';
-            default:
-                return 'Biométrie';
-        }
-    }
-    
-    function getBiometricIcon(): string {
-        switch (biometricType) {
-            case 'faceid':
-                return 'scan';
-            case 'touchid':
-            case 'fingerprint':
-                return 'finger-print';
-            default:
-                return 'lock-closed';
+
+    async function fetchBalance() {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+            const { data } = await supabase.from('profiles').select('balance').eq('id', user.id).single();
+            if (data) setBalance(data.balance || 0);
+        } catch (error) {
+            console.error('Error fetching balance:', error);
         }
     }
 
     async function searchUsers(query: string) {
-        const { data, error } = await supabase
-            .from('profiles')
-            .select('id, email, full_name')
-            .or(`email.ilike.%${query}%,full_name.ilike.%${query}%`)
-            .limit(5);
+        setSearching(true);
+        try {
+            const { data } = await supabase
+                .from('profiles')
+                .select('id, email, full_name')
+                .or(`email.ilike.%${query}%,full_name.ilike.%${query}%`)
+                .limit(5);
 
-        if (!error && data) {
-            setSearchResults(data);
+            if (data) {
+                const { data: { user } } = await supabase.auth.getUser();
+                setSearchResults(data.filter(p => p.id !== user?.id));
+            }
+        } catch (error) {
+            console.error('Search error:', error);
+        } finally {
+            setSearching(false);
         }
     }
 
-    function handleSelectUser(user: UserProfile) {
-        setSelectedUser(user);
-        setSearchQuery(user.email);
-        setSearchResults([]);
-    }
-
-    function handlePreTransfer() {
-        if (!selectedUser || !amount) {
-            Alert.alert('Erreur', 'Veuillez sélectionner un destinataire et entrer un montant');
+    async function handleSend() {
+        if (!selectedUser) {
+            Alert.alert('Erreur', 'Sélectionnez un destinataire');
             return;
         }
 
-        const parsedAmount = parseFloat(amount);
-        if (isNaN(parsedAmount) || parsedAmount <= 0) {
-            Alert.alert('Erreur', 'Montant invalide');
+        const amountNum = parseFloat(amount);
+        if (!amount || amountNum <= 0) {
+            Alert.alert('Erreur', 'Entrez un montant valide');
             return;
         }
 
-        setPassword('');
-        setShowConfirmModal(true);
-    }
+        if (amountNum > balance) {
+            Alert.alert('Erreur', `Solde insuffisant (${balance.toFixed(2)} EPC)`);
+            return;
+        }
 
-    async function handleConfirm() {
-        if (authMethod === 'biometric') {
-            const promptMessage = biometricType === 'faceid' 
-                ? 'Confirmez le transfert avec Face ID'
-                : biometricType === 'touchid'
-                ? 'Confirmez le transfert avec Touch ID'
-                : 'Confirmez le transfert avec votre empreinte';
-                
-            const result = await LocalAuthentication.authenticateAsync({
-                promptMessage,
-                fallbackLabel: 'Utiliser le mot de passe',
-                cancelLabel: 'Annuler',
-                disableDeviceFallback: true, // Désactive le fallback vers le code iOS
+        // Authentification biométrique si disponible
+        if (biometricAvailable) {
+            const auth = await LocalAuthentication.authenticateAsync({
+                promptMessage: `Confirmer ${amount} EPC`,
             });
-
-            if (result.success) {
-                handleTransfer();
-            } else if (result.error === 'user_cancel' || result.error === 'system_cancel') {
-                // Ne rien faire si annulé
-            } else {
-                // Fallback vers mot de passe si la biométrie échoue
-                setAuthMethod('password');
-            }
-        } else {
-            // Vérifier le mot de passe
-            if (!password) {
-                Alert.alert('Erreur', 'Veuillez entrer votre mot de passe');
-                return;
-            }
-            setVerifying(true);
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user && user.email) {
-                const { error } = await supabase.auth.signInWithPassword({
-                    email: user.email,
-                    password: password,
-                });
-
-                if (error) {
-                    Alert.alert('Erreur', 'Mot de passe incorrect');
-                    setVerifying(false);
-                } else {
-                    setVerifying(false);
-                    handleTransfer();
-                }
-            } else {
-                setVerifying(false);
-                Alert.alert('Erreur', 'Session utilisateur introuvable');
-            }
+            if (!auth.success) return;
         }
-    }
 
-    async function handleTransfer() {
-        setShowConfirmModal(false);
-        setLoading(true);
-
-        const parsedAmount = parseFloat(amount);
+        setProcessing(true);
 
         try {
-            // Récupérer l'utilisateur actuel
             const { data: { user } } = await supabase.auth.getUser();
-            if (!user) {
-                throw new Error('Session utilisateur introuvable');
-            }
+            if (!user) throw new Error('Non connecté');
 
-            // Collecter le contexte de la transaction
             const context = await collectTransactionContext();
-
-            // Construire le payload enrichi pour fraud-detection
             const payload = buildTransactionPayload({
                 userId: user.id,
-                amount: parsedAmount,
+                amount: amountNum,
                 type: 'transfer',
-                recipientEmail: selectedUser?.email,
-                recipientId: selectedUser?.id,
-                description: `Transfert à ${selectedUser?.full_name || selectedUser?.email}`,
+                recipientId: selectedUser.id,
+                description: note || `Transfert vers ${selectedUser.full_name}`,
                 context,
+                metadata: {
+                    receiver_name: selectedUser.full_name,
+                    receiver_email: selectedUser.email,
+                    note: note || undefined,
+                },
             });
 
-            // Appeler fraud-detection Edge Function
-            const { data: fraudResponse, error: fraudError } = await supabase.functions.invoke('fraud-detection', {
+            const { data: fraudResponse } = await supabase.functions.invoke('fraud-detection', {
                 body: { transaction: payload }
             });
 
-            if (fraudError) {
-                console.warn('[Send] Fraud detection unavailable, proceeding without ML:', fraudError);
-                // Continue sans fraud detection si l'Edge Function échoue
-            }
-
-            // Vérifier si la transaction est bloquée par fraud-detection
             if (fraudResponse?.decision === 'blocked') {
-                Alert.alert(
-                    'Transaction Bloquée', 
-                    fraudResponse.reason || 'Cette transaction a été bloquée par notre système de sécurité.',
-                    [{ text: 'OK', onPress: () => router.back() }]
-                );
+                Alert.alert('Transaction bloquée', fraudResponse.reason || 'Raison de sécurité');
+                setProcessing(false);
                 return;
             }
 
-            // Effectuer le transfert avec les scores de fraude
             const { data, error } = await supabase.rpc('transfer_epicoin', {
-                receiver_email: selectedUser?.email,
-                amount: parsedAmount,
+                receiver_email: selectedUser.email,
+                amount: amountNum,
                 fraud_score: fraudResponse?.riskScore || 0,
                 fraud_features: fraudResponse?.features || {}
             });
 
             if (error) throw error;
 
-            if (data && data.success) {
-                if (data.status === 'pending_review') {
-                    Alert.alert('Vérification de sécurité', 'Votre transaction a été signalée pour vérification de sécurité. Elle sera traitée après approbation par un administrateur.', [
-                        { text: 'OK', onPress: () => router.back() }
-                    ]);
-                } else {
-                    Alert.alert('Succès', `${parsedAmount} EPC envoyés à ${selectedUser?.full_name || selectedUser?.email}`, [
-                        { text: 'OK', onPress: () => router.back() }
-                    ]);
-                }
+            if (data?.success) {
+                Alert.alert(
+                    'Envoyé !',
+                    `${amount} EPC → ${selectedUser.full_name}`,
+                    [{ text: 'OK', onPress: () => router.back() }]
+                );
             } else {
-                Alert.alert('Erreur', data?.message || 'Le transfert a échoué');
+                Alert.alert('Erreur', data?.message || 'Échec du transfert');
             }
         } catch (error: any) {
             Alert.alert('Erreur', error.message);
         } finally {
-            setLoading(false);
+            setProcessing(false);
         }
     }
 
+    const canSend = selectedUser && amount && parseFloat(amount) > 0 && parseFloat(amount) <= balance;
+
     return (
-        <View className="flex-1 bg-white p-6">
-            <Text className="text-3xl font-bold mb-2 text-epitech-blue">Envoyer des EpiCoin</Text>
-            <Text className="text-gray-500 mb-8 text-base">Transférez des fonds en toute sécurité à un autre étudiant.</Text>
-
-            {/* Recherche de destinataire */}
-            <View className="mb-6 z-10">
-                <Text className="text-gray-700 font-semibold mb-2">Destinataire</Text>
-                <View className="flex-row items-center border border-gray-300 rounded-xl bg-gray-50 px-4 py-3 focus:border-epitech-blue relative">
-                    <Ionicons name="search-outline" size={20} color="#6b7280" style={{ marginRight: 10 }} />
-                    <TextInput
-                        className="flex-1 text-gray-900 text-base"
-                        placeholder="Rechercher par nom ou email..."
-                        value={searchQuery}
-                        onChangeText={(text) => {
-                            setSearchQuery(text);
-                            setSelectedUser(null);
-                        }}
-                        autoCapitalize="none"
-                        placeholderTextColor="#9ca3af"
-                    />
-                    {selectedUser && (
-                        <TouchableOpacity onPress={() => {
-                            setSearchQuery('');
-                            setSelectedUser(null);
-                        }}>
-                            <Ionicons name="close-circle" size={20} color="#9ca3af" />
-                        </TouchableOpacity>
-                    )}
+        <ScrollView
+            contentInsetAdjustmentBehavior="automatic"
+            style={{ flex: 1, backgroundColor: Colors.systemGroupedBackground }}
+            contentContainerStyle={{ padding: 24, paddingTop: 24, paddingBottom: 54 }}
+            keyboardShouldPersistTaps="handled"
+        >
+            {/* Carte Solde */}
+            <View style={{
+                backgroundColor: Colors.secondarySystemGroupedBackground,
+                borderRadius: 16,
+                borderCurve: 'continuous',
+                padding: 20,
+                marginBottom: 24,
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
+            }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                    <SymbolView name="dollarsign.circle.fill" size={20} tintColor={Colors.epitechBlue} />
+                    <Text style={{
+                        fontSize: 13,
+                        fontWeight: '600',
+                        color: Colors.secondaryLabel,
+                        marginLeft: 8,
+                        textTransform: 'uppercase',
+                    }}>
+                        Solde disponible
+                    </Text>
                 </View>
+                <Text style={{
+                    fontSize: 32,
+                    fontWeight: '700',
+                    color: Colors.epitechBlue,
+                    fontVariant: ['tabular-nums'],
+                }}>
+                    {balance.toFixed(2)} EPC
+                </Text>
+            </View>
 
-                {/* Search Results Dropdown */}
-                {searchResults.length > 0 && !selectedUser && (
-                    <View className="absolute top-20 left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-hidden">
-                        <FlatList
-                            data={searchResults}
-                            keyExtractor={(item) => item.id}
-                            renderItem={({ item }) => (
-                                <TouchableOpacity
-                                    className="p-3 border-b border-gray-100 active:bg-gray-50"
-                                    onPress={() => handleSelectUser(item)}
-                                >
-                                    <Text className="font-bold text-gray-900">{item.full_name}</Text>
-                                    <Text className="text-sm text-gray-500">{item.email}</Text>
-                                </TouchableOpacity>
-                            )}
-                        />
+            {/* Section Destinataire */}
+            <View style={{ marginBottom: 24 }}>
+                <Text style={{
+                    fontSize: 15,
+                    fontWeight: '600',
+                    color: Colors.label,
+                    marginBottom: 12,
+                }}>
+                    Destinataire
+                </Text>
+
+                {!selectedUser ? (
+                    <>
+                        <View style={{
+                            backgroundColor: Colors.secondarySystemGroupedBackground,
+                            borderRadius: 12,
+                            borderCurve: 'continuous',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            paddingHorizontal: 12,
+                            paddingVertical: 12,
+                            marginBottom: 8,
+                        }}>
+                            <SymbolView name="magnifyingglass" size={18} tintColor={Colors.tertiaryLabel} style={{ marginRight: 8 }} />
+                            <TextInput
+                                style={{ flex: 1, fontSize: 17, color: Colors.label }}
+                                placeholder="Nom ou email..."
+                                placeholderTextColor={Colors.tertiaryLabel}
+                                value={searchQuery}
+                                onChangeText={setSearchQuery}
+                                autoCapitalize="none"
+                            />
+                            {searching && <ActivityIndicator size="small" />}
+                        </View>
+
+                        {searchResults.length > 0 && (
+                            <View style={{
+                                backgroundColor: Colors.secondarySystemGroupedBackground,
+                                borderRadius: 12,
+                                borderCurve: 'continuous',
+                                overflow: 'hidden',
+                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                            }}>
+                                {searchResults.map((user, i) => (
+                                    <TouchableOpacity
+                                        key={user.id}
+                                        onPress={() => {
+                                            setSelectedUser(user);
+                                            setSearchQuery('');
+                                            setSearchResults([]);
+                                        }}
+                                        style={{
+                                            padding: 12,
+                                            flexDirection: 'row',
+                                            alignItems: 'center',
+                                            borderBottomWidth: i < searchResults.length - 1 ? 1 : 0,
+                                            borderBottomColor: Colors.separator,
+                                        }}
+                                    >
+                                        <View style={{
+                                            width: 40,
+                                            height: 40,
+                                            backgroundColor: Colors.epitechBlue,
+                                            borderRadius: 20,
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            marginRight: 12,
+                                        }}>
+                                            <Text style={{ color: '#fff', fontSize: 18, fontWeight: '700' }}>
+                                                {user.full_name.charAt(0).toUpperCase()}
+                                            </Text>
+                                        </View>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={{ fontSize: 16, fontWeight: '600', color: Colors.label }}>
+                                                {user.full_name}
+                                            </Text>
+                                            <Text style={{ fontSize: 13, color: Colors.secondaryLabel }}>
+                                                {user.email}
+                                            </Text>
+                                        </View>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        )}
+                    </>
+                ) : (
+                    <View style={{
+                        backgroundColor: Colors.epitechBlue,
+                        borderRadius: 12,
+                        borderCurve: 'continuous',
+                        padding: 16,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        boxShadow: '0 2px 8px rgba(0, 145, 211, 0.25)',
+                    }}>
+                        <View style={{
+                            width: 48,
+                            height: 48,
+                            backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                            borderRadius: 24,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginRight: 12,
+                        }}>
+                            <Text style={{ color: '#fff', fontSize: 20, fontWeight: '700' }}>
+                                {selectedUser.full_name.charAt(0).toUpperCase()}
+                            </Text>
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <Text style={{ fontSize: 17, fontWeight: '700', color: '#fff' }}>
+                                {selectedUser.full_name}
+                            </Text>
+                            <Text style={{ fontSize: 13, color: 'rgba(255, 255, 255, 0.75)' }}>
+                                {selectedUser.email}
+                            </Text>
+                        </View>
+                        <TouchableOpacity onPress={() => setSelectedUser(null)}>
+                            <SymbolView name="xmark.circle.fill" size={28} tintColor="rgba(255, 255, 255, 0.75)" />
+                        </TouchableOpacity>
                     </View>
                 )}
             </View>
 
-            {/* Montant */}
-            <View className="mb-8">
-                <Text className="text-gray-700 font-semibold mb-2">Montant (EPC)</Text>
-                <View className="flex-row items-center border border-gray-300 rounded-xl bg-gray-50 px-4 py-3 focus:border-epitech-blue">
-                    <Text className="text-gray-500 font-bold mr-2">EPC</Text>
-                    <TextInput
-                        className="flex-1 text-gray-900 text-2xl font-bold"
-                        placeholder="0.00"
-                        value={amount}
-                        onChangeText={setAmount}
-                        keyboardType="numeric"
-                        placeholderTextColor="#9ca3af"
-                    />
+            {/* Section Montant */}
+            <View style={{ marginBottom: 24 }}>
+                <Text style={{
+                    fontSize: 15,
+                    fontWeight: '600',
+                    color: Colors.label,
+                    marginBottom: 12,
+                }}>
+                    Montant
+                </Text>
+                <View style={{
+                    backgroundColor: Colors.secondarySystemGroupedBackground,
+                    borderRadius: 16,
+                    borderCurve: 'continuous',
+                    padding: 20,
+                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
+                }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <TextInput
+                            style={{
+                                flex: 1,
+                                fontSize: 40,
+                                fontWeight: '700',
+                                color: Colors.label,
+                                fontVariant: ['tabular-nums'],
+                            }}
+                            placeholder="0"
+                            placeholderTextColor={Colors.tertiaryLabel}
+                            value={amount}
+                            onChangeText={setAmount}
+                            keyboardType="decimal-pad"
+                        />
+                        <Text style={{
+                            fontSize: 24,
+                            fontWeight: '700',
+                            color: Colors.epitechBlue,
+                            marginLeft: 8,
+                        }}>
+                            EPC
+                        </Text>
+                    </View>
+                    {amount && parseFloat(amount) > balance && (
+                        <View style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            marginTop: 12,
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            padding: 12,
+                            borderRadius: 8,
+                            borderCurve: 'continuous',
+                        }}>
+                            <SymbolView name="exclamationmark.triangle.fill" size={16} tintColor={Colors.systemRed} />
+                            <Text style={{
+                                fontSize: 13,
+                                color: Colors.systemRed,
+                                marginLeft: 8,
+                                fontWeight: '600',
+                            }}>
+                                Solde insuffisant
+                            </Text>
+                        </View>
+                    )}
                 </View>
             </View>
 
-            {/* Bouton d'envoi */}
+            {/* Section Note */}
+            <View style={{ marginBottom: 32 }}>
+                <Text style={{
+                    fontSize: 15,
+                    fontWeight: '600',
+                    color: Colors.label,
+                    marginBottom: 12,
+                }}>
+                    Note (optionnel)
+                </Text>
+                <View style={{
+                    backgroundColor: Colors.secondarySystemGroupedBackground,
+                    borderRadius: 12,
+                    borderCurve: 'continuous',
+                    padding: 16,
+                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
+                }}>
+                    <TextInput
+                        style={{
+                            fontSize: 16,
+                            color: Colors.label,
+                            minHeight: 80,
+                            textAlignVertical: 'top',
+                        }}
+                        placeholder="Ajouter une note..."
+                        placeholderTextColor={Colors.tertiaryLabel}
+                        value={note}
+                        onChangeText={setNote}
+                        multiline
+                        maxLength={100}
+                    />
+                    <Text style={{
+                        fontSize: 12,
+                        color: Colors.tertiaryLabel,
+                        textAlign: 'right',
+                        marginTop: 8,
+                    }}>
+                        {note.length}/100
+                    </Text>
+                </View>
+            </View>
+
+            {/* Bouton Envoyer */}
             <TouchableOpacity
-                className={`p-5 rounded-2xl items-center shadow-lg flex-row justify-center ${loading ? 'bg-gray-300' : 'bg-epitech-blue shadow-blue-200'}`}
-                onPress={handlePreTransfer}
-                disabled={loading}
+                style={{
+                    backgroundColor: canSend && !processing ? Colors.epitechBlue : Colors.systemFill,
+                    borderRadius: 14,
+                    borderCurve: 'continuous',
+                    padding: 18,
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    boxShadow: canSend && !processing ? '0 4px 12px rgba(0, 145, 211, 0.3)' : 'none',
+                }}
+                onPress={handleSend}
+                disabled={!canSend || processing}
             >
-                {loading ? (
+                {processing ? (
                     <ActivityIndicator color="#fff" />
                 ) : (
                     <>
-                        <Ionicons name="send" size={24} color="white" style={{ marginRight: 8 }} />
-                        <Text className="text-white font-bold text-xl">Envoyer</Text>
+                        <SymbolView name="paperplane.fill" size={20} tintColor={canSend ? '#fff' : Colors.tertiaryLabel} />
+                        <Text style={{
+                            color: canSend ? '#fff' : Colors.tertiaryLabel,
+                            fontSize: 17,
+                            fontWeight: '700',
+                            marginLeft: 8,
+                        }}>
+                            Envoyer {amount ? `${amount} EPC` : ''}
+                        </Text>
                     </>
                 )}
             </TouchableOpacity>
 
-            {/* Confirmation Modal */}
-            <Modal
-                visible={showConfirmModal}
-                transparent={true}
-                animationType="fade"
-                onRequestClose={() => setShowConfirmModal(false)}
-            >
-                <View className="flex-1 justify-center items-center bg-black/50 p-6">
-                    <View className="bg-white rounded-3xl p-6 w-full max-w-sm items-center shadow-2xl">
-                        <View className="bg-blue-50 p-4 rounded-full mb-4">
-                            <Ionicons name="shield-checkmark" size={32} color="#2563eb" />
-                        </View>
-
-                        <Text className="text-xl font-bold text-gray-900 mb-1">Confirmer le transfert</Text>
-                        <Text className="text-gray-500 text-center mb-6">Vérifiez les détails ci-dessous.</Text>
-
-                        {/* Destinataire */}
-                        <View className="w-full bg-gray-50 p-4 rounded-xl mb-4">
-                            <Text className="text-xs text-gray-400 uppercase tracking-wide mb-2">Destinataire</Text>
-                            <View className="flex-row items-center">
-                                <View className="bg-epitech-blue/10 w-12 h-12 rounded-full items-center justify-center mr-3">
-                                    <Ionicons name="person" size={24} color="#2563eb" />
-                                </View>
-                                <View className="flex-1">
-                                    <Text className="font-bold text-gray-900 text-lg" numberOfLines={1}>
-                                        {selectedUser?.full_name || 'Utilisateur'}
-                                    </Text>
-                                    <Text className="text-gray-500 text-sm" numberOfLines={1}>
-                                        {selectedUser?.email}
-                                    </Text>
-                                </View>
-                            </View>
-                        </View>
-
-                        {/* Montant */}
-                        <View className="w-full bg-gray-50 p-4 rounded-xl mb-4">
-                            <Text className="text-xs text-gray-400 uppercase tracking-wide mb-2">Montant</Text>
-                            <View className="flex-row items-center justify-between">
-                                <View className="flex-row items-center">
-                                    <View className="bg-green-100 w-12 h-12 rounded-full items-center justify-center mr-3">
-                                        <Ionicons name="wallet" size={24} color="#16a34a" />
-                                    </View>
-                                    <Text className="text-gray-500">Vous envoyez</Text>
-                                </View>
-                                <Text className="text-2xl font-bold text-epitech-blue">{amount} EPC</Text>
-                            </View>
-                        </View>
-
-                        {/* Méthode d'authentification */}
-                        <View className="w-full bg-amber-50 p-4 rounded-xl mb-6 border border-amber-200">
-                            <View className="flex-row items-center">
-                                <View className="bg-amber-100 w-10 h-10 rounded-full items-center justify-center mr-3">
-                                    <Ionicons 
-                                        name={authMethod === 'biometric' ? getBiometricIcon() as any : 'key'} 
-                                        size={20} 
-                                        color="#d97706" 
-                                    />
-                                </View>
-                                <View className="flex-1">
-                                    <Text className="text-amber-800 font-semibold">
-                                        {authMethod === 'biometric' 
-                                            ? `Authentification par ${getBiometricLabel()}`
-                                            : 'Authentification par mot de passe'
-                                        }
-                                    </Text>
-                                    <Text className="text-amber-600 text-xs">
-                                        {authMethod === 'biometric'
-                                            ? 'Utilisez votre biométrie pour confirmer'
-                                            : 'Entrez votre mot de passe pour confirmer'
-                                        }
-                                    </Text>
-                                </View>
-                            </View>
-                        </View>
-
-                        {/* Password Input (si biométrie non disponible ou échouée) */}
-                        {authMethod === 'password' && (
-                            <View className="w-full mb-4">
-                                <Text className="text-gray-700 font-semibold mb-2">Mot de passe</Text>
-                                <View className="flex-row items-center border border-gray-300 rounded-xl bg-gray-50 px-4 py-3">
-                                    <Ionicons name="lock-closed-outline" size={20} color="#6b7280" style={{ marginRight: 10 }} />
-                                    <TextInput
-                                        className="flex-1 text-gray-900 text-base"
-                                        placeholder="Entrez votre mot de passe"
-                                        value={password}
-                                        onChangeText={setPassword}
-                                        secureTextEntry
-                                        placeholderTextColor="#9ca3af"
-                                        autoCapitalize="none"
-                                    />
-                                </View>
-                            </View>
-                        )}
-
-                        <View className="flex-row gap-3 w-full">
-                            <TouchableOpacity
-                                className="flex-1 bg-gray-100 p-4 rounded-xl items-center"
-                                onPress={() => {
-                                    setShowConfirmModal(false);
-                                    setPassword('');
-                                }}
-                            >
-                                <Text className="text-gray-700 font-bold">Annuler</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                className="flex-1 bg-epitech-blue p-4 rounded-xl items-center flex-row justify-center"
-                                onPress={handleConfirm}
-                                disabled={verifying}
-                            >
-                                {verifying ? (
-                                    <ActivityIndicator color="#fff" />
-                                ) : (
-                                    <>
-                                        <Ionicons 
-                                            name={authMethod === 'biometric' ? getBiometricIcon() as any : 'checkmark-circle'} 
-                                            size={20} 
-                                            color="white" 
-                                            style={{ marginRight: 6 }}
-                                        />
-                                        <Text className="text-white font-bold">
-                                            {authMethod === 'biometric' ? getBiometricLabel() : 'Confirmer'}
-                                        </Text>
-                                    </>
-                                )}
-                            </TouchableOpacity>
-                        </View>
-                    </View>
+            {biometricAvailable && (
+                <View style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginTop: 16,
+                }}>
+                    <SymbolView name="faceid" size={16} tintColor={Colors.tertiaryLabel} />
+                    <Text style={{
+                        color: Colors.tertiaryLabel,
+                        fontSize: 13,
+                        marginLeft: 8,
+                    }}>
+                        Authentification biométrique activée
+                    </Text>
                 </View>
-            </Modal>
-        </View>
+            )}
+        </ScrollView>
     );
 }
-

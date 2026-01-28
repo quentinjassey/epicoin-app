@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { SymbolView } from 'expo-symbols';
 import React, { useEffect, useState } from 'react';
 import { 
     ActivityIndicator, 
@@ -7,10 +7,12 @@ import {
     Text, 
     TextInput, 
     TouchableOpacity, 
-    View 
+    View,
+    Switch,
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { supabase } from '../../lib/supabase';
+import { Colors } from '@/constants/NativeColors';
 
 interface FraudConfig {
     ml_weight: number;
@@ -57,7 +59,6 @@ export default function FraudConfigScreen() {
     }
 
     async function saveConfig() {
-        // Validation
         if (config.ml_weight + config.heuristic_weight !== 1.00) {
             Alert.alert('Erreur', 'La somme des poids ML et heuristique doit être égale à 100%');
             return;
@@ -91,7 +92,7 @@ export default function FraudConfigScreen() {
             }
 
             Alert.alert('Succès', 'Configuration mise à jour avec succès');
-            fetchConfig(); // Recharger pour vérifier
+            fetchConfig();
         } catch (error: any) {
             console.error('Error saving config:', error);
             Alert.alert('Erreur', error.message);
@@ -134,258 +135,295 @@ export default function FraudConfigScreen() {
 
     if (loading) {
         return (
-            <View className="flex-1 justify-center items-center bg-gray-50">
-                <ActivityIndicator size="large" color="#0091D3" />
+            <View style={{
+                flex: 1,
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: Colors.systemGroupedBackground,
+            }}>
+                <ActivityIndicator size="large" color={Colors.epitechBlue} />
             </View>
         );
     }
 
     return (
-        <ScrollView className="flex-1 bg-gray-50">
-            <View className="p-6">
-                {/* Header */}
-                <View className="bg-purple-600 rounded-2xl p-6 mb-6">
-                    <View className="flex-row items-center mb-2">
-                        <Ionicons name="settings" size={24} color="white" />
-                        <Text className="text-white font-bold text-xl ml-2">
-                            Configuration du système de fraude
+        <ScrollView 
+            contentInsetAdjustmentBehavior="automatic"
+            style={{ flex: 1, backgroundColor: Colors.systemGroupedBackground }}
+            contentContainerStyle={{ padding: 24 }}
+        >
+            {/* Header */}
+            <View style={{
+                backgroundColor: Colors.systemPurple,
+                borderRadius: 16,
+                borderCurve: 'continuous',
+                padding: 24,
+                marginBottom: 24,
+            }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                    <SymbolView name="slider.horizontal.3" size={24} tintColor="#fff" />
+                    <Text style={{
+                        color: '#fff',
+                        fontWeight: '700',
+                        fontSize: 20,
+                        marginLeft: 8,
+                    }}>
+                        Configuration Fraude
+                    </Text>
+                </View>
+                <Text style={{ color: 'rgba(255, 255, 255, 0.75)', fontSize: 15 }}>
+                    Ajustez les poids et seuils du système de détection
+                </Text>
+            </View>
+
+            {/* ML vs Heuristic Weight */}
+            <View style={{
+                backgroundColor: Colors.secondarySystemGroupedBackground,
+                borderRadius: 16,
+                borderCurve: 'continuous',
+                padding: 20,
+                marginBottom: 24,
+            }}>
+                <Text style={{
+                    fontSize: 17,
+                    fontWeight: '700',
+                    color: Colors.label,
+                    marginBottom: 16,
+                }}>
+                    Pondération ML vs Heuristique
+                </Text>
+
+                <View style={{ marginBottom: 20 }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
+                        <Text style={{ color: Colors.secondaryLabel, fontSize: 15 }}>ML (Machine Learning)</Text>
+                        <Text style={{
+                            fontWeight: '700',
+                            color: Colors.systemPurple,
+                            fontSize: 17,
+                            fontVariant: ['tabular-nums'],
+                        }}>
+                            {(config.ml_weight * 100).toFixed(0)}%
                         </Text>
                     </View>
-                    <Text className="text-purple-100">
-                        Personnalisez les paramètres de détection et les seuils de décision
+                    <Slider
+                        style={{ width: '100%', height: 40 }}
+                        minimumValue={0}
+                        maximumValue={1}
+                        step={0.05}
+                        value={config.ml_weight}
+                        onValueChange={updateMLWeight}
+                        minimumTrackTintColor="#8B5CF6"
+                        maximumTrackTintColor="rgba(120, 120, 128, 0.2)"
+                        thumbTintColor="#8B5CF6"
+                    />
+                </View>
+
+                <View>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
+                        <Text style={{ color: Colors.secondaryLabel, fontSize: 15 }}>Heuristique (Règles)</Text>
+                        <Text style={{
+                            fontWeight: '700',
+                            color: Colors.systemBlue,
+                            fontSize: 17,
+                            fontVariant: ['tabular-nums'],
+                        }}>
+                            {(config.heuristic_weight * 100).toFixed(0)}%
+                        </Text>
+                    </View>
+                    <View style={{
+                        height: 8,
+                        backgroundColor: Colors.systemFill,
+                        borderRadius: 4,
+                        borderCurve: 'continuous',
+                        overflow: 'hidden',
+                    }}>
+                        <View style={{
+                            height: '100%',
+                            width: `${config.heuristic_weight * 100}%`,
+                            backgroundColor: Colors.systemBlue,
+                        }} />
+                    </View>
+                </View>
+            </View>
+
+            {/* Thresholds */}
+            <View style={{
+                backgroundColor: Colors.secondarySystemGroupedBackground,
+                borderRadius: 16,
+                borderCurve: 'continuous',
+                padding: 20,
+                marginBottom: 24,
+            }}>
+                <Text style={{
+                    fontSize: 17,
+                    fontWeight: '700',
+                    color: Colors.label,
+                    marginBottom: 16,
+                }}>
+                    Seuils de décision
+                </Text>
+
+                <View style={{ marginBottom: 20 }}>
+                    <Text style={{ color: Colors.secondaryLabel, fontSize: 15, marginBottom: 8 }}>
+                        Seuil d'approbation automatique
+                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                        <TextInput
+                            style={{
+                                flex: 1,
+                                backgroundColor: Colors.systemFill,
+                                borderRadius: 12,
+                                borderCurve: 'continuous',
+                                padding: 12,
+                                fontSize: 16,
+                                color: Colors.label,
+                                fontWeight: '700',
+                                fontVariant: ['tabular-nums'],
+                            }}
+                            value={config.threshold_approve.toString()}
+                            onChangeText={(text) => setConfig({ ...config, threshold_approve: parseInt(text) || 0 })}
+                            keyboardType="number-pad"
+                        />
+                        <Text style={{ color: Colors.secondaryLabel, fontSize: 15 }}>/ 100</Text>
+                    </View>
+                    <Text style={{ color: Colors.tertiaryLabel, fontSize: 13, marginTop: 8 }}>
+                        Scores inférieurs sont approuvés automatiquement
                     </Text>
                 </View>
 
-                {/* Poids ML vs Heuristique */}
-                <View className="bg-white rounded-2xl p-5 mb-4 shadow-sm border border-gray-100">
-                    <View className="flex-row items-center mb-4">
-                        <View className="bg-blue-100 p-2.5 rounded-full mr-3">
-                            <Ionicons name="analytics" size={20} color="#2563eb" />
-                        </View>
-                        <View className="flex-1">
-                            <Text className="text-lg font-bold text-gray-900">
-                                Répartition des scores
-                            </Text>
-                            <Text className="text-gray-500 text-sm">
-                                Équilibre entre Machine Learning et règles heuristiques
-                            </Text>
-                        </View>
+                <View>
+                    <Text style={{ color: Colors.secondaryLabel, fontSize: 15, marginBottom: 8 }}>
+                        Seuil de révision manuelle
+                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                        <TextInput
+                            style={{
+                                flex: 1,
+                                backgroundColor: Colors.systemFill,
+                                borderRadius: 12,
+                                borderCurve: 'continuous',
+                                padding: 12,
+                                fontSize: 16,
+                                color: Colors.label,
+                                fontWeight: '700',
+                                fontVariant: ['tabular-nums'],
+                            }}
+                            value={config.threshold_review.toString()}
+                            onChangeText={(text) => setConfig({ ...config, threshold_review: parseInt(text) || 0 })}
+                            keyboardType="number-pad"
+                        />
+                        <Text style={{ color: Colors.secondaryLabel, fontSize: 15 }}>/ 100</Text>
                     </View>
+                    <Text style={{ color: Colors.tertiaryLabel, fontSize: 13, marginTop: 8 }}>
+                        Scores entre {config.threshold_approve} et {config.threshold_review} nécessitent une révision
+                    </Text>
+                </View>
+            </View>
 
-                    {/* Visualisation des poids */}
-                    <View className="mb-6">
-                        <View className="flex-row justify-between mb-3">
-                            <View className="flex-1 mr-2">
-                                <View className="bg-blue-50 p-4 rounded-xl border border-blue-200">
-                                    <Text className="text-blue-600 text-xs font-medium mb-1">
-                                        Machine Learning
-                                    </Text>
-                                    <Text className="text-blue-900 text-2xl font-bold">
-                                        {Math.round(config.ml_weight * 100)}%
-                                    </Text>
-                                </View>
-                            </View>
-                            <View className="flex-1 ml-2">
-                                <View className="bg-green-50 p-4 rounded-xl border border-green-200">
-                                    <Text className="text-green-600 text-xs font-medium mb-1">
-                                        Règles Heuristiques
-                                    </Text>
-                                    <Text className="text-green-900 text-2xl font-bold">
-                                        {Math.round(config.heuristic_weight * 100)}%
-                                    </Text>
-                                </View>
-                            </View>
-                        </View>
+            {/* Visualization */}
+            <View style={{
+                backgroundColor: Colors.secondarySystemGroupedBackground,
+                borderRadius: 16,
+                borderCurve: 'continuous',
+                padding: 20,
+                marginBottom: 24,
+            }}>
+                <Text style={{
+                    fontSize: 17,
+                    fontWeight: '700',
+                    color: Colors.label,
+                    marginBottom: 16,
+                }}>
+                    Zones de décision
+                </Text>
 
-                        {/* Slider pour ajuster */}
-                        <View className="bg-gray-50 p-4 rounded-xl">
-                            <Text className="text-gray-700 font-medium mb-2">
-                                Ajuster la répartition
-                            </Text>
-                            <Slider
-                                style={{ width: '100%', height: 40 }}
-                                minimumValue={0}
-                                maximumValue={1}
-                                step={0.05}
-                                value={config.ml_weight}
-                                onValueChange={updateMLWeight}
-                                minimumTrackTintColor="#2563eb"
-                                maximumTrackTintColor="#16a34a"
-                                thumbTintColor="#9333ea"
-                            />
-                            <View className="flex-row justify-between mt-1">
-                                <Text className="text-xs text-gray-500">100% ML</Text>
-                                <Text className="text-xs text-gray-500">100% Heuristique</Text>
-                            </View>
-                        </View>
-
-                        {/* Recommandation */}
-                        <View className="bg-amber-50 p-3 rounded-xl mt-3 border border-amber-200">
-                            <View className="flex-row items-start">
-                                <Ionicons name="bulb" size={16} color="#d97706" style={{ marginTop: 2 }} />
-                                <Text className="text-amber-800 text-xs ml-2 flex-1">
-                                    <Text className="font-bold">Recommandation :</Text> 40% ML / 60% Heuristique 
-                                    offre un bon équilibre entre précision et explicabilité.
-                                </Text>
-                            </View>
-                        </View>
+                <View style={{ gap: 12 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View style={{
+                            width: 12,
+                            height: 12,
+                            backgroundColor: Colors.systemGreen,
+                            borderRadius: 6,
+                            borderCurve: 'continuous',
+                            marginRight: 8,
+                        }} />
+                        <Text style={{ color: Colors.label, fontSize: 14 }}>
+                            0 - {config.threshold_approve} : Approbation auto
+                        </Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View style={{
+                            width: 12,
+                            height: 12,
+                            backgroundColor: Colors.systemOrange,
+                            borderRadius: 6,
+                            borderCurve: 'continuous',
+                            marginRight: 8,
+                        }} />
+                        <Text style={{ color: Colors.label, fontSize: 14 }}>
+                            {config.threshold_approve} - {config.threshold_review} : Révision manuelle
+                        </Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View style={{
+                            width: 12,
+                            height: 12,
+                            backgroundColor: Colors.systemRed,
+                            borderRadius: 6,
+                            borderCurve: 'continuous',
+                            marginRight: 8,
+                        }} />
+                        <Text style={{ color: Colors.label, fontSize: 14 }}>
+                            {config.threshold_review} - 100 : Blocage auto
+                        </Text>
                     </View>
                 </View>
+            </View>
 
-                {/* Seuils de décision */}
-                <View className="bg-white rounded-2xl p-5 mb-4 shadow-sm border border-gray-100">
-                    <View className="flex-row items-center mb-4">
-                        <View className="bg-orange-100 p-2.5 rounded-full mr-3">
-                            <Ionicons name="speedometer" size={20} color="#ea580c" />
-                        </View>
-                        <View className="flex-1">
-                            <Text className="text-lg font-bold text-gray-900">
-                                Seuils de décision
-                            </Text>
-                            <Text className="text-gray-500 text-sm">
-                                Définissez à partir de quel score une transaction est considérée comme frauduleuse
-                            </Text>
-                        </View>
-                    </View>
+            {/* Actions */}
+            <View style={{ gap: 12 }}>
+                <TouchableOpacity
+                    style={{
+                        backgroundColor: Colors.epitechBlue,
+                        borderRadius: 14,
+                        borderCurve: 'continuous',
+                        padding: 16,
+                        alignItems: 'center',
+                    }}
+                    onPress={saveConfig}
+                    disabled={saving}
+                >
+                    {saving ? (
+                        <ActivityIndicator color="#fff" />
+                    ) : (
+                        <Text style={{
+                            color: '#fff',
+                            fontSize: 17,
+                            fontWeight: '700',
+                        }}>
+                            Enregistrer la configuration
+                        </Text>
+                    )}
+                </TouchableOpacity>
 
-                    {/* Visualisation des zones */}
-                    <View className="mb-4">
-                        <View className="h-12 flex-row rounded-xl overflow-hidden mb-3">
-                            <View 
-                                className="bg-green-500 justify-center items-center" 
-                                style={{ width: `${config.threshold_approve}%` }}
-                            >
-                                <Text className="text-white text-xs font-bold">Approuvé</Text>
-                            </View>
-                            <View 
-                                className="bg-amber-500 justify-center items-center" 
-                                style={{ width: `${config.threshold_review - config.threshold_approve}%` }}
-                            >
-                                <Text className="text-white text-xs font-bold">Révision</Text>
-                            </View>
-                            <View 
-                                className="bg-red-500 justify-center items-center" 
-                                style={{ width: `${100 - config.threshold_review}%` }}
-                            >
-                                <Text className="text-white text-xs font-bold">Bloqué</Text>
-                            </View>
-                        </View>
-
-                        {/* Seuil d'approbation */}
-                        <View className="mb-4">
-                            <View className="flex-row justify-between items-center mb-2">
-                                <Text className="text-gray-700 font-medium">
-                                    Seuil d'approbation automatique
-                                </Text>
-                                <View className="bg-green-100 px-3 py-1.5 rounded-full">
-                                    <Text className="text-green-700 font-bold">
-                                        0-{config.threshold_approve}
-                                    </Text>
-                                </View>
-                            </View>
-                            <Slider
-                                style={{ width: '100%', height: 40 }}
-                                minimumValue={0}
-                                maximumValue={config.threshold_review - 5}
-                                step={5}
-                                value={config.threshold_approve}
-                                onValueChange={(value) => setConfig({ ...config, threshold_approve: value })}
-                                minimumTrackTintColor="#16a34a"
-                                maximumTrackTintColor="#d1d5db"
-                                thumbTintColor="#16a34a"
-                            />
-                            <Text className="text-xs text-gray-500 mt-1">
-                                Les transactions avec un score inférieur ou égal à {config.threshold_approve} seront 
-                                <Text className="font-bold text-green-600"> approuvées automatiquement</Text>
-                            </Text>
-                        </View>
-
-                        {/* Seuil de révision */}
-                        <View className="mb-4">
-                            <View className="flex-row justify-between items-center mb-2">
-                                <Text className="text-gray-700 font-medium">
-                                    Seuil de révision manuelle
-                                </Text>
-                                <View className="bg-amber-100 px-3 py-1.5 rounded-full">
-                                    <Text className="text-amber-700 font-bold">
-                                        {config.threshold_approve + 1}-{config.threshold_review}
-                                    </Text>
-                                </View>
-                            </View>
-                            <Slider
-                                style={{ width: '100%', height: 40 }}
-                                minimumValue={config.threshold_approve + 5}
-                                maximumValue={95}
-                                step={5}
-                                value={config.threshold_review}
-                                onValueChange={(value) => setConfig({ ...config, threshold_review: value })}
-                                minimumTrackTintColor="#f59e0b"
-                                maximumTrackTintColor="#d1d5db"
-                                thumbTintColor="#f59e0b"
-                            />
-                            <Text className="text-xs text-gray-500 mt-1">
-                                Les transactions entre {config.threshold_approve + 1} et {config.threshold_review} nécessiteront 
-                                <Text className="font-bold text-amber-600"> une révision manuelle</Text>
-                            </Text>
-                        </View>
-
-                        {/* Zone de blocage (automatique) */}
-                        <View className="bg-red-50 p-3 rounded-xl border border-red-200">
-                            <View className="flex-row items-center mb-1">
-                                <Ionicons name="shield-checkmark" size={16} color="#dc2626" />
-                                <Text className="text-red-700 font-bold text-sm ml-2">
-                                    Zone de blocage automatique
-                                </Text>
-                            </View>
-                            <Text className="text-red-600 text-xs">
-                                Les transactions avec un score supérieur à {config.threshold_review} seront 
-                                <Text className="font-bold"> bloquées automatiquement</Text>
-                            </Text>
-                        </View>
-                    </View>
-                </View>
-
-                {/* Actions */}
-                <View className="flex-row gap-3 mb-6">
-                    <TouchableOpacity
-                        className="flex-1 bg-gray-200 py-4 rounded-xl items-center flex-row justify-center"
-                        onPress={resetToDefaults}
-                    >
-                        <Ionicons name="refresh" size={20} color="#374151" />
-                        <Text className="text-gray-700 font-bold ml-2">Réinitialiser</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        className={`flex-1 py-4 rounded-xl items-center flex-row justify-center ${
-                            saving ? 'bg-gray-400' : 'bg-purple-600'
-                        }`}
-                        onPress={saveConfig}
-                        disabled={saving}
-                    >
-                        {saving ? (
-                            <ActivityIndicator color="white" size="small" />
-                        ) : (
-                            <>
-                                <Ionicons name="save" size={20} color="white" />
-                                <Text className="text-white font-bold ml-2">Enregistrer</Text>
-                            </>
-                        )}
-                    </TouchableOpacity>
-                </View>
-
-                {/* Info */}
-                <View className="bg-blue-50 p-4 rounded-xl border border-blue-200">
-                    <View className="flex-row items-start">
-                        <Ionicons name="information-circle" size={20} color="#2563eb" style={{ marginTop: 1 }} />
-                        <View className="flex-1 ml-3">
-                            <Text className="text-blue-900 font-bold mb-1">À propos de cette configuration</Text>
-                            <Text className="text-blue-800 text-xs leading-5">
-                                Ces paramètres affectent tous les calculs de score de fraude en temps réel. 
-                                Les modifications seront appliquées immédiatement aux nouvelles transactions.
-                            </Text>
-                        </View>
-                    </View>
-                </View>
+                <TouchableOpacity
+                    style={{
+                        backgroundColor: Colors.systemFill,
+                        borderRadius: 14,
+                        borderCurve: 'continuous',
+                        padding: 16,
+                        alignItems: 'center',
+                    }}
+                    onPress={resetToDefaults}
+                >
+                    <Text style={{
+                        color: Colors.label,
+                        fontSize: 17,
+                        fontWeight: '600',
+                    }}>
+                        Réinitialiser aux valeurs par défaut
+                    </Text>
+                </TouchableOpacity>
             </View>
         </ScrollView>
     );

@@ -6,7 +6,6 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
-import '../global.css';
 
 import { useColorScheme } from '@/components/useColorScheme';
 import { supabase } from '../lib/supabase';
@@ -16,7 +15,7 @@ export {
 } from 'expo-router';
 
 export const unstable_settings = {
-    initialRouteName: '(tabs)',
+    initialRouteName: '(main)',
 };
 
 SplashScreen.preventAutoHideAsync();
@@ -70,7 +69,7 @@ function RootLayoutNav() {
         const inAuthGroup = segments[0] === '(auth)';
 
         if (session && inAuthGroup) {
-            router.replace('/(tabs)');
+            router.replace('/(main)/(wallet)' as any);
         } else if (!session && !inAuthGroup) {
             router.replace('/(auth)/sign-in');
         }
@@ -100,47 +99,15 @@ function RootLayoutNav() {
     return (
         <ThemeProvider value={colorScheme === 'dark' ? EpitechDarkTheme : EpitechLightTheme}>
             <Stack>
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="(main)" options={{ headerShown: false }} />
                 <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-                <Stack.Screen 
-                    name="admin/index" 
-                    options={{ 
-                        presentation: 'modal', 
-                        title: 'Administration',
-                        headerTintColor: '#0091D3',
-                    }} 
-                />
-                <Stack.Screen 
-                    name="admin/products" 
-                    options={{ 
-                        title: 'Produits',
-                        headerTintColor: '#0091D3',
-                    }} 
-                />
-                <Stack.Screen 
-                    name="admin/users" 
-                    options={{ 
-                        title: 'Utilisateurs',
-                        headerTintColor: '#0091D3',
-                    }} 
-                />
-                <Stack.Screen 
-                    name="admin/transactions" 
-                    options={{ 
-                        title: 'Transactions',
-                        headerTintColor: '#0091D3',
-                    }} 
-                />
-                <Stack.Screen 
-                    name="admin/fraud" 
-                    options={{ 
-                        title: 'Alertes Fraude',
-                        headerTintColor: '#0091D3',
-                    }} 
-                />
+                <Stack.Screen name="admin" options={{ headerShown: false }} />
                 <Stack.Screen 
                     name="send" 
                     options={{ 
+                        presentation: 'formSheet',
+                        sheetGrabberVisible: true,
+                        sheetAllowedDetents: [0.9],
                         title: 'Envoyer',
                         headerTintColor: '#0091D3',
                     }} 
@@ -148,6 +115,9 @@ function RootLayoutNav() {
                 <Stack.Screen 
                     name="pay" 
                     options={{ 
+                        presentation: 'formSheet',
+                        sheetGrabberVisible: true,
+                        sheetAllowedDetents: [0.85],
                         title: 'Payer',
                         headerShown: false,
                     }} 
@@ -155,6 +125,9 @@ function RootLayoutNav() {
                 <Stack.Screen 
                     name="top-up" 
                     options={{ 
+                        presentation: 'formSheet',
+                        sheetGrabberVisible: true,
+                        sheetAllowedDetents: [0.85],
                         title: 'Recharger',
                         headerTintColor: '#0091D3',
                     }} 

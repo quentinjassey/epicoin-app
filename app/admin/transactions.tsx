@@ -1,9 +1,10 @@
-import { Ionicons } from '@expo/vector-icons';
+import { SymbolView } from 'expo-symbols';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, RefreshControl, Text, View } from 'react-native';
 import { supabase } from '../../lib/supabase';
+import { Colors } from '@/constants/NativeColors';
 
 type Transaction = {
     id: string;
@@ -61,49 +62,129 @@ export default function AdminTransactions() {
 
     function getTypeLabel(type: string) {
         switch (type) {
-            case 'transfer': return { label: 'Transfert', bg: 'bg-blue-100', text: 'text-blue-700' };
-            case 'top_up': return { label: 'Rechargement', bg: 'bg-green-100', text: 'text-green-700' };
-            case 'payment': return { label: 'Paiement', bg: 'bg-purple-100', text: 'text-purple-700' };
-            default: return { label: type, bg: 'bg-gray-100', text: 'text-gray-700' };
+            case 'transfer': return { 
+                label: 'Transfert', 
+                bg: 'rgba(59, 130, 246, 0.15)', 
+                color: Colors.systemBlue 
+            };
+            case 'top_up': return { 
+                label: 'Rechargement', 
+                bg: 'rgba(16, 185, 129, 0.15)', 
+                color: Colors.systemGreen 
+            };
+            case 'payment': return { 
+                label: 'Paiement', 
+                bg: 'rgba(139, 92, 246, 0.15)', 
+                color: Colors.systemPurple 
+            };
+            default: return { 
+                label: type, 
+                bg: Colors.systemFill, 
+                color: Colors.secondaryLabel 
+            };
         }
     }
 
     function getStatusLabel(status: string) {
         switch (status) {
-            case 'completed': return { label: 'Complété', bg: 'bg-green-100', text: 'text-green-700' };
-            case 'pending': return { label: 'En attente', bg: 'bg-amber-100', text: 'text-amber-700' };
-            case 'pending_review': return { label: 'En attente', bg: 'bg-amber-100', text: 'text-amber-700' };
-            case 'failed': return { label: 'Échoué', bg: 'bg-red-100', text: 'text-red-700' };
-            default: return { label: status, bg: 'bg-gray-100', text: 'text-gray-700' };
+            case 'completed': return { 
+                label: 'Complété', 
+                bg: 'rgba(16, 185, 129, 0.15)', 
+                color: Colors.systemGreen 
+            };
+            case 'pending': 
+            case 'pending_review': return { 
+                label: 'En attente', 
+                bg: 'rgba(245, 158, 11, 0.15)', 
+                color: Colors.systemOrange 
+            };
+            case 'failed': return { 
+                label: 'Échoué', 
+                bg: 'rgba(239, 68, 68, 0.15)', 
+                color: Colors.systemRed 
+            };
+            default: return { 
+                label: status, 
+                bg: Colors.systemFill, 
+                color: Colors.secondaryLabel 
+            };
         }
     }
 
     function getFraudRiskLevel(score?: number) {
-        if (score === undefined || score === null) return { label: 'N/A', bg: 'bg-gray-50', text: 'text-gray-500', icon: 'help-circle-outline' };
-        if (score <= 30) return { label: 'Faible', bg: 'bg-green-50', text: 'text-green-700', icon: 'shield-checkmark' };
-        if (score <= 70) return { label: 'Moyen', bg: 'bg-amber-50', text: 'text-amber-700', icon: 'warning' };
-        return { label: 'Élevé', bg: 'bg-red-50', text: 'text-red-700', icon: 'alert-circle' };
+        if (score === undefined || score === null) return { 
+            label: 'N/A', 
+            bg: Colors.systemFill, 
+            color: Colors.tertiaryLabel 
+        };
+        if (score <= 30) return { 
+            label: 'Faible', 
+            bg: 'rgba(16, 185, 129, 0.15)', 
+            color: Colors.systemGreen 
+        };
+        if (score <= 70) return { 
+            label: 'Moyen', 
+            bg: 'rgba(245, 158, 11, 0.15)', 
+            color: Colors.systemOrange 
+        };
+        return { 
+            label: 'Élevé', 
+            bg: 'rgba(239, 68, 68, 0.15)', 
+            color: Colors.systemRed 
+        };
     }
 
     const totalAmount = transactions.reduce((sum, tx) => sum + (tx.amount || 0), 0);
 
     return (
-        <View className="flex-1 bg-gray-50">
+        <View style={{ flex: 1, backgroundColor: Colors.systemGroupedBackground }}>
             {/* Stats */}
-            <View className="p-4 flex-row gap-3">
-                <View className="flex-1 bg-white p-4 rounded-xl border border-gray-100">
-                    <Text className="text-gray-500 text-sm">Transactions</Text>
-                    <Text className="text-2xl font-bold text-gray-900">{transactions.length}</Text>
+            <View style={{ padding: 16, flexDirection: 'row', gap: 12 }}>
+                <View style={{
+                    flex: 1,
+                    backgroundColor: Colors.secondarySystemGroupedBackground,
+                    padding: 16,
+                    borderRadius: 12,
+                    borderCurve: 'continuous',
+                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
+                }}>
+                    <Text style={{ color: Colors.secondaryLabel, fontSize: 13, marginBottom: 4 }}>
+                        Transactions
+                    </Text>
+                    <Text style={{
+                        fontSize: 24,
+                        fontWeight: '700',
+                        color: Colors.label,
+                        fontVariant: ['tabular-nums'],
+                    }}>
+                        {transactions.length}
+                    </Text>
                 </View>
-                <View className="flex-1 bg-white p-4 rounded-xl border border-gray-100">
-                    <Text className="text-gray-500 text-sm">Volume total</Text>
-                    <Text className="text-2xl font-bold text-epitech-blue">{totalAmount.toFixed(0)} EPC</Text>
+                <View style={{
+                    flex: 1,
+                    backgroundColor: Colors.secondarySystemGroupedBackground,
+                    padding: 16,
+                    borderRadius: 12,
+                    borderCurve: 'continuous',
+                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
+                }}>
+                    <Text style={{ color: Colors.secondaryLabel, fontSize: 13, marginBottom: 4 }}>
+                        Volume total
+                    </Text>
+                    <Text style={{
+                        fontSize: 24,
+                        fontWeight: '700',
+                        color: Colors.epitechBlue,
+                        fontVariant: ['tabular-nums'],
+                    }}>
+                        {totalAmount.toFixed(0)} EPC
+                    </Text>
                 </View>
             </View>
 
             {loading ? (
-                <View className="flex-1 justify-center items-center">
-                    <ActivityIndicator size="large" color="#0091D3" />
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <ActivityIndicator size="large" color={Colors.epitechBlue} />
                 </View>
             ) : (
                 <FlatList
@@ -114,95 +195,144 @@ export default function AdminTransactions() {
                         <RefreshControl 
                             refreshing={refreshing} 
                             onRefresh={onRefresh}
-                            tintColor="#0091D3"
+                            tintColor={Colors.epitechBlue}
                         />
                     }
                     renderItem={({ item }) => {
-                        const type = getTypeLabel(item.type);
-                        const status = getStatusLabel(item.status);
-                        const fraudRisk = getFraudRiskLevel(item.fraud_score);
-                        const mlActive = item.fraud_features?.ml_active === true;
-                        
+                        const typeInfo = getTypeLabel(item.type);
+                        const statusInfo = getStatusLabel(item.status);
+                        const fraudInfo = getFraudRiskLevel(item.fraud_score);
+                        const hasML = item.fraud_features && Object.keys(item.fraud_features).length > 0;
+
                         return (
-                            <View className="bg-white p-4 rounded-xl mb-3 shadow-sm border border-gray-100">
-                                {/* En-tête avec badges */}
-                                <View className="flex-row justify-between items-start mb-3">
-                                    <View className="flex-row gap-2 flex-wrap flex-1 mr-2">
-                                        <View className={`${type.bg} px-2 py-1 rounded-full`}>
-                                            <Text className={`${type.text} text-xs font-medium`}>{type.label}</Text>
-                                        </View>
-                                        <View className={`${status.bg} px-2 py-1 rounded-full`}>
-                                            <Text className={`${status.text} text-xs font-medium`}>{status.label}</Text>
-                                        </View>
-                                        {/* Badge Fraude */}
-                                        <View className={`${fraudRisk.bg} px-2 py-1 rounded-full flex-row items-center`}>
-                                            <Ionicons name={fraudRisk.icon as any} size={10} color={fraudRisk.text.replace('text-', '')} />
-                                            <Text className={`${fraudRisk.text} text-xs font-medium ml-1`}>
-                                                Risque: {item.fraud_score !== undefined ? `${item.fraud_score}/100` : 'N/A'}
-                                            </Text>
-                                        </View>
-                                        {/* Badge ML */}
-                                        {mlActive && (
-                                            <View className="bg-purple-50 px-2 py-1 rounded-full flex-row items-center">
-                                                <Ionicons name="sparkles" size={10} color="#9333ea" />
-                                                <Text className="text-purple-700 text-xs font-medium ml-1">ML</Text>
-                                            </View>
-                                        )}
+                            <View style={{
+                                backgroundColor: Colors.secondarySystemGroupedBackground,
+                                padding: 16,
+                                borderRadius: 12,
+                                borderCurve: 'continuous',
+                                marginBottom: 12,
+                                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
+                            }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                                    <View style={{
+                                        backgroundColor: typeInfo.bg,
+                                        paddingHorizontal: 10,
+                                        paddingVertical: 4,
+                                        borderRadius: 8,
+                                        borderCurve: 'continuous',
+                                        marginRight: 8,
+                                    }}>
+                                        <Text style={{
+                                            color: typeInfo.color,
+                                            fontSize: 11,
+                                            fontWeight: '700',
+                                            textTransform: 'uppercase',
+                                        }}>
+                                            {typeInfo.label}
+                                        </Text>
                                     </View>
-                                    <Text className="text-gray-400 text-xs">
-                                        {format(new Date(item.created_at), "d MMM 'à' HH:mm", { locale: fr })}
-                                    </Text>
+                                    <View style={{
+                                        backgroundColor: statusInfo.bg,
+                                        paddingHorizontal: 10,
+                                        paddingVertical: 4,
+                                        borderRadius: 8,
+                                        borderCurve: 'continuous',
+                                    }}>
+                                        <Text style={{
+                                            color: statusInfo.color,
+                                            fontSize: 11,
+                                            fontWeight: '700',
+                                        }}>
+                                            {statusInfo.label}
+                                        </Text>
+                                    </View>
                                 </View>
 
-                                {/* Corps de la transaction */}
-                                <View className="flex-row justify-between items-center">
-                                    <View className="flex-1 mr-4">
-                                        <View className="flex-row items-center mb-1">
-                                            <Ionicons name="arrow-up-circle-outline" size={16} color="#9ca3af" />
-                                            <Text className="text-gray-600 text-sm ml-1" numberOfLines={1}>
-                                                {item.sender?.full_name || item.sender?.email || 'Système'}
-                                            </Text>
-                                        </View>
-                                        <View className="flex-row items-center">
-                                            <Ionicons name="arrow-down-circle-outline" size={16} color="#9ca3af" />
-                                            <Text className="text-gray-600 text-sm ml-1" numberOfLines={1}>
-                                                {item.receiver?.full_name || item.receiver?.email || 'Système'}
-                                            </Text>
-                                        </View>
+                                <View style={{ gap: 8 }}>
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                        <Text style={{ color: Colors.secondaryLabel, fontSize: 14 }}>Montant</Text>
+                                        <Text style={{
+                                            fontWeight: '700',
+                                            color: Colors.epitechBlue,
+                                            fontSize: 16,
+                                            fontVariant: ['tabular-nums'],
+                                        }}>
+                                            {item.amount.toFixed(2)} EPC
+                                        </Text>
                                     </View>
-                                    <Text className="text-xl font-bold text-epitech-blue">
-                                        {item.amount?.toFixed(2)} EPC
-                                    </Text>
-                                </View>
-
-                                {/* Détails Fraude (si score > 0) */}
-                                {item.fraud_score !== undefined && item.fraud_score > 0 && (
-                                    <View className="mt-3 pt-3 border-t border-gray-100">
-                                        <View className="flex-row items-center justify-between">
-                                            <View className="flex-row items-center">
-                                                <Ionicons name="shield-outline" size={14} color="#6b7280" />
-                                                <Text className="text-gray-600 text-xs ml-1">Analyse de fraude :</Text>
-                                            </View>
-                                            <View className="flex-row items-center gap-2">
-                                                {mlActive && (
-                                                    <Text className="text-purple-600 text-xs">
-                                                        ML: {item.fraud_features?.ml_score?.toFixed(0) || 'N/A'}
-                                                    </Text>
-                                                )}
-                                                <Text className="text-gray-700 text-xs font-medium">
-                                                    Heuristique: {item.fraud_features?.heuristic_score_raw?.toFixed(0) || item.fraud_score}
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                        <Text style={{ color: Colors.secondaryLabel, fontSize: 14 }}>De</Text>
+                                        <Text style={{ color: Colors.label, fontSize: 13 }} numberOfLines={1}>
+                                            {item.sender?.full_name || 'N/A'}
+                                        </Text>
+                                    </View>
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                        <Text style={{ color: Colors.secondaryLabel, fontSize: 14 }}>À</Text>
+                                        <Text style={{ color: Colors.label, fontSize: 13 }} numberOfLines={1}>
+                                            {item.receiver?.full_name || 'N/A'}
+                                        </Text>
+                                    </View>
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                        <Text style={{ color: Colors.secondaryLabel, fontSize: 14 }}>Date</Text>
+                                        <Text style={{ color: Colors.label, fontSize: 13 }}>
+                                            {format(new Date(item.created_at), "d MMM 'à' HH:mm", { locale: fr })}
+                                        </Text>
+                                    </View>
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <Text style={{ color: Colors.secondaryLabel, fontSize: 14 }}>Risque fraude</Text>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                            <View style={{
+                                                backgroundColor: fraudInfo.bg,
+                                                paddingHorizontal: 8,
+                                                paddingVertical: 2,
+                                                borderRadius: 6,
+                                                borderCurve: 'continuous',
+                                            }}>
+                                                <Text style={{
+                                                    color: fraudInfo.color,
+                                                    fontSize: 11,
+                                                    fontWeight: '600',
+                                                }}>
+                                                    {fraudInfo.label}
                                                 </Text>
                                             </View>
+                                            {hasML && (
+                                                <View style={{
+                                                    backgroundColor: 'rgba(139, 92, 246, 0.15)',
+                                                    paddingHorizontal: 6,
+                                                    paddingVertical: 2,
+                                                    borderRadius: 6,
+                                                    borderCurve: 'continuous',
+                                                }}>
+                                                    <Text style={{
+                                                        color: Colors.systemPurple,
+                                                        fontSize: 10,
+                                                        fontWeight: '700',
+                                                    }}>
+                                                        ML
+                                                    </Text>
+                                                </View>
+                                            )}
                                         </View>
                                     </View>
-                                )}
+                                </View>
                             </View>
                         );
                     }}
                     ListEmptyComponent={
-                        <View className="items-center py-12">
-                            <Ionicons name="receipt-outline" size={48} color="#d1d5db" />
-                            <Text className="text-gray-400 mt-4">Aucune transaction</Text>
+                        <View style={{
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            paddingVertical: 80,
+                        }}>
+                            <SymbolView name="doc.text" size={48} tintColor={Colors.tertiaryLabel} />
+                            <Text style={{
+                                color: Colors.secondaryLabel,
+                                fontSize: 17,
+                                marginTop: 16,
+                            }}>
+                                Aucune transaction
+                            </Text>
                         </View>
                     }
                 />
