@@ -120,10 +120,22 @@ serve(async (req) => {
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-    );
+    // Debug: Vérifier que les variables d'environnement sont disponibles
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    
+    console.log("[Fraud Detection] Environment check:", {
+      hasUrl: !!supabaseUrl,
+      urlLength: supabaseUrl?.length || 0,
+      hasKey: !!supabaseKey,
+      keyLength: supabaseKey?.length || 0
+    });
+
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     const { transaction } = (await req.json()) as {
       transaction: EnrichedTransactionPayload;
@@ -962,28 +974,43 @@ async function callMLModel(features: number[]): Promise<number> {
     features.length,
   );
 
-  const response = await fetch(HF_MODEL_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${HF_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      inputs: features, // Array de 19 nombres
-    }),
-  });
+  // Ajouter un timeout de 10 secondes pour éviter les blocages
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error("[ML] Hugging Face error:", response.status, errorText);
-    throw new Error(`ML model returned ${response.status}: ${errorText}`);
+  try {
+    const response = await fetch(HF_MODEL_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${HF_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        inputs: features, // Array de 19 nombres
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("[ML] Hugging Face error:", response.status, errorText);
+      throw new Error(`ML model returned ${response.status}: ${errorText}`);
+    }
+
+    const result = await response.json();
+    console.log("[ML] Hugging Face response:", JSON.stringify(result));
+
+    // Le modèle enrichi retourne : { fraud_score: number, fraud_probability: number, is_fraud: boolean }
+    const fraudScore = result?.fraud_score || result[0]?.fraud_score || 0;
+
+    return fraudScore;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      throw new Error('ML model timeout after 10 seconds');
+    }
+    throw error;
   }
-
-  const result = await response.json();
-  console.log("[ML] Hugging Face response:", JSON.stringify(result));
-
-  // Le modèle enrichi retourne : { fraud_score: number, fraud_probability: number, is_fraud: boolean }
-  const fraudScore = result?.fraud_score || result[0]?.fraud_score || 0;
-
-  return fraudScore;
 }

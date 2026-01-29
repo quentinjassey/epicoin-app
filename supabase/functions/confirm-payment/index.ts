@@ -39,15 +39,17 @@ serve(async (req) => {
         }
 
         // 2. Check if transaction already exists (Idempotency)
-        const { data: existingTx } = await supabase
+        const { data: existingTx, error: existingError } = await supabase
             .from('transactions')
             .select('id')
             .eq('metadata->>stripe_payment_intent_id', payment_intent_id)
-            .single()
+            .maybeSingle()
 
+        // Si la transaction existe déjà, retourner succès (idempotence)
         if (existingTx) {
+            console.log('[Confirm Payment] Transaction already processed:', existingTx.id)
             return new Response(
-                JSON.stringify({ success: true, message: 'Transaction already processed' }),
+                JSON.stringify({ success: true, status: 'completed', message: 'Transaction already processed' }),
                 { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             )
         }
@@ -98,6 +100,52 @@ serve(async (req) => {
             ? JSON.parse(paymentIntent.metadata.context)
             : {}
 
+        // Utiliser le SDK Supabase au lieu de fetch pour appeler fraud-detection
+        const fraudPayload = {
+            transaction: {
+                // Ancien format (rétrocompatibilité)
+                userId: user.id,
+                amount: amountInEpc,
+                type: 'topup',
+                
+                // Nouveau format enrichi
+                initiator_user_id: user.id,
+                provider: 'stripe',
+                provider_tx_id: payment_intent_id,
+                currency: 'EPC',
+                transaction_type: 'CASHIN',
+                direction: 'incoming',
+                
+                // Timestamps
+                created_at: new Date().toISOString(),
+                provider_created_at: new Date(paymentIntent.created * 1000).toISOString(),
+                executed_at: new Date().toISOString(),
+                
+                // Localisation (depuis le contexte frontend)
+                country: context.country,
+                city: context.city,
+                
+                // Device info
+                device_info: {
+                    ...deviceInfo,
+                    ...context.device_info
+                },
+                
+                // Description
+                description: `Top-up de ${amountInEur}€ via Stripe`,
+                
+                // Métadonnées
+                metadata: {
+                    stripe_payment_intent_id: payment_intent_id,
+                    amount_eur: amountInEur,
+                    payment_method: paymentIntent.payment_method
+                }
+            }
+        }
+
+        console.log('[Confirm Payment] Calling fraud-detection')
+        
+        // Utiliser fetch() comme intercampus-send (méthode qui fonctionne)
         const fraudResponse = await fetch(
             `${Deno.env.get('SUPABASE_URL')}/functions/v1/fraud-detection`,
             {
@@ -106,47 +154,7 @@ serve(async (req) => {
                     'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    transaction: {
-                        // Ancien format (rétrocompatibilité)
-                        userId: user.id,
-                        amount: amountInEpc,
-                        type: 'topup',
-                        
-                        // Nouveau format enrichi
-                        initiator_user_id: user.id,
-                        provider: 'stripe',
-                        provider_tx_id: payment_intent_id,
-                        currency: 'EPC',
-                        transaction_type: 'CASHIN',
-                        direction: 'incoming',
-                        
-                        // Timestamps
-                        created_at: new Date().toISOString(),
-                        provider_created_at: new Date(paymentIntent.created * 1000).toISOString(),
-                        executed_at: new Date().toISOString(),
-                        
-                        // Localisation (depuis le contexte frontend)
-                        country: context.country,
-                        city: context.city,
-                        
-                        // Device info
-                        device_info: {
-                            ...deviceInfo,
-                            ...context.device_info
-                        },
-                        
-                        // Description
-                        description: `Top-up de ${amountInEur}€ via Stripe`,
-                        
-                        // Métadonnées
-                        metadata: {
-                            stripe_payment_intent_id: payment_intent_id,
-                            amount_eur: amountInEur,
-                            payment_method: paymentIntent.payment_method
-                        }
-                    }
-                })
+                body: JSON.stringify(fraudPayload)
             }
         )
 
@@ -157,6 +165,7 @@ serve(async (req) => {
         }
 
         const fraudAnalysis = await fraudResponse.json()
+        console.log('[Confirm Payment] Fraud analysis:', fraudAnalysis)
         console.log('[Confirm Payment] Fraud analysis result:', fraudAnalysis)
 
         let transactionStatus = 'completed'
@@ -256,14 +265,19 @@ serve(async (req) => {
                 .map((r: any) => r.description)
                 .join('; ')
 
-            await supabase.rpc('create_fraud_alert', {
+            const { error: alertError } = await supabase.rpc('create_fraud_alert', {
                 p_transaction_id: insertedTx.id,
                 p_risk_score: fraudAnalysis.riskScore,
                 p_reason: reasonsText,
                 p_fraud_features: fraudAnalysis.features
             })
 
-            console.log('[Confirm Payment] Fraud alert created for transaction:', insertedTx.id)
+            if (alertError) {
+                console.error('[Confirm Payment] Failed to create fraud alert:', alertError)
+                // Continue anyway - the transaction is already recorded
+            } else {
+                console.log('[Confirm Payment] Fraud alert created for transaction:', insertedTx.id)
+            }
         }
 
         // 9. Retourner résultat selon statut (toujours 200 OK pour que supabase.functions.invoke() ne throw pas)

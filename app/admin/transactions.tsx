@@ -281,6 +281,16 @@ export default function AdminTransactions() {
                                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <Text style={{ color: Colors.secondaryLabel, fontSize: 14 }}>Risque fraude</Text>
                                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                            {item.fraud_score !== undefined && item.fraud_score !== null && (
+                                                <Text style={{
+                                                    color: Colors.label,
+                                                    fontSize: 13,
+                                                    fontWeight: '700',
+                                                    fontVariant: ['tabular-nums'],
+                                                }}>
+                                                    {item.fraud_score.toFixed(0)}
+                                                </Text>
+                                            )}
                                             <View style={{
                                                 backgroundColor: fraudInfo.bg,
                                                 paddingHorizontal: 8,

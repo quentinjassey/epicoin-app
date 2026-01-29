@@ -107,30 +107,67 @@ function TopUpContent() {
         return;
       }
 
+      console.log(
+        "[Top-up] Calling confirm-payment with payment_intent_id:",
+        data.id,
+      );
+
       const { data: confirmData, error: confirmError } =
         await supabase.functions.invoke("confirm-payment", {
           body: { payment_intent_id: data.id },
         });
 
-      if (confirmError || !confirmData?.success) {
-        Alert.alert("Erreur", "Impossible de confirmer le paiement.");
+      console.log("[Top-up] Confirm payment response:", {
+        confirmData,
+        confirmError,
+      });
+
+      if (confirmError) {
+        console.error("[Top-up] Confirm payment error:", confirmError);
+        Alert.alert(
+          "Erreur",
+          `Impossible de confirmer le paiement: ${confirmError.message || "Erreur inconnue"}`,
+        );
         setLoading(false);
         return;
       }
 
+      // Gérer les différents statuts de transaction
       if (confirmData.status === "pending_review") {
         Alert.alert(
           "Vérification de sécurité",
           "Votre rechargement a été signalé pour vérification. Vous serez notifié une fois validé.",
           [{ text: "OK", onPress: () => router.back() }],
         );
-      } else {
-        Alert.alert(
-          "Rechargement réussi",
-          `${totalEpc} EPC ont été ajoutés à votre compte${selectedOption.bonus > 0 ? ` (dont ${selectedOption.bonus} de bonus)` : ""} !`,
-          [{ text: "Super !", onPress: () => router.back() }],
-        );
+        setLoading(false);
+        return;
       }
+
+      if (confirmData.status === "blocked") {
+        Alert.alert(
+          "Transaction bloquée",
+          "Votre transaction a été bloquée pour des raisons de sécurité. Un remboursement a été initié.",
+          [{ text: "OK", onPress: () => router.back() }],
+        );
+        setLoading(false);
+        return;
+      }
+
+      if (confirmData.status === "error" || !confirmData?.success) {
+        Alert.alert(
+          "Erreur",
+          confirmData.message || "Impossible de confirmer le paiement.",
+        );
+        setLoading(false);
+        return;
+      }
+
+      // Transaction réussie
+      Alert.alert(
+        "Rechargement réussi",
+        `${totalEpc} EPC ont été ajoutés à votre compte${selectedOption.bonus > 0 ? ` (dont ${selectedOption.bonus} de bonus)` : ""} !`,
+        [{ text: "Super !", onPress: () => router.back() }],
+      );
     } catch (error: any) {
       Alert.alert("Erreur", error.message);
     } finally {
@@ -142,7 +179,7 @@ function TopUpContent() {
     <ScrollView
       contentInsetAdjustmentBehavior="automatic"
       style={{ flex: 1, backgroundColor: Colors.systemGroupedBackground }}
-      contentContainerStyle={{ padding: 24, paddingTop: 100 }}
+      contentContainerStyle={{ padding: 24, paddingBottom: 48 }}
     >
       <View style={{ marginBottom: 32 }}>
         <Text
