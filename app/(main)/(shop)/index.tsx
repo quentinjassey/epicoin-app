@@ -302,12 +302,22 @@ export default function ShopScreen() {
                 fetchProducts();
                 fetchBalance();
             } else {
-                Alert.alert('Erreur', data?.message || 'L\'achat a échoué');
+                const msg = data?.message || 'L\'achat a échoué';
+                // Si le produit a été supprimé ou le stock est épuisé, fermer le modal et rafraîchir
+                if (msg.includes('introuvable') || msg.includes('Stock insuffisant')) {
+                    setShowPurchaseModal(false);
+                    Alert.alert('Produit indisponible', msg);
+                    fetchProducts();
+                } else {
+                    Alert.alert('Erreur', msg);
+                }
             }
         } catch (error: any) {
             Alert.alert('Erreur', error.message);
         } finally {
             setPurchasing(false);
+            fetchProducts();
+            fetchBalance();
         }
     }
 
