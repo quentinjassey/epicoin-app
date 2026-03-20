@@ -112,10 +112,30 @@ function TopUpContent() {
         data.id,
       );
 
-      const { data: confirmData, error: confirmError } =
-        await supabase.functions.invoke("confirm-payment", {
+      // Retry logic: si le réseau coupe après le paiement Stripe, on retente la confirmation
+      const MAX_RETRIES = 3;
+      let confirmData = null;
+      let confirmError = null;
+
+      for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        const result = await supabase.functions.invoke("confirm-payment", {
           body: { payment_intent_id: data.id },
         });
+        confirmData = result.data;
+        confirmError = result.error;
+
+        if (!confirmError) break;
+
+        console.warn(
+          `[Top-up] Confirm attempt ${attempt}/${MAX_RETRIES} failed:`,
+          confirmError.message,
+        );
+
+        if (attempt < MAX_RETRIES) {
+          // Attente exponentielle: 1s, 2s
+          await new Promise((r) => setTimeout(r, attempt * 1000));
+        }
+      }
 
       console.log("[Top-up] Confirm payment response:", {
         confirmData,
@@ -123,10 +143,11 @@ function TopUpContent() {
       });
 
       if (confirmError) {
-        console.error("[Top-up] Confirm payment error:", confirmError);
+        console.error("[Top-up] Confirm payment error after retries:", confirmError);
         Alert.alert(
-          "Erreur",
-          `Impossible de confirmer le paiement: ${confirmError.message || "Erreur inconnue"}`,
+          "Paiement en cours de traitement",
+          "Votre paiement Stripe a été effectué mais la confirmation a échoué. Vos EPC seront crédités automatiquement. Contactez le support si le problème persiste.",
+          [{ text: "OK", onPress: () => router.back() }],
         );
         setLoading(false);
         return;
