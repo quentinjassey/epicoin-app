@@ -90,9 +90,9 @@ export default function SendScreen() {
             return;
         }
 
-        const amountNum = parseFloat(amount);
-        if (!amount || amountNum <= 0) {
-            Alert.alert('Erreur', 'Entrez un montant valide');
+        const amountNum = Math.round(parseFloat(amount) * 100) / 100;
+        if (!amount || isNaN(amountNum) || amountNum < 0.01) {
+            Alert.alert('Erreur', 'Entrez un montant valide (minimum 0.01 EPC)');
             return;
         }
 
@@ -171,7 +171,8 @@ export default function SendScreen() {
         }
     }
 
-    const canSend = selectedUser && amount && parseFloat(amount) > 0 && parseFloat(amount) <= balance;
+    const parsedAmount = Math.round(parseFloat(amount) * 100) / 100;
+    const canSend = selectedUser && amount && parsedAmount >= 0.01 && parsedAmount <= balance;
 
     return (
         <ScrollView
@@ -363,7 +364,13 @@ export default function SendScreen() {
                             placeholder="0"
                             placeholderTextColor={Colors.tertiaryLabel}
                             value={amount}
-                            onChangeText={setAmount}
+                            onChangeText={(text) => {
+                                const sanitized = text.replace(/[^0-9.]/g, '');
+                                if (sanitized.split('.').length > 2) return;
+                                const parts = sanitized.split('.');
+                                if (parts[1] && parts[1].length > 2) return;
+                                setAmount(sanitized);
+                            }}
                             keyboardType="decimal-pad"
                         />
                         <Text style={{
