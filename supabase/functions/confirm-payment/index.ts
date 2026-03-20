@@ -38,18 +38,25 @@ serve(async (req) => {
             throw new Error(`Payment not succeeded. Status: ${paymentIntent.status}`)
         }
 
-        // 2. Check if transaction already exists (Idempotency)
+        // 2. Acquire advisory lock to prevent concurrent confirm calls for the same payment
+        const lockKey = Math.abs(payment_intent_id.split('').reduce((a: number, c: string) => ((a << 5) - a) + c.charCodeAt(0), 0))
+        await supabase.rpc('pg_advisory_xact_lock', { key: lockKey }).catch(() => {
+            // Advisory lock may not be available via RPC, continue with unique index as fallback
+            console.warn('[Confirm Payment] Advisory lock not available, relying on unique index')
+        })
+
+        // 3. Check if transaction already exists (Idempotency)
         const { data: existingTx, error: existingError } = await supabase
             .from('transactions')
-            .select('id')
+            .select('id, status')
             .eq('metadata->>stripe_payment_intent_id', payment_intent_id)
             .maybeSingle()
 
-        // Si la transaction existe déjà, retourner succès (idempotence)
+        // Si la transaction existe déjà, retourner le statut existant (idempotence)
         if (existingTx) {
             console.log('[Confirm Payment] Transaction already processed:', existingTx.id)
             return new Response(
-                JSON.stringify({ success: true, status: 'completed', message: 'Transaction already processed' }),
+                JSON.stringify({ success: true, status: existingTx.status, message: 'Transaction already processed', transaction_id: existingTx.id }),
                 { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             )
         }
