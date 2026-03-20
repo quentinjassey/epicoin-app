@@ -121,6 +121,20 @@ export default function SendScreen() {
                 return;
             }
 
+            // Re-vérifier que le destinataire existe toujours
+            const { data: recipient } = await supabase
+                .from('profiles')
+                .select('id')
+                .eq('id', selectedUser.id)
+                .single();
+
+            if (!recipient) {
+                Alert.alert('Erreur', 'Ce destinataire n\'existe plus');
+                setSelectedUser(null);
+                setProcessing(false);
+                return;
+            }
+
             const context = await collectTransactionContext();
             const payload = buildTransactionPayload({
                 userId: user.id,
