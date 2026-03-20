@@ -115,6 +115,12 @@ export default function SendScreen() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error('Non connecté');
 
+            if (selectedUser.id === user.id) {
+                Alert.alert('Erreur', 'Vous ne pouvez pas vous envoyer des EPC à vous-même');
+                setProcessing(false);
+                return;
+            }
+
             const context = await collectTransactionContext();
             const payload = buildTransactionPayload({
                 userId: user.id,
