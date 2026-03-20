@@ -80,15 +80,21 @@ serve(async (req) => {
         }
 
         const amountInEur = paymentIntent.amount / 100
-        
-        // Récupérer le montant EPC depuis les metadata (inclut le bonus)
-        const amountInEpc = paymentIntent.metadata.epc_amount 
-            ? parseFloat(paymentIntent.metadata.epc_amount)
-            : amountInEur * 5 // Fallback: 1€ = 5 EPC sans bonus
-        
-        const bonus = paymentIntent.metadata.bonus 
+
+        // Récupérer le montant EPC depuis les metadata Stripe (calculé côté serveur, pas côté client)
+        if (!paymentIntent.metadata.epc_amount) {
+            throw new Error('Missing epc_amount in PaymentIntent metadata — cannot trust client-provided amounts')
+        }
+        const amountInEpc = parseFloat(paymentIntent.metadata.epc_amount)
+        const bonus = paymentIntent.metadata.bonus
             ? parseInt(paymentIntent.metadata.bonus)
             : 0
+
+        // Vérification de cohérence : le montant EPC doit correspondre au montant EUR payé
+        const expectedBaseEpc = amountInEur * 5
+        if (amountInEpc < expectedBaseEpc) {
+            throw new Error(`EPC amount mismatch: ${amountInEpc} EPC < expected base ${expectedBaseEpc} EPC for ${amountInEur}€`)
+        }
 
         // 4. Fraud Detection (avant d'incrémenter le solde) - VERSION ENRICHIE
         console.log('[Confirm Payment] Calling fraud-detection for top-up:', {

@@ -57,13 +57,12 @@ function TopUpContent() {
       const context = await collectTransactionContext();
       const totalEpc = getTotalEpc(selectedOption.euros, selectedOption.bonus);
 
+      // Le serveur calcule bonus et epc_amount — on n'envoie que le montant EUR
       const { data, error } = await supabase.functions.invoke(
         "create-payment-intent",
         {
           body: {
             amount: selectedOption.euros,
-            bonus: selectedOption.bonus,
-            epc_amount: totalEpc,
             context: {
               country: context.location_info.country,
               city: context.location_info.city,
