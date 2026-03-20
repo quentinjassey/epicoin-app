@@ -204,13 +204,41 @@ export default function ShopScreen() {
         if (!selectedProduct) return;
 
         setPurchasing(true);
-        const totalPrice = selectedProduct.price_epicoin * quantity;
 
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
                 throw new Error('Session utilisateur introuvable');
             }
+
+            // Re-vérifier le stock en temps réel avant de lancer l'achat
+            const { data: freshProduct } = await supabase
+                .from('products')
+                .select('stock_quantity, price_epicoin')
+                .eq('id', selectedProduct.id)
+                .single();
+
+            if (!freshProduct) {
+                Alert.alert('Erreur', 'Ce produit n\'est plus disponible');
+                setShowPurchaseModal(false);
+                fetchProducts();
+                return;
+            }
+
+            if (freshProduct.stock_quantity < quantity) {
+                Alert.alert(
+                    'Stock insuffisant',
+                    `Il ne reste que ${freshProduct.stock_quantity} unité(s) en stock.`,
+                );
+                // Mettre à jour le stock local pour ajuster le slider
+                setSelectedProduct({ ...selectedProduct, stock_quantity: freshProduct.stock_quantity });
+                if (quantity > freshProduct.stock_quantity) {
+                    setQuantity(Math.max(1, freshProduct.stock_quantity));
+                }
+                return;
+            }
+
+            const totalPrice = freshProduct.price_epicoin * quantity;
 
             const context = await collectTransactionContext();
 
