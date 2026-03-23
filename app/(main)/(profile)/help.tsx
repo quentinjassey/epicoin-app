@@ -210,7 +210,7 @@ export default function HelpScreen() {
             </View>
 
             {/* ── Contact Section ── */}
-            <View style={{ marginBottom: 32 }}>
+            <View style={{ marginBottom: 32, paddingHorizontal: 20 }}>
                 <Text
                     style={{
                         fontSize: 13,

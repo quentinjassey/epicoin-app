@@ -1,6 +1,5 @@
 import Icon from '@/components/Icon';
 import * as Crypto from 'expo-crypto';
-import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';

@@ -1,5 +1,5 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Session } from '@supabase/supabase-js';
 import { useFonts } from 'expo-font';
 import { Stack, useRouter, useSegments } from 'expo-router';
@@ -8,7 +8,6 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 
-import { useColorScheme } from '@/components/useColorScheme';
 import { supabase } from '../lib/supabase';
 
 export {
@@ -45,7 +44,6 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-    const colorScheme = useColorScheme();
     const segments = useSegments();
     const router = useRouter();
     const [session, setSession] = useState<Session | null>(null);

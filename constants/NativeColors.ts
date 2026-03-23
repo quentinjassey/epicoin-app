@@ -58,7 +58,7 @@ export const Colors = {
   warning: '#F59E0B',
   info: '#013AFB',
 
-  // Legacy alias
+  // Legacy alias (maps to neonGreen for backward compat)
   epitechYellow: '#00ff97',
 };
 
