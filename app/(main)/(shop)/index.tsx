@@ -20,6 +20,7 @@ import { supabase } from '../../../lib/supabase';
 import { collectTransactionContext, buildTransactionPayload } from '../../../lib/transactionContext';
 import { Colors } from '@/constants/NativeColors';
 import GlitchIn from '@/components/GlitchIn';
+import { useAccessibility } from '@/lib/AccessibilityContext';
 
 type Product = {
     id: string;
@@ -42,6 +43,7 @@ const brutalistShadow = {
 };
 
 export default function ShopScreen() {
+    const { adaptiveColors } = useAccessibility();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -447,7 +449,7 @@ export default function ShopScreen() {
 
                         {/* Stock Badge */}
                         <View style={{
-                            backgroundColor: item.stock_quantity > 10 ? Colors.success : Colors.accentOrange,
+                            backgroundColor: item.stock_quantity > 10 ? adaptiveColors.success : adaptiveColors.warning,
                             paddingHorizontal: 10,
                             paddingVertical: 4,
                             borderRadius: 0,
@@ -474,7 +476,7 @@ export default function ShopScreen() {
                         position: 'absolute',
                         top: 0,
                         right: 0,
-                        backgroundColor: Colors.accentOrange,
+                        backgroundColor: adaptiveColors.error,
                         padding: 6,
                         borderRadius: 0,
                         borderLeftWidth: 2,

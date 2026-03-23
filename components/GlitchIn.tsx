@@ -1,6 +1,7 @@
 import React from 'react';
 import { ViewStyle } from 'react-native';
 import { useFocusEffect } from 'expo-router';
+import { useAccessibility } from '@/lib/AccessibilityContext';
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
@@ -20,6 +21,7 @@ type Props = {
 };
 
 export default function GlitchIn({ children, delay = 0, style }: Props) {
+    const { prefs } = useAccessibility();
     const opacity = useSharedValue(0);
     const translateX = useSharedValue(0);
     const translateY = useSharedValue(14);
@@ -113,8 +115,17 @@ export default function GlitchIn({ children, delay = 0, style }: Props) {
 
     useFocusEffect(
         React.useCallback(() => {
+            if (prefs.reduceMotion) {
+                // Skip animation, just show immediately
+                opacity.value = 1;
+                translateX.value = 0;
+                translateY.value = 0;
+                scaleX.value = 1;
+                splitOpacity.value = 0;
+                return;
+            }
             playGlitch();
-        }, [])
+        }, [prefs.reduceMotion])
     );
 
     const mainStyle = useAnimatedStyle(() => ({

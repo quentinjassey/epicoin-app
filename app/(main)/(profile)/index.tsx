@@ -103,6 +103,14 @@ export default function ProfileScreen() {
             route: '/(main)/(profile)/notifications' as const,
         },
         {
+            icon: 'eye.fill',
+            label: 'ACCESSIBILITE',
+            description: 'Taille du texte, contraste, animations',
+            color: Colors.success,
+            bg: Colors.offWhite,
+            route: '/(main)/(profile)/accessibility' as const,
+        },
+        {
             icon: 'questionmark.circle',
             label: 'AIDE & SUPPORT',
             description: 'FAQ, contact',

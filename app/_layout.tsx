@@ -8,6 +8,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 
+import { AccessibilityProvider } from '../lib/AccessibilityContext';
 import { supabase } from '../lib/supabase';
 
 export {
@@ -89,6 +90,7 @@ function RootLayoutNav() {
     };
 
     return (
+        <AccessibilityProvider>
         <ThemeProvider value={EpitechTheme}>
             <StatusBar style="dark" translucent backgroundColor="transparent" />
             <Stack screenOptions={{ contentStyle: { backgroundColor: '#FFFFFF' } }}>
@@ -131,5 +133,6 @@ function RootLayoutNav() {
                 />
             </Stack>
         </ThemeProvider>
+        </AccessibilityProvider>
     );
 }

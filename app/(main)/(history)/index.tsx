@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { supabase } from "../../../lib/supabase";
 import GlitchIn from '@/components/GlitchIn';
+import { useAccessibility } from '@/lib/AccessibilityContext';
 
 type Transaction = {
   id: string;
@@ -28,6 +29,7 @@ type Transaction = {
 };
 
 export default function HistoryScreen() {
+  const { adaptiveColors } = useAccessibility();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -102,27 +104,27 @@ export default function HistoryScreen() {
     if (isTopUp) {
       return {
         name: "plus.circle.fill",
-        color: Colors.success,
+        color: adaptiveColors.success,
         bg: Colors.white,
       };
     }
     if (isPurchase) {
       return {
         name: "cart.fill",
-        color: Colors.accentOrange,
+        color: adaptiveColors.error,
         bg: Colors.white,
       };
     }
     if (isSender) {
       return {
         name: "arrow.up.circle.fill",
-        color: Colors.accentOrange,
+        color: adaptiveColors.error,
         bg: Colors.white,
       };
     }
     return {
       name: "arrow.down.circle.fill",
-      color: Colors.success,
+      color: adaptiveColors.success,
       bg: Colors.white,
     };
   }
@@ -166,17 +168,17 @@ export default function HistoryScreen() {
     const isPurchase = tx.type === "payment" || tx.type === "purchase";
 
     if (isTopUp) {
-      return { prefix: "+", color: Colors.success };
+      return { prefix: "+", color: adaptiveColors.success };
     }
 
     if (isPurchase) {
-      return { prefix: "-", color: Colors.accentOrange };
+      return { prefix: "-", color: adaptiveColors.error };
     }
 
     if (isSender) {
-      return { prefix: "-", color: Colors.accentOrange };
+      return { prefix: "-", color: adaptiveColors.error };
     }
-    return { prefix: "+", color: Colors.success };
+    return { prefix: "+", color: adaptiveColors.success };
   }
 
   function getStatusBadge(status: string) {
@@ -184,20 +186,20 @@ export default function HistoryScreen() {
       case "completed":
         return {
           label: "COMPLETE",
-          borderColor: Colors.success,
-          color: Colors.success,
+          borderColor: adaptiveColors.success,
+          color: adaptiveColors.success,
         };
       case "pending_review":
         return {
           label: "EN ATTENTE",
-          borderColor: Colors.accentOrange,
-          color: Colors.accentOrange,
+          borderColor: adaptiveColors.warning,
+          color: adaptiveColors.warning,
         };
       case "failed":
         return {
           label: "ECHOUE",
-          borderColor: Colors.accentOrange,
-          color: Colors.accentOrange,
+          borderColor: adaptiveColors.error,
+          color: adaptiveColors.error,
         };
       default:
         return {

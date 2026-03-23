@@ -7,6 +7,7 @@ import { ActivityIndicator, Image, RefreshControl, ScrollView, Text, TouchableOp
 import GlitchIn from '@/components/GlitchIn';
 import { supabase } from '../../../lib/supabase';
 import { Colors } from '@/constants/NativeColors';
+import { useAccessibility } from '@/lib/AccessibilityContext';
 
 type Transaction = {
     id: string;
@@ -22,6 +23,7 @@ type Transaction = {
 };
 
 export default function WalletScreen() {
+    const { adaptiveColors } = useAccessibility();
     const [balance, setBalance] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -128,10 +130,10 @@ export default function WalletScreen() {
             const bonus = tx.metadata?.bonus || 0;
             return {
                 icon: 'plus.circle.fill',
-                color: Colors.success,
+                color: adaptiveColors.success,
                 label: bonus > 0 ? `Rechargement (+${bonus} bonus)` : 'Rechargement',
                 prefix: '+',
-                amountColor: Colors.success,
+                amountColor: adaptiveColors.success,
             };
         }
 
@@ -144,10 +146,10 @@ export default function WalletScreen() {
             }
             return {
                 icon: 'cart.fill',
-                color: Colors.accentOrange,
+                color: adaptiveColors.error,
                 label,
                 prefix: '-',
-                amountColor: Colors.accentOrange,
+                amountColor: adaptiveColors.error,
             };
         }
 
@@ -157,10 +159,10 @@ export default function WalletScreen() {
             else if (tx.status === 'failed') label += ' (echoue)';
             return {
                 icon: 'arrow.up.circle.fill',
-                color: Colors.accentOrange,
+                color: adaptiveColors.error,
                 label,
                 prefix: '-',
-                amountColor: Colors.accentOrange,
+                amountColor: adaptiveColors.error,
             };
         }
 
@@ -169,21 +171,21 @@ export default function WalletScreen() {
         else if (tx.status === 'failed') label += ' (echoue)';
         return {
             icon: 'arrow.down.circle.fill',
-            color: Colors.success,
+            color: adaptiveColors.success,
             label,
             prefix: '+',
-            amountColor: Colors.success,
+            amountColor: adaptiveColors.success,
         };
     }
 
     function getStatusBadge(status: string) {
         switch (status) {
             case 'completed':
-                return { label: 'COMPLETE', color: Colors.success };
+                return { label: 'COMPLETE', color: adaptiveColors.success };
             case 'pending_review':
-                return { label: 'EN ATTENTE', color: Colors.accentOrange };
+                return { label: 'EN ATTENTE', color: adaptiveColors.warning };
             case 'failed':
-                return { label: 'ECHOUE', color: Colors.accentOrange };
+                return { label: 'ECHOUE', color: adaptiveColors.error };
             default:
                 return { label: status.toUpperCase(), color: Colors.mediumGray };
         }
@@ -357,7 +359,7 @@ export default function WalletScreen() {
                         <Icon
                             name="plus.circle.fill"
                             size={28}
-                            color={Colors.success}
+                            color={adaptiveColors.success}
                         />
                         <Text style={{
                             fontWeight: '800',
