@@ -156,7 +156,7 @@ export default function FraudConfigScreen() {
         >
             {/* Header */}
             <View style={{
-                backgroundColor: Colors.accentMagenta,
+                backgroundColor: adaptiveColors.accent,
                 borderRadius: 0,
                 padding: 24,
                 marginBottom: 24,
@@ -214,7 +214,7 @@ export default function FraudConfigScreen() {
                         <Text style={{ color: Colors.secondaryLabel, fontSize: 15, fontWeight: '700' }}>ML (Machine Learning)</Text>
                         <Text style={{
                             fontWeight: '900',
-                            color: Colors.accentMagenta,
+                            color: adaptiveColors.accent,
                             fontSize: 17,
                             fontVariant: ['tabular-nums'],
                         }}>
@@ -228,9 +228,9 @@ export default function FraudConfigScreen() {
                         step={0.05}
                         value={config.ml_weight}
                         onValueChange={updateMLWeight}
-                        minimumTrackTintColor={Colors.accentMagenta}
+                        minimumTrackTintColor={adaptiveColors.accent}
                         maximumTrackTintColor={Colors.offWhite}
-                        thumbTintColor={Colors.accentMagenta}
+                        thumbTintColor={adaptiveColors.accent}
                     />
                 </View>
 
@@ -375,7 +375,7 @@ export default function FraudConfigScreen() {
                         <View style={{
                             width: 12,
                             height: 12,
-                            backgroundColor: Colors.success,
+                            backgroundColor: adaptiveColors.success,
                             borderRadius: 0,
                             marginRight: 8,
                             borderWidth: 1,
@@ -389,7 +389,7 @@ export default function FraudConfigScreen() {
                         <View style={{
                             width: 12,
                             height: 12,
-                            backgroundColor: Colors.systemOrange,
+                            backgroundColor: adaptiveColors.warning,
                             borderRadius: 0,
                             marginRight: 8,
                             borderWidth: 1,
@@ -403,7 +403,7 @@ export default function FraudConfigScreen() {
                         <View style={{
                             width: 12,
                             height: 12,
-                            backgroundColor: Colors.accentOrange,
+                            backgroundColor: adaptiveColors.error,
                             borderRadius: 0,
                             marginRight: 8,
                             borderWidth: 1,

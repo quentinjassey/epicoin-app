@@ -219,10 +219,10 @@ export default function AdminUsers() {
                                                 borderRadius: 0,
                                                 marginLeft: 8,
                                                 borderWidth: 2,
-                                                borderColor: Colors.accentOrange,
+                                                borderColor: adaptiveColors.warning,
                                             }}>
                                                 <Text style={{
-                                                    color: Colors.accentOrange,
+                                                    color: adaptiveColors.warning,
                                                     fontSize: 11,
                                                     fontWeight: '900',
                                                     textTransform: 'uppercase',

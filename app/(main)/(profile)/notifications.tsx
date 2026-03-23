@@ -5,55 +5,47 @@ import { ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { Colors } from '@/constants/NativeColors';
 import { useAccessibility } from '@/lib/AccessibilityContext';
 
-type NotificationPref = {
-    key: string;
-    icon: string;
-    label: string;
-    description: string;
-    color: string;
-};
-
-const NOTIFICATION_PREFS: NotificationPref[] = [
-    {
-        key: 'transactions',
-        icon: 'arrow.left.arrow.right',
-        label: 'TRANSACTIONS',
-        description: 'Alertes pour les transferts entrants et sortants',
-        color: adaptiveColors.primary,
-    },
-    {
-        key: 'purchases',
-        icon: 'bag.fill',
-        label: 'ACHATS',
-        description: 'Alertes quand vous achetez un produit',
-        color: Colors.success,
-    },
-    {
-        key: 'topups',
-        icon: 'plus.circle.fill',
-        label: 'RECHARGEMENTS',
-        description: 'Alertes quand vous rechargez votre solde',
-        color: Colors.accentOrange,
-    },
-    {
-        key: 'security',
-        icon: 'shield.fill',
-        label: 'ALERTES DE SÉCURITÉ',
-        description: 'Activité suspecte détectée sur votre compte',
-        color: Colors.accentMagenta,
-    },
-    {
-        key: 'promotions',
-        icon: 'tag.fill',
-        label: 'PROMOTIONS',
-        description: 'Nouveaux produits, offres et bons plans',
-        color: Colors.accentOrange,
-    },
-];
-
 export default function NotificationsScreen() {
     const router = useRouter();
     const { adaptiveColors } = useAccessibility();
+
+    const NOTIFICATION_PREFS = [
+        {
+            key: 'transactions',
+            icon: 'arrow.left.arrow.right',
+            label: 'TRANSACTIONS',
+            description: 'Alertes pour les transferts entrants et sortants',
+            color: adaptiveColors.primary,
+        },
+        {
+            key: 'purchases',
+            icon: 'bag.fill',
+            label: 'ACHATS',
+            description: 'Alertes quand vous achetez un produit',
+            color: adaptiveColors.success,
+        },
+        {
+            key: 'topups',
+            icon: 'plus.circle.fill',
+            label: 'RECHARGEMENTS',
+            description: 'Alertes quand vous rechargez votre solde',
+            color: adaptiveColors.warning,
+        },
+        {
+            key: 'security',
+            icon: 'shield.fill',
+            label: 'ALERTES DE SÉCURITÉ',
+            description: 'Activité suspecte détectée sur votre compte',
+            color: adaptiveColors.accent,
+        },
+        {
+            key: 'promotions',
+            icon: 'tag.fill',
+            label: 'PROMOTIONS',
+            description: 'Nouveaux produits, offres et bons plans',
+            color: adaptiveColors.warning,
+        },
+    ];
     const [prefs, setPrefs] = useState<Record<string, boolean>>({
         transactions: true,
         purchases: true,

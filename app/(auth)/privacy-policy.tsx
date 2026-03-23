@@ -1,5 +1,6 @@
 import Icon from '@/components/Icon';
 import { Colors } from '@/constants/NativeColors';
+import { useAccessibility } from '@/lib/AccessibilityContext';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -83,6 +84,7 @@ const SECTIONS = [
 
 export default function PrivacyPolicy() {
     const router = useRouter();
+    const { adaptiveColors } = useAccessibility();
 
     return (
         <View style={styles.container}>
@@ -101,7 +103,7 @@ export default function PrivacyPolicy() {
             >
                 {/* Title */}
                 <Text style={styles.mainTitle}>POLITIQUE DE CONFIDENTIALITE</Text>
-                <Text style={styles.appName}>EPIPAY</Text>
+                <Text style={[styles.appName, { color: adaptiveColors.primary }]}>EPIPAY</Text>
 
                 <View style={styles.dateBadge}>
                     <Text style={styles.dateText}>DERNIERE MISE A JOUR : MARS 2026</Text>
@@ -110,7 +112,7 @@ export default function PrivacyPolicy() {
                 {/* Sections */}
                 {SECTIONS.map((section, index) => (
                     <View key={index} style={styles.section}>
-                        <Text style={styles.sectionTitle}>{section.title}</Text>
+                        <Text style={[styles.sectionTitle, { color: adaptiveColors.primary }]}>{section.title}</Text>
                         <Text style={styles.sectionBody}>{section.body}</Text>
                     </View>
                 ))}
@@ -118,7 +120,7 @@ export default function PrivacyPolicy() {
                 {/* Accept button */}
                 <TouchableOpacity
                     onPress={() => router.back()}
-                    style={styles.acceptButton}
+                    style={[styles.acceptButton, { backgroundColor: adaptiveColors.primary }]}
                     activeOpacity={0.85}
                 >
                     <Text style={styles.acceptButtonText}>J'AI LU ET COMPRIS</Text>

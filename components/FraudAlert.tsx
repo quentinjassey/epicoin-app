@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Colors } from '@/constants/NativeColors';
+import { useAccessibility } from '@/lib/AccessibilityContext';
 
 interface FraudReason {
   factor: string;
@@ -20,16 +21,7 @@ interface FraudAlertProps {
   onDismiss?: () => void;
 }
 
-const getSeverityColor = (severity: 'low' | 'medium' | 'high') => {
-  switch (severity) {
-    case 'high':
-      return Colors.accentOrange;
-    case 'medium':
-      return Colors.systemOrange;
-    case 'low':
-      return Colors.success;
-  }
-};
+// getSeverityColor is now inside the component to access adaptiveColors
 
 const getSeverityIcon = (severity: 'low' | 'medium' | 'high') => {
   switch (severity) {
@@ -42,21 +34,7 @@ const getSeverityIcon = (severity: 'low' | 'medium' | 'high') => {
   }
 };
 
-const getStatusInfo = (status: 'pending_review' | 'blocked') => {
-  if (status === 'blocked') {
-    return {
-      title: 'TRANSACTION REFUSEE',
-      subtitle: 'Cette transaction a été bloquée pour protéger votre compte',
-      color: Colors.accentOrange,
-    };
-  } else {
-    return {
-      title: 'TRANSACTION EN ATTENTE',
-      subtitle: 'Un administrateur validera cette transaction sous 24h',
-      color: Colors.systemOrange,
-    };
-  }
-};
+// getStatusInfo is now inside the component to access adaptiveColors
 
 export default function FraudAlert({
   status,
@@ -68,6 +46,35 @@ export default function FraudAlert({
   onContestDecision,
   onDismiss,
 }: FraudAlertProps) {
+  const { adaptiveColors } = useAccessibility();
+
+  const getSeverityColor = (severity: 'low' | 'medium' | 'high') => {
+    switch (severity) {
+      case 'high':
+        return adaptiveColors.error;
+      case 'medium':
+        return adaptiveColors.warning;
+      case 'low':
+        return adaptiveColors.success;
+    }
+  };
+
+  const getStatusInfo = (status: 'pending_review' | 'blocked') => {
+    if (status === 'blocked') {
+      return {
+        title: 'TRANSACTION REFUSEE',
+        subtitle: 'Cette transaction a été bloquée pour protéger votre compte',
+        color: adaptiveColors.error,
+      };
+    } else {
+      return {
+        title: 'TRANSACTION EN ATTENTE',
+        subtitle: 'Un administrateur validera cette transaction sous 24h',
+        color: adaptiveColors.warning,
+      };
+    }
+  };
+
   const statusInfo = getStatusInfo(status);
 
   const handleLearnMore = () => {
@@ -154,7 +161,7 @@ export default function FraudAlert({
       )}
 
       {/* Explanation */}
-      <View style={styles.explanationBox}>
+      <View style={[styles.explanationBox, { borderColor: adaptiveColors.warning }]}>
         <Text style={styles.explanationText}>
           {status === 'blocked'
             ? 'Cette vérification protège votre compte contre les transactions frauduleuses et inhabituelles.'
@@ -173,7 +180,7 @@ export default function FraudAlert({
 
         {onContestDecision && (
           <TouchableOpacity
-            style={[styles.button, styles.primaryButton]}
+            style={[styles.button, { backgroundColor: adaptiveColors.primary }]}
             onPress={handleContestDecision}
           >
             <Text style={styles.primaryButtonText}>CONTESTER</Text>
@@ -182,7 +189,7 @@ export default function FraudAlert({
 
         {onDismiss && status === 'pending_review' && (
           <TouchableOpacity
-            style={[styles.button, styles.primaryButton]}
+            style={[styles.button, { backgroundColor: adaptiveColors.primary }]}
             onPress={onDismiss}
           >
             <Text style={styles.primaryButtonText}>COMPRIS</Text>
@@ -300,7 +307,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 16,
     borderWidth: 2,
-    borderColor: Colors.systemOrange,
+    borderColor: Colors.black, // overridden inline with adaptiveColors.warning
   },
   explanationText: {
     fontSize: 13,
@@ -328,7 +335,7 @@ const styles = StyleSheet.create({
     shadowRadius: 0,
   },
   primaryButton: {
-    backgroundColor: Colors.epitechBlue,
+    backgroundColor: Colors.black, // fallback, overridden inline with adaptiveColors.primary
   },
   secondaryButton: {
     backgroundColor: Colors.white,

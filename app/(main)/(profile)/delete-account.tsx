@@ -1,5 +1,6 @@
 import Icon from '@/components/Icon';
 import { Colors } from '@/constants/NativeColors';
+import { useAccessibility } from '@/lib/AccessibilityContext';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
@@ -29,6 +30,7 @@ const ANONYMIZED_ITEMS = [
 
 export default function DeleteAccountScreen() {
     const router = useRouter();
+    const { adaptiveColors } = useAccessibility();
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -105,7 +107,7 @@ export default function DeleteAccountScreen() {
             <View style={{ flex: 1 }}>
                 <View
                     style={{
-                        backgroundColor: Colors.accentOrange,
+                        backgroundColor: adaptiveColors.error,
                         position: 'absolute',
                         top: 0,
                         left: 0,
@@ -124,7 +126,7 @@ export default function DeleteAccountScreen() {
                     {/* Header */}
                     <View
                         style={{
-                            backgroundColor: Colors.accentOrange,
+                            backgroundColor: adaptiveColors.error,
                             paddingTop: 70,
                             paddingBottom: 32,
                             paddingHorizontal: 24,
@@ -176,7 +178,7 @@ export default function DeleteAccountScreen() {
                                 <Icon
                                     name="exclamationmark.triangle.fill"
                                     size={28}
-                                    color={Colors.accentOrange}
+                                    color={adaptiveColors.error}
                                 />
                             </View>
                             <View>
@@ -212,7 +214,7 @@ export default function DeleteAccountScreen() {
                             style={{
                                 backgroundColor: Colors.offWhite,
                                 borderWidth: 3,
-                                borderColor: Colors.accentOrange,
+                                borderColor: adaptiveColors.error,
                                 borderRadius: 0,
                                 padding: 20,
                                 shadowColor: Colors.black,
@@ -226,7 +228,7 @@ export default function DeleteAccountScreen() {
                             <Icon
                                 name="exclamationmark.triangle.fill"
                                 size={24}
-                                color={Colors.accentOrange}
+                                color={adaptiveColors.error}
                                 style={{ marginRight: 12, marginTop: 2 }}
                             />
                             <Text
@@ -287,7 +289,7 @@ export default function DeleteAccountScreen() {
                                     <Icon
                                         name="xmark.circle.fill"
                                         size={18}
-                                        color={Colors.accentOrange}
+                                        color={adaptiveColors.error}
                                     />
                                     <Text
                                         style={{
@@ -347,7 +349,7 @@ export default function DeleteAccountScreen() {
                                     <Icon
                                         name="shield.checkered"
                                         size={18}
-                                        color={Colors.accentOrange}
+                                        color={adaptiveColors.error}
                                     />
                                     <Text
                                         style={{
@@ -433,7 +435,7 @@ export default function DeleteAccountScreen() {
                                 style={{
                                     backgroundColor: loading
                                         ? Colors.lightGray
-                                        : Colors.accentOrange,
+                                        : adaptiveColors.error,
                                     borderRadius: 0,
                                     padding: 16,
                                     alignItems: 'center',

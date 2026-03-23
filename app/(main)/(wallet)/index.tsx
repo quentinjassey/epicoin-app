@@ -315,7 +315,7 @@ export default function WalletScreen() {
                         {balance?.toFixed(2)}
                     </Text>
                     <Text style={{
-                        color: Colors.neonGreen,
+                        color: adaptiveColors.success,
                         fontSize: 22,
                         fontWeight: '900',
                         marginLeft: 8,

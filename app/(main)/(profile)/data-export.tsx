@@ -265,7 +265,7 @@ export default function DataExportScreen() {
                         <View style={{
                             backgroundColor: Colors.offWhite,
                             borderWidth: 2,
-                            borderColor: Colors.success,
+                            borderColor: adaptiveColors.success,
                             borderRadius: 0,
                             padding: 12,
                             flexDirection: 'row',
@@ -274,10 +274,10 @@ export default function DataExportScreen() {
                             <Icon
                                 name="checkmark.circle.fill"
                                 size={18}
-                                color={Colors.success}
+                                color={adaptiveColors.success}
                             />
                             <Text style={{
-                                color: Colors.success,
+                                color: adaptiveColors.success,
                                 fontWeight: '700',
                                 fontSize: 13,
                                 marginLeft: 8,

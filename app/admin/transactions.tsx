@@ -70,11 +70,11 @@ export default function AdminTransactions() {
             };
             case 'top_up': return {
                 label: 'Rechargement',
-                color: Colors.success,
+                color: adaptiveColors.success,
             };
             case 'payment': return {
                 label: 'Paiement',
-                color: Colors.accentMagenta,
+                color: adaptiveColors.accent,
             };
             default: return {
                 label: type,
@@ -87,16 +87,16 @@ export default function AdminTransactions() {
         switch (status) {
             case 'completed': return {
                 label: 'Complété',
-                color: Colors.success,
+                color: adaptiveColors.success,
             };
             case 'pending':
             case 'pending_review': return {
                 label: 'En attente',
-                color: Colors.systemOrange,
+                color: adaptiveColors.warning,
             };
             case 'failed': return {
                 label: 'Échoué',
-                color: Colors.accentOrange,
+                color: adaptiveColors.error,
             };
             default: return {
                 label: status,
@@ -112,15 +112,15 @@ export default function AdminTransactions() {
         };
         if (score <= 30) return {
             label: 'Faible',
-            color: Colors.success,
+            color: adaptiveColors.success,
         };
         if (score <= 70) return {
             label: 'Moyen',
-            color: Colors.systemOrange,
+            color: adaptiveColors.warning,
         };
         return {
             label: 'Élevé',
-            color: Colors.accentOrange,
+            color: adaptiveColors.error,
         };
     }
 
@@ -321,10 +321,10 @@ export default function AdminTransactions() {
                                                     paddingVertical: 2,
                                                     borderRadius: 0,
                                                     borderWidth: 1,
-                                                    borderColor: Colors.accentMagenta,
+                                                    borderColor: adaptiveColors.accent,
                                                 }}>
                                                     <Text style={{
-                                                        color: Colors.accentMagenta,
+                                                        color: adaptiveColors.accent,
                                                         fontSize: 10,
                                                         fontWeight: '900',
                                                     }}>

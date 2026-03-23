@@ -355,7 +355,7 @@ export default function SecurityScreen() {
                             <View style={{
                                 backgroundColor: Colors.offWhite,
                                 borderWidth: 2,
-                                borderColor: Colors.accentOrange,
+                                borderColor: adaptiveColors.error,
                                 borderRadius: 0,
                                 padding: 12,
                                 marginBottom: 16,
@@ -365,10 +365,10 @@ export default function SecurityScreen() {
                                 <Icon
                                     name="exclamationmark.triangle.fill"
                                     size={18}
-                                    color={Colors.accentOrange}
+                                    color={adaptiveColors.error}
                                 />
                                 <Text style={{
-                                    color: Colors.accentOrange,
+                                    color: adaptiveColors.error,
                                     fontWeight: '700',
                                     fontSize: 13,
                                     marginLeft: 8,
@@ -384,7 +384,7 @@ export default function SecurityScreen() {
                             <View style={{
                                 backgroundColor: Colors.offWhite,
                                 borderWidth: 2,
-                                borderColor: Colors.success,
+                                borderColor: adaptiveColors.success,
                                 borderRadius: 0,
                                 padding: 12,
                                 marginBottom: 16,
@@ -394,10 +394,10 @@ export default function SecurityScreen() {
                                 <Icon
                                     name="checkmark.circle.fill"
                                     size={18}
-                                    color={Colors.success}
+                                    color={adaptiveColors.success}
                                 />
                                 <Text style={{
-                                    color: Colors.success,
+                                    color: adaptiveColors.success,
                                     fontWeight: '700',
                                     fontSize: 13,
                                     marginLeft: 8,

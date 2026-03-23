@@ -329,7 +329,7 @@ export default function MetricsScreen() {
                                 <Text style={{
                                     fontSize: 28,
                                     fontWeight: '900',
-                                    color: metrics.fraud_rate > 5 ? Colors.accentOrange : Colors.success,
+                                    color: metrics.fraud_rate > 5 ? adaptiveColors.error : adaptiveColors.success,
                                     fontVariant: ['tabular-nums'],
                                 }}>
                                     {metrics.fraud_rate.toFixed(1)}%
@@ -354,7 +354,7 @@ export default function MetricsScreen() {
                                 <Text style={{
                                     fontSize: 28,
                                     fontWeight: '900',
-                                    color: metrics.avg_fraud_score > 50 ? Colors.systemOrange : Colors.success,
+                                    color: metrics.avg_fraud_score > 50 ? adaptiveColors.warning : adaptiveColors.success,
                                     fontVariant: ['tabular-nums'],
                                 }}>
                                     {metrics.avg_fraud_score.toFixed(1)}
@@ -379,19 +379,19 @@ export default function MetricsScreen() {
                             </Text>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                                    <View style={{ width: 8, height: 8, borderRadius: 0, backgroundColor: Colors.accentOrange, borderWidth: 1, borderColor: Colors.black }} />
+                                    <View style={{ width: 8, height: 8, borderRadius: 0, backgroundColor: adaptiveColors.error, borderWidth: 1, borderColor: Colors.black }} />
                                     <Text style={{ color: Colors.secondaryLabel, fontSize: 15, fontWeight: '700' }}>Risque élevé</Text>
                                 </View>
-                                <Text style={{ fontWeight: '900', color: Colors.accentOrange, fontSize: 17, fontVariant: ['tabular-nums'] }}>
+                                <Text style={{ fontWeight: '900', color: adaptiveColors.error, fontSize: 17, fontVariant: ['tabular-nums'] }}>
                                     {metrics.high_risk_count}
                                 </Text>
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                                    <View style={{ width: 8, height: 8, borderRadius: 0, backgroundColor: Colors.systemOrange, borderWidth: 1, borderColor: Colors.black }} />
+                                    <View style={{ width: 8, height: 8, borderRadius: 0, backgroundColor: adaptiveColors.warning, borderWidth: 1, borderColor: Colors.black }} />
                                     <Text style={{ color: Colors.secondaryLabel, fontSize: 15, fontWeight: '700' }}>Risque moyen</Text>
                                 </View>
-                                <Text style={{ fontWeight: '900', color: Colors.systemOrange, fontSize: 17, fontVariant: ['tabular-nums'] }}>
+                                <Text style={{ fontWeight: '900', color: adaptiveColors.warning, fontSize: 17, fontVariant: ['tabular-nums'] }}>
                                     {metrics.medium_risk_count}
                                 </Text>
                             </View>
@@ -435,28 +435,28 @@ export default function MetricsScreen() {
                     }}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                                <Icon name="clock" size={16} color={Colors.systemOrange} />
+                                <Icon name="clock" size={16} color={adaptiveColors.warning} />
                                 <Text style={{ color: Colors.secondaryLabel, fontSize: 15, fontWeight: '700' }}>En attente</Text>
                             </View>
-                            <Text style={{ fontWeight: '900', color: Colors.systemOrange, fontSize: 17, fontVariant: ['tabular-nums'] }}>
+                            <Text style={{ fontWeight: '900', color: adaptiveColors.warning, fontSize: 17, fontVariant: ['tabular-nums'] }}>
                                 {metrics.alerts_pending}
                             </Text>
                         </View>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                                <Icon name="checkmark.circle" size={16} color={Colors.success} />
+                                <Icon name="checkmark.circle" size={16} color={adaptiveColors.success} />
                                 <Text style={{ color: Colors.secondaryLabel, fontSize: 15, fontWeight: '700' }}>Approuvées</Text>
                             </View>
-                            <Text style={{ fontWeight: '900', color: Colors.success, fontSize: 17, fontVariant: ['tabular-nums'] }}>
+                            <Text style={{ fontWeight: '900', color: adaptiveColors.success, fontSize: 17, fontVariant: ['tabular-nums'] }}>
                                 {metrics.alerts_approved}
                             </Text>
                         </View>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                                <Icon name="xmark.circle" size={16} color={Colors.accentOrange} />
+                                <Icon name="xmark.circle" size={16} color={adaptiveColors.error} />
                                 <Text style={{ color: Colors.secondaryLabel, fontSize: 15, fontWeight: '700' }}>Rejetées</Text>
                             </View>
-                            <Text style={{ fontWeight: '900', color: Colors.accentOrange, fontSize: 17, fontVariant: ['tabular-nums'] }}>
+                            <Text style={{ fontWeight: '900', color: adaptiveColors.error, fontSize: 17, fontVariant: ['tabular-nums'] }}>
                                 {metrics.alerts_rejected}
                             </Text>
                         </View>
@@ -465,7 +465,7 @@ export default function MetricsScreen() {
                                 <View style={{ height: 2, backgroundColor: Colors.black, marginVertical: 4 }} />
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <Text style={{ color: Colors.secondaryLabel, fontSize: 13, fontWeight: '700' }}>Score max détecté</Text>
-                                    <Text style={{ fontWeight: '900', color: Colors.accentOrange, fontSize: 17, fontVariant: ['tabular-nums'] }}>
+                                    <Text style={{ fontWeight: '900', color: adaptiveColors.error, fontSize: 17, fontVariant: ['tabular-nums'] }}>
                                         {metrics.max_fraud_score.toFixed(1)}
                                     </Text>
                                 </View>

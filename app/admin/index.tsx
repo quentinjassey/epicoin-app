@@ -19,35 +19,35 @@ export default function AdminDashboard() {
             title: 'Gestion des utilisateurs',
             icon: 'person.3.fill',
             route: '/admin/users',
-            color: Colors.success,
+            color: adaptiveColors.success,
             description: 'Voir les profils et les soldes des étudiants.'
         },
         {
             title: 'Journal des transactions',
             icon: 'list.bullet.rectangle',
             route: '/admin/transactions',
-            color: Colors.accentMagenta,
+            color: adaptiveColors.accent,
             description: 'Surveiller toutes les transactions du système.'
         },
         {
             title: 'Alertes de fraude',
             icon: 'exclamationmark.triangle.fill',
             route: '/admin/fraud',
-            color: Colors.accentOrange,
+            color: adaptiveColors.error,
             description: 'Examiner les transactions suspectes.'
         },
         {
             title: 'Configuration fraude',
             icon: 'slider.horizontal.3',
             route: '/admin/fraud-config',
-            color: Colors.accentMagenta,
+            color: adaptiveColors.accent,
             description: 'Personnaliser les seuils et poids de détection.'
         },
         {
             title: 'Métriques & Export',
             icon: 'chart.bar.fill',
             route: '/admin/metrics',
-            color: Colors.systemOrange,
+            color: adaptiveColors.warning,
             description: 'Statistiques opérationnelles et export des logs.'
         },
     ];

@@ -137,11 +137,11 @@ export default function FraudAlertsScreen() {
     function getRiskLevel(score: number) {
         if (score >= 80) return {
             label: 'Critique',
-            color: Colors.accentOrange,
+            color: adaptiveColors.error,
         };
         if (score >= 60) return {
             label: 'Élevé',
-            color: Colors.systemOrange,
+            color: adaptiveColors.warning,
         };
         if (score >= 40) return {
             label: 'Moyen',
@@ -149,7 +149,7 @@ export default function FraudAlertsScreen() {
         };
         return {
             label: 'Faible',
-            color: Colors.success,
+            color: adaptiveColors.success,
         };
     }
 
@@ -235,7 +235,7 @@ export default function FraudAlertsScreen() {
                     <TouchableOpacity
                         style={{
                             flex: 1,
-                            backgroundColor: Colors.success,
+                            backgroundColor: adaptiveColors.success,
                             borderRadius: 0,
                             padding: 12,
                             alignItems: 'center',
@@ -266,7 +266,7 @@ export default function FraudAlertsScreen() {
                     <TouchableOpacity
                         style={{
                             flex: 1,
-                            backgroundColor: Colors.accentOrange,
+                            backgroundColor: adaptiveColors.error,
                             borderRadius: 0,
                             padding: 12,
                             alignItems: 'center',
@@ -340,7 +340,7 @@ export default function FraudAlertsScreen() {
                             borderColor: Colors.black,
                             marginBottom: 16,
                         }}>
-                            <Icon name="checkmark.shield.fill" size={48} color={Colors.success} />
+                            <Icon name="checkmark.shield.fill" size={48} color={adaptiveColors.success} />
                         </View>
                         <Text style={{
                             color: Colors.black,

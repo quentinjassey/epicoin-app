@@ -283,7 +283,7 @@ function TopUpContent() {
                         style={{
                           backgroundColor: isSelected
                             ? "rgba(255, 255, 255, 0.25)"
-                            : Colors.accentOrange,
+                            : adaptiveColors.warning,
                           paddingHorizontal: 8,
                           paddingVertical: 4,
                           borderRadius: 0,
@@ -423,11 +423,11 @@ function TopUpContent() {
                   justifyContent: "space-between",
                 }}
               >
-                <Text style={{ color: Colors.neonGreen, fontWeight: "700" }}>Bonus</Text>
+                <Text style={{ color: adaptiveColors.success, fontWeight: "700" }}>Bonus</Text>
                 <Text
                   style={{
                     fontWeight: "800",
-                    color: Colors.neonGreen,
+                    color: adaptiveColors.success,
                     fontVariant: ["tabular-nums"],
                   }}
                 >

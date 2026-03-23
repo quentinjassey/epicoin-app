@@ -433,12 +433,12 @@ export default function SendScreen() {
                             padding: 12,
                             borderRadius: 0,
                             borderWidth: 2,
-                            borderColor: Colors.accentOrange,
+                            borderColor: adaptiveColors.error,
                         }}>
-                            <Icon name="exclamationmark.triangle.fill" size={16} color={Colors.accentOrange} />
+                            <Icon name="exclamationmark.triangle.fill" size={16} color={adaptiveColors.error} />
                             <Text style={{
                                 fontSize: 13,
-                                color: Colors.accentOrange,
+                                color: adaptiveColors.error,
                                 marginLeft: 8,
                                 fontWeight: '800',
                                 textTransform: 'uppercase',

@@ -112,9 +112,9 @@ export default function FraudDetailScreen() {
     }
 
     const riskColor = alert.risk_score >= 80
-        ? Colors.accentOrange
+        ? adaptiveColors.error
         : alert.risk_score >= 60
-        ? Colors.systemOrange
+        ? adaptiveColors.warning
         : Colors.systemYellow;
 
     const mlScore = alert.fraud_features?.ml_score ?? 0;
@@ -216,7 +216,7 @@ export default function FraudDetailScreen() {
                             <Text style={{ color: Colors.secondaryLabel, fontWeight: '700' }}>Machine Learning (ML)</Text>
                             <Text style={{
                                 fontWeight: '900',
-                                color: Colors.accentMagenta,
+                                color: adaptiveColors.accent,
                                 fontSize: 17,
                                 fontVariant: ['tabular-nums'],
                             }}>
@@ -234,7 +234,7 @@ export default function FraudDetailScreen() {
                             <View style={{
                                 width: `${mlScore}%`,
                                 height: '100%',
-                                backgroundColor: Colors.accentMagenta,
+                                backgroundColor: adaptiveColors.accent,
                             }} />
                         </View>
                     </View>
@@ -306,7 +306,7 @@ export default function FraudDetailScreen() {
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
                             <Text style={{ color: Colors.secondaryLabel, fontWeight: '700' }}>Ratio montant/solde</Text>
                             <Text style={{
-                                color: alert.fraud_features.amount_to_balance_ratio > 0.8 ? Colors.accentOrange : Colors.black,
+                                color: alert.fraud_features.amount_to_balance_ratio > 0.8 ? adaptiveColors.error : Colors.black,
                                 fontWeight: '800',
                                 fontVariant: ['tabular-nums']
                             }}>
@@ -320,7 +320,7 @@ export default function FraudDetailScreen() {
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
                             <Text style={{ color: Colors.secondaryLabel, fontWeight: '700' }}>Transactions 24h</Text>
                             <Text style={{
-                                color: alert.fraud_features.transaction_count_24h > 10 ? Colors.systemOrange : Colors.black,
+                                color: alert.fraud_features.transaction_count_24h > 10 ? adaptiveColors.warning : Colors.black,
                                 fontWeight: '800',
                                 fontVariant: ['tabular-nums']
                             }}>
@@ -342,7 +342,7 @@ export default function FraudDetailScreen() {
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
                             <Text style={{ color: Colors.secondaryLabel, fontWeight: '700' }}>Âge du compte</Text>
                             <Text style={{
-                                color: alert.fraud_features.user_age_days < 7 ? Colors.systemOrange : Colors.black,
+                                color: alert.fraud_features.user_age_days < 7 ? adaptiveColors.warning : Colors.black,
                                 fontWeight: '800'
                             }}>
                                 {alert.fraud_features.user_age_days} jour{alert.fraud_features.user_age_days > 1 ? 's' : ''}
@@ -376,7 +376,7 @@ export default function FraudDetailScreen() {
                             <Text style={{ color: Colors.secondaryLabel, fontWeight: '700' }}>Heure de la transaction</Text>
                             <Text style={{
                                 color: (alert.fraud_features.transaction_hour >= 2 && alert.fraud_features.transaction_hour <= 6)
-                                    ? Colors.systemOrange
+                                    ? adaptiveColors.warning
                                     : Colors.black,
                                 fontWeight: '800',
                                 fontVariant: ['tabular-nums']
@@ -408,7 +408,7 @@ export default function FraudDetailScreen() {
                                 <Icon
                                     name={alert.fraud_features.ml_active ? "checkmark.circle.fill" : "xmark.circle.fill"}
                                     size={16}
-                                    color={alert.fraud_features.ml_active ? Colors.success : Colors.systemOrange}
+                                    color={alert.fraud_features.ml_active ? adaptiveColors.success : adaptiveColors.warning}
                                 />
                                 <Text style={{ color: Colors.secondaryLabel, fontSize: 14, fontWeight: '700' }}>
                                     Modèle ML : {alert.fraud_features.ml_active ? 'Actif' : 'Inactif (règles uniquement)'}
@@ -525,7 +525,7 @@ export default function FraudDetailScreen() {
                         <Icon
                             name="exclamationmark.triangle.fill"
                             size={20}
-                            color={Colors.systemOrange}
+                            color={adaptiveColors.warning}
                             style={{ marginRight: 8 }}
                         />
                         <Text style={{
@@ -542,8 +542,8 @@ export default function FraudDetailScreen() {
                     <View style={{ gap: 12 }}>
                         {reasons.map((reason: any, index: number) => {
                             const severityColor =
-                                reason.severity === 'high' ? Colors.accentOrange :
-                                reason.severity === 'medium' ? Colors.systemOrange :
+                                reason.severity === 'high' ? adaptiveColors.error :
+                                reason.severity === 'medium' ? adaptiveColors.warning :
                                 Colors.systemYellow;
 
                             const severityIcon =
@@ -665,7 +665,7 @@ export default function FraudDetailScreen() {
                     <TouchableOpacity
                         style={{
                             flex: 1,
-                            backgroundColor: Colors.success,
+                            backgroundColor: adaptiveColors.success,
                             borderRadius: 0,
                             padding: 16,
                             alignItems: 'center',
@@ -696,7 +696,7 @@ export default function FraudDetailScreen() {
                     <TouchableOpacity
                         style={{
                             flex: 1,
-                            backgroundColor: Colors.accentOrange,
+                            backgroundColor: adaptiveColors.error,
                             borderRadius: 0,
                             padding: 16,
                             alignItems: 'center',

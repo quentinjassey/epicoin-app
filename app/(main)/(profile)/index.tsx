@@ -92,7 +92,7 @@ export default function ProfileScreen() {
             icon: 'shield.checkered',
             label: 'SÉCURITÉ',
             description: 'Mot de passe, biométrie',
-            color: Colors.neonGreen,
+            color: adaptiveColors.success,
             bg: Colors.offWhite,
             route: '/(main)/(profile)/security' as const,
         },
@@ -100,7 +100,7 @@ export default function ProfileScreen() {
             icon: 'bell.badge.fill',
             label: 'NOTIFICATIONS',
             description: 'Gérer vos alertes',
-            color: Colors.accentOrange,
+            color: adaptiveColors.warning,
             bg: Colors.offWhite,
             route: '/(main)/(profile)/notifications' as const,
         },
@@ -108,7 +108,7 @@ export default function ProfileScreen() {
             icon: 'eye.fill',
             label: 'ACCESSIBILITE',
             description: 'Taille du texte, contraste, animations',
-            color: Colors.success,
+            color: adaptiveColors.success,
             bg: Colors.offWhite,
             route: '/(main)/(profile)/accessibility' as const,
         },
@@ -116,7 +116,7 @@ export default function ProfileScreen() {
             icon: 'questionmark.circle',
             label: 'AIDE & SUPPORT',
             description: 'FAQ, contact',
-            color: Colors.accentMagenta,
+            color: adaptiveColors.accent,
             bg: Colors.offWhite,
             route: '/(main)/(profile)/help' as const,
         },
@@ -132,7 +132,7 @@ export default function ProfileScreen() {
             icon: 'exclamationmark.triangle.fill',
             label: 'SUPPRIMER MON COMPTE',
             description: 'Suppression irreversible',
-            color: Colors.accentOrange,
+            color: adaptiveColors.error,
             bg: Colors.offWhite,
             route: '/(main)/(profile)/delete-account' as const,
         },
@@ -403,7 +403,7 @@ export default function ProfileScreen() {
                             <Icon
                                 name="gearshape.fill"
                                 size={22}
-                                color={Colors.accentOrange}
+                                color={adaptiveColors.warning}
                             />
                         </View>
                         <View style={{ flex: 1 }}>
@@ -442,7 +442,7 @@ export default function ProfileScreen() {
                     style={{
                         backgroundColor: Colors.white,
                         borderWidth: 3,
-                        borderColor: Colors.accentOrange,
+                        borderColor: adaptiveColors.error,
                         borderRadius: 0,
                         padding: 16,
                         flexDirection: 'row',
@@ -458,10 +458,10 @@ export default function ProfileScreen() {
                     <Icon
                         name="rectangle.portrait.and.arrow.right"
                         size={22}
-                        color={Colors.accentOrange}
+                        color={adaptiveColors.error}
                     />
                     <Text style={{
-                        color: Colors.accentOrange,
+                        color: adaptiveColors.error,
                         fontWeight: '900',
                         marginLeft: 8,
                         fontSize: 16,

@@ -298,7 +298,7 @@ export default function AccessibilityScreen() {
                 {saved && (
                     <View style={{
                         marginHorizontal: 24,
-                        backgroundColor: Colors.success,
+                        backgroundColor: adaptiveColors.success,
                         borderWidth: 2,
                         borderColor: Colors.black,
                         padding: 12,
@@ -328,16 +328,16 @@ export default function AccessibilityScreen() {
                         style={{
                             backgroundColor: Colors.white,
                             borderWidth: 2,
-                            borderColor: Colors.accentOrange,
+                            borderColor: adaptiveColors.warning,
                             padding: 14,
                             alignItems: 'center',
                             flexDirection: 'row',
                             justifyContent: 'center',
                         }}
                     >
-                        <Icon name="arrow.clockwise" size={18} color={Colors.accentOrange} />
+                        <Icon name="arrow.clockwise" size={18} color={adaptiveColors.warning} />
                         <Text style={{
-                            color: Colors.accentOrange,
+                            color: adaptiveColors.warning,
                             fontWeight: '900',
                             fontSize: 13,
                             marginLeft: 8,

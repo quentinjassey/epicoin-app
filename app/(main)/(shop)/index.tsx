@@ -355,11 +355,11 @@ export default function ShopScreen() {
     );
 
     const CATEGORIES = [
-        { key: 'Boissons', icon: 'cup.and.saucer.fill', color: Colors.accentOrange },
+        { key: 'Boissons', icon: 'cup.and.saucer.fill', color: adaptiveColors.warning },
         { key: 'Snacks', icon: 'takeoutbag.and.cup.and.straw.fill', color: Colors.systemYellow },
-        { key: 'Repas', icon: 'fork.knife', color: Colors.accentMagenta },
+        { key: 'Repas', icon: 'fork.knife', color: adaptiveColors.accent },
         { key: 'Fournitures', icon: 'pencil.and.ruler', color: adaptiveColors.primary },
-        { key: 'Goodies', icon: 'tshirt.fill', color: Colors.success },
+        { key: 'Goodies', icon: 'tshirt.fill', color: adaptiveColors.success },
     ];
 
     const getCategoryIcon = (category: string | null): string => {
