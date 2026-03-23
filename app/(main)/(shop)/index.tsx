@@ -33,18 +33,27 @@ type Product = {
 
 type BiometricType = 'faceid' | 'touchid' | 'fingerprint' | 'none';
 
+// ── Brutalist shadow preset ──
+const brutalistShadow = {
+    shadowColor: Colors.black,
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+};
+
 export default function ShopScreen() {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [balance, setBalance] = useState<number>(0);
-    
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [quantity, setQuantity] = useState(1);
     const [showPurchaseModal, setShowPurchaseModal] = useState(false);
     const [purchasing, setPurchasing] = useState(false);
-    
+
     const [authMethod, setAuthMethod] = useState<'biometric' | 'password'>('password');
     const [biometricType, setBiometricType] = useState<BiometricType>('none');
     const [password, setPassword] = useState('');
@@ -60,11 +69,11 @@ export default function ShopScreen() {
     async function checkBiometricAvailability() {
         const hasHardware = await LocalAuthentication.hasHardwareAsync();
         const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-        
+
         if (hasHardware && isEnrolled) {
             setAuthMethod('biometric');
             const supportedTypes = await LocalAuthentication.supportedAuthenticationTypesAsync();
-            
+
             if (Platform.OS === 'ios') {
                 if (supportedTypes.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)) {
                     setBiometricType('faceid');
@@ -154,7 +163,7 @@ export default function ShopScreen() {
         if (!selectedProduct) return;
 
         if (authMethod === 'biometric') {
-            const promptMessage = biometricType === 'faceid' 
+            const promptMessage = biometricType === 'faceid'
                 ? 'Confirmez votre achat avec Face ID'
                 : biometricType === 'touchid'
                 ? 'Confirmez votre achat avec Touch ID'
@@ -180,7 +189,7 @@ export default function ShopScreen() {
 
             setPurchasing(true);
             const { data: { user } } = await supabase.auth.getUser();
-            
+
             if (user && user.email) {
                 const { error } = await supabase.auth.signInWithPassword({
                     email: user.email,
@@ -267,7 +276,7 @@ export default function ShopScreen() {
             if (fraudResponse?.decision === 'blocked') {
                 setShowPurchaseModal(false);
                 Alert.alert(
-                    'Transaction Bloquée', 
+                    'Transaction Bloquée',
                     fraudResponse.reason || 'Cette transaction a été bloquée par notre système de sécurité.',
                     [{ text: 'OK' }]
                 );
@@ -287,7 +296,7 @@ export default function ShopScreen() {
                 if (data.status === 'pending_review') {
                     setShowPurchaseModal(false);
                     Alert.alert(
-                        'Vérification de sécurité', 
+                        'Vérification de sécurité',
                         'Votre achat a été signalé pour vérification de sécurité. Il sera traité après approbation par un administrateur.',
                         [{ text: 'OK' }]
                     );
@@ -321,29 +330,42 @@ export default function ShopScreen() {
         }
     }
 
-    const filteredProducts = products.filter(product =>
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredProducts = products.filter(product => {
+        const matchesSearch = searchQuery === '' ||
+            product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            product.description?.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesCategory = !selectedCategory || product.category === selectedCategory;
+        return matchesSearch && matchesCategory;
+    });
+
+    // Group products by category
+    const groupedProducts = filteredProducts.reduce((groups, product) => {
+        const cat = product.category || 'Autres';
+        if (!groups[cat]) groups[cat] = [];
+        groups[cat].push(product);
+        return groups;
+    }, {} as Record<string, Product[]>);
+
+    // Order categories
+    const categoryOrder = ['Boissons', 'Snacks', 'Repas', 'Fournitures', 'Goodies', 'Autres'];
+    const sortedCategories = Object.keys(groupedProducts).sort(
+        (a, b) => (categoryOrder.indexOf(a) === -1 ? 99 : categoryOrder.indexOf(a)) - (categoryOrder.indexOf(b) === -1 ? 99 : categoryOrder.indexOf(b))
     );
 
+    const CATEGORIES = [
+        { key: 'Boissons', icon: 'cup.and.saucer.fill', color: Colors.accentOrange },
+        { key: 'Snacks', icon: 'takeoutbag.and.cup.and.straw.fill', color: Colors.systemYellow },
+        { key: 'Repas', icon: 'fork.knife', color: Colors.accentMagenta },
+        { key: 'Fournitures', icon: 'pencil.and.ruler', color: Colors.epitechBlue },
+        { key: 'Goodies', icon: 'tshirt.fill', color: Colors.success },
+    ];
+
     const getCategoryIcon = (category: string | null): string => {
-        switch (category?.toLowerCase()) {
-            case 'boissons': return 'cup.and.saucer.fill';
-            case 'snacks': return 'takeoutbag.and.cup.and.straw.fill';
-            case 'repas': return 'fork.knife';
-            case 'fournitures': return 'pencil.and.ruler';
-            default: return 'cube.fill';
-        }
+        return CATEGORIES.find(c => c.key.toLowerCase() === category?.toLowerCase())?.icon || 'cube.fill';
     };
 
     const getCategoryColor = (category: string | null): any => {
-        switch (category?.toLowerCase()) {
-            case 'boissons': return Colors.systemOrange;
-            case 'snacks': return Colors.systemYellow;
-            case 'repas': return Colors.systemRed;
-            case 'fournitures': return Colors.systemBlue;
-            default: return Colors.systemGray;
-        }
+        return CATEGORIES.find(c => c.key.toLowerCase() === category?.toLowerCase())?.color || Colors.mediumGray;
     };
 
     const renderProduct = ({ item, index }: { item: Product, index: number }) => {
@@ -355,27 +377,29 @@ export default function ShopScreen() {
                 key={item.id}
                 style={{
                     width: '47%',
-                    backgroundColor: Colors.secondarySystemGroupedBackground,
-                    borderRadius: 20,
-                    borderCurve: 'continuous',
+                    backgroundColor: Colors.white,
+                    borderRadius: 0,
                     padding: 16,
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                    borderWidth: 2,
+                    borderColor: Colors.black,
                     minHeight: 180,
+                    ...brutalistShadow,
                 }}
                 onPress={() => handleProductPress(item)}
                 disabled={!canAfford}
             >
                 {/* Category Icon */}
                 <View style={{
-                    backgroundColor: `${getCategoryColor(item.category)}20`,
+                    backgroundColor: Colors.offWhite,
                     padding: 16,
-                    borderRadius: 16,
-                    borderCurve: 'continuous',
+                    borderRadius: 0,
+                    borderWidth: 2,
+                    borderColor: Colors.black,
                     alignSelf: 'center',
                     marginBottom: 12,
                 }}>
-                    <SymbolView 
-                        name={getCategoryIcon(item.category) as any} 
+                    <SymbolView
+                        name={getCategoryIcon(item.category) as any}
                         size={40}
                         tintColor={getCategoryColor(item.category)}
                     />
@@ -386,19 +410,22 @@ export default function ShopScreen() {
                     <View>
                         <Text style={{
                             fontSize: 16,
-                            fontWeight: '700',
-                            color: Colors.label,
+                            fontWeight: '800',
+                            color: Colors.black,
                             marginBottom: 4,
                             textAlign: 'center',
+                            textTransform: 'uppercase',
+                            letterSpacing: 0.5,
                         }} numberOfLines={2}>
                             {item.name}
                         </Text>
                         {item.description && (
                             <Text style={{
                                 fontSize: 12,
-                                color: Colors.tertiaryLabel,
+                                color: Colors.mediumGray,
                                 marginBottom: 8,
                                 textAlign: 'center',
+                                fontWeight: '700',
                             }} numberOfLines={2}>
                                 {item.description}
                             </Text>
@@ -409,8 +436,8 @@ export default function ShopScreen() {
                         {/* Price */}
                         <Text style={{
                             fontSize: 20,
-                            fontWeight: '700',
-                            color: canAfford ? Colors.epitechBlue : Colors.tertiaryLabel,
+                            fontWeight: '900',
+                            color: canAfford ? Colors.epitechBlue : Colors.mediumGray,
                             fontVariant: ['tabular-nums'],
                             textAlign: 'center',
                             marginBottom: 6,
@@ -420,17 +447,20 @@ export default function ShopScreen() {
 
                         {/* Stock Badge */}
                         <View style={{
-                            backgroundColor: item.stock_quantity > 10 ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                            backgroundColor: item.stock_quantity > 10 ? Colors.success : Colors.accentOrange,
                             paddingHorizontal: 10,
                             paddingVertical: 4,
-                            borderRadius: 8,
-                            borderCurve: 'continuous',
+                            borderRadius: 0,
+                            borderWidth: 2,
+                            borderColor: Colors.black,
                             alignSelf: 'center',
                         }}>
                             <Text style={{
                                 fontSize: 11,
-                                color: item.stock_quantity > 10 ? Colors.systemGreen : Colors.systemOrange,
-                                fontWeight: '700',
+                                color: Colors.white,
+                                fontWeight: '900',
+                                textTransform: 'uppercase',
+                                letterSpacing: 0.5,
                             }}>
                                 {item.stock_quantity > 10 ? 'En stock' : `${item.stock_quantity} restant${item.stock_quantity > 1 ? 's' : ''}`}
                             </Text>
@@ -442,17 +472,19 @@ export default function ShopScreen() {
                 {!canAfford && (
                     <View style={{
                         position: 'absolute',
-                        top: 8,
-                        right: 8,
-                        backgroundColor: 'rgba(239, 68, 68, 0.9)',
+                        top: 0,
+                        right: 0,
+                        backgroundColor: Colors.accentOrange,
                         padding: 6,
-                        borderRadius: 12,
-                        borderCurve: 'continuous',
+                        borderRadius: 0,
+                        borderLeftWidth: 2,
+                        borderBottomWidth: 2,
+                        borderColor: Colors.black,
                     }}>
-                        <SymbolView 
-                            name="lock.fill" 
+                        <SymbolView
+                            name="lock.fill"
                             size={14}
-                            tintColor="#fff"
+                            tintColor={Colors.white}
                         />
                     </View>
                 )}
@@ -466,7 +498,7 @@ export default function ShopScreen() {
                 flex: 1,
                 justifyContent: 'center',
                 alignItems: 'center',
-                backgroundColor: Colors.systemGroupedBackground,
+                backgroundColor: Colors.white,
             }}>
                 <ActivityIndicator size="large" color={Colors.epitechBlue} />
             </View>
@@ -476,7 +508,7 @@ export default function ShopScreen() {
     return (
         <View style={{
             flex: 1,
-            backgroundColor: Colors.systemGroupedBackground,
+            backgroundColor: Colors.white,
         }}>
             <ScrollView
                 style={{ flex: 1 }}
@@ -486,8 +518,8 @@ export default function ShopScreen() {
                     paddingBottom: 32,
                 }}
                 refreshControl={
-                    <RefreshControl 
-                        refreshing={refreshing} 
+                    <RefreshControl
+                        refreshing={refreshing}
                         onRefresh={onRefresh}
                         tintColor={Colors.epitechBlue}
                     />
@@ -500,8 +532,10 @@ export default function ShopScreen() {
                 }}>
                     <Text style={{
                         fontSize: 34,
-                        fontWeight: '700',
-                        color: Colors.label,
+                        fontWeight: '900',
+                        color: Colors.black,
+                        textTransform: 'uppercase',
+                        letterSpacing: 2,
                     }}>
                         Boutique
                     </Text>
@@ -509,13 +543,14 @@ export default function ShopScreen() {
 
                 {/* Balance Header */}
                 <View style={{
-                    backgroundColor: Colors.secondarySystemGroupedBackground,
+                    backgroundColor: Colors.white,
                     padding: 16,
                     marginHorizontal: 16,
                     marginBottom: 16,
-                    borderRadius: 16,
-                    borderCurve: 'continuous',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+                    borderRadius: 0,
+                    borderWidth: 2,
+                    borderColor: Colors.black,
+                    ...brutalistShadow,
                 }}>
                     <View style={{
                         flexDirection: 'row',
@@ -524,13 +559,16 @@ export default function ShopScreen() {
                     }}>
                         <Text style={{
                             fontSize: 15,
-                            color: Colors.secondaryLabel,
+                            color: Colors.mediumGray,
+                            fontWeight: '800',
+                            textTransform: 'uppercase',
+                            letterSpacing: 1,
                         }}>
                             Solde disponible
                         </Text>
                         <Text style={{
                             fontSize: 24,
-                            fontWeight: '700',
+                            fontWeight: '900',
                             color: Colors.epitechBlue,
                             fontVariant: ['tabular-nums'],
                         }}>
@@ -542,47 +580,124 @@ export default function ShopScreen() {
                 {/* Search Bar */}
                 <View style={{
                     paddingHorizontal: 16,
-                    marginBottom: 16,
+                    marginBottom: 12,
                 }}>
                     <View style={{
                         flexDirection: 'row',
                         alignItems: 'center',
-                        backgroundColor: Colors.secondarySystemGroupedBackground,
-                        borderRadius: 12,
-                        borderCurve: 'continuous',
+                        backgroundColor: Colors.white,
+                        borderRadius: 0,
+                        borderWidth: 2,
+                        borderColor: Colors.black,
                         paddingHorizontal: 12,
                         paddingVertical: 10,
                     }}>
-                        <SymbolView 
-                            name="magnifyingglass" 
+                        <SymbolView
+                            name="magnifyingglass"
                             size={18}
-                            tintColor={Colors.tertiaryLabel}
+                            tintColor={Colors.mediumGray}
                             style={{ marginRight: 8 }}
                         />
                         <TextInput
                             style={{
                                 flex: 1,
                                 fontSize: 16,
-                                color: Colors.label,
+                                color: Colors.black,
+                                fontWeight: '700',
                             }}
-                            placeholder="Rechercher un produit..."
-                            placeholderTextColor={Colors.tertiaryLabel}
+                            placeholder="RECHERCHER UN PRODUIT..."
+                            placeholderTextColor={Colors.mediumGray}
                             value={searchQuery}
                             onChangeText={setSearchQuery}
                         />
                         {searchQuery.length > 0 && (
                             <TouchableOpacity onPress={() => setSearchQuery('')}>
-                                <SymbolView 
-                                    name="xmark.circle.fill" 
+                                <SymbolView
+                                    name="xmark.circle.fill"
                                     size={18}
-                                    tintColor={Colors.tertiaryLabel}
+                                    tintColor={Colors.mediumGray}
                                 />
                             </TouchableOpacity>
                         )}
                     </View>
                 </View>
 
-                {/* Products Grid */}
+                {/* Category Filters */}
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{
+                        paddingHorizontal: 16,
+                        gap: 8,
+                        marginBottom: 20,
+                    }}
+                >
+                    <TouchableOpacity
+                        onPress={() => setSelectedCategory(null)}
+                        style={{
+                            backgroundColor: !selectedCategory ? Colors.black : Colors.white,
+                            borderWidth: 2,
+                            borderColor: Colors.black,
+                            paddingHorizontal: 16,
+                            paddingVertical: 10,
+                        }}
+                    >
+                        <Text style={{
+                            color: !selectedCategory ? Colors.white : Colors.black,
+                            fontWeight: '900',
+                            fontSize: 12,
+                            textTransform: 'uppercase',
+                            letterSpacing: 1,
+                        }}>
+                            Tout
+                        </Text>
+                    </TouchableOpacity>
+                    {CATEGORIES.map((cat) => {
+                        const isActive = selectedCategory === cat.key;
+                        const count = products.filter(p => p.category === cat.key).length;
+                        if (count === 0) return null;
+                        return (
+                            <TouchableOpacity
+                                key={cat.key}
+                                onPress={() => setSelectedCategory(isActive ? null : cat.key)}
+                                style={{
+                                    backgroundColor: isActive ? cat.color : Colors.white,
+                                    borderWidth: 2,
+                                    borderColor: isActive ? cat.color : Colors.black,
+                                    paddingHorizontal: 14,
+                                    paddingVertical: 10,
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    gap: 6,
+                                }}
+                            >
+                                <SymbolView
+                                    name={cat.icon as any}
+                                    size={14}
+                                    tintColor={isActive ? Colors.white : cat.color}
+                                />
+                                <Text style={{
+                                    color: isActive ? Colors.white : Colors.black,
+                                    fontWeight: '800',
+                                    fontSize: 12,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: 0.5,
+                                }}>
+                                    {cat.key}
+                                </Text>
+                                <Text style={{
+                                    color: isActive ? 'rgba(255,255,255,0.7)' : Colors.mediumGray,
+                                    fontWeight: '700',
+                                    fontSize: 11,
+                                }}>
+                                    {count}
+                                </Text>
+                            </TouchableOpacity>
+                        );
+                    })}
+                </ScrollView>
+
+                {/* Products grouped by category */}
                 {filteredProducts.length === 0 ? (
                     <View style={{
                         alignItems: 'center',
@@ -590,34 +705,92 @@ export default function ShopScreen() {
                         paddingVertical: 80,
                     }}>
                         <View style={{
-                            backgroundColor: Colors.systemFill,
+                            backgroundColor: Colors.offWhite,
                             padding: 24,
-                            borderRadius: 48,
-                            borderCurve: 'continuous',
+                            borderRadius: 0,
+                            borderWidth: 2,
+                            borderColor: Colors.black,
                             marginBottom: 16,
+                            ...brutalistShadow,
                         }}>
-                            <SymbolView 
-                                name="bag.fill" 
+                            <SymbolView
+                                name="bag.fill"
                                 size={48}
-                                tintColor={Colors.tertiaryLabel}
+                                tintColor={Colors.mediumGray}
                             />
                         </View>
                         <Text style={{
-                            color: Colors.secondaryLabel,
+                            color: Colors.black,
                             fontSize: 17,
-                            fontWeight: '600',
+                            fontWeight: '800',
+                            textTransform: 'uppercase',
+                            letterSpacing: 1,
                         }}>
-                            {searchQuery ? 'Aucun produit trouvé' : 'Boutique vide'}
+                            {searchQuery ? 'Aucun produit trouve' : 'Boutique vide'}
                         </Text>
                     </View>
                 ) : (
-                    <View style={{
-                        paddingHorizontal: 10,
-                        flexDirection: 'row',
-                        flexWrap: 'wrap',
-                        gap: 12,
-                    }}>
-                        {filteredProducts.map((item, index) => renderProduct({ item, index }))}
+                    <View style={{ paddingBottom: 16 }}>
+                        {sortedCategories.map((category) => (
+                            <View key={category} style={{ marginBottom: 24 }}>
+                                {/* Category Header */}
+                                <View style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    paddingHorizontal: 16,
+                                    marginBottom: 12,
+                                    gap: 10,
+                                }}>
+                                    <View style={{
+                                        backgroundColor: getCategoryColor(category),
+                                        padding: 6,
+                                        borderWidth: 2,
+                                        borderColor: Colors.black,
+                                    }}>
+                                        <SymbolView
+                                            name={getCategoryIcon(category) as any}
+                                            size={16}
+                                            tintColor={Colors.white}
+                                        />
+                                    </View>
+                                    <Text style={{
+                                        fontSize: 16,
+                                        fontWeight: '900',
+                                        color: Colors.black,
+                                        textTransform: 'uppercase',
+                                        letterSpacing: 2,
+                                        flex: 1,
+                                    }}>
+                                        {category}
+                                    </Text>
+                                    <Text style={{
+                                        fontSize: 13,
+                                        fontWeight: '700',
+                                        color: Colors.mediumGray,
+                                    }}>
+                                        {groupedProducts[category].length} article{groupedProducts[category].length > 1 ? 's' : ''}
+                                    </Text>
+                                </View>
+
+                                {/* Category separator line */}
+                                <View style={{
+                                    height: 2,
+                                    backgroundColor: Colors.black,
+                                    marginHorizontal: 16,
+                                    marginBottom: 12,
+                                }} />
+
+                                {/* Products Grid */}
+                                <View style={{
+                                    paddingHorizontal: 10,
+                                    flexDirection: 'row',
+                                    flexWrap: 'wrap',
+                                    gap: 12,
+                                }}>
+                                    {groupedProducts[category].map((item, index) => renderProduct({ item, index }))}
+                                </View>
+                            </View>
+                        ))}
                     </View>
                 )}
             </ScrollView>
@@ -631,7 +804,7 @@ export default function ShopScreen() {
             >
                 <View style={{
                     flex: 1,
-                    backgroundColor: Colors.systemGroupedBackground,
+                    backgroundColor: Colors.white,
                 }}>
                     {/* Modal Header */}
                     <View style={{
@@ -640,22 +813,32 @@ export default function ShopScreen() {
                         justifyContent: 'space-between',
                         padding: 16,
                         paddingTop: 24,
-                        backgroundColor: Colors.secondarySystemGroupedBackground,
-                        borderBottomWidth: 1,
-                        borderBottomColor: Colors.separator,
+                        backgroundColor: Colors.white,
+                        borderBottomWidth: 2,
+                        borderBottomColor: Colors.black,
                     }}>
                         <Text style={{
                             fontSize: 20,
-                            fontWeight: '700',
-                            color: Colors.label,
+                            fontWeight: '900',
+                            color: Colors.black,
+                            textTransform: 'uppercase',
+                            letterSpacing: 1,
                         }}>
                             Confirmer l'achat
                         </Text>
-                        <TouchableOpacity onPress={() => setShowPurchaseModal(false)}>
-                            <SymbolView 
-                                name="xmark.circle.fill" 
-                                size={28}
-                                tintColor={Colors.tertiaryLabel}
+                        <TouchableOpacity
+                            onPress={() => setShowPurchaseModal(false)}
+                            style={{
+                                borderWidth: 2,
+                                borderColor: Colors.black,
+                                borderRadius: 0,
+                                padding: 4,
+                            }}
+                        >
+                            <SymbolView
+                                name="xmark"
+                                size={20}
+                                tintColor={Colors.black}
                             />
                         </TouchableOpacity>
                     </View>
@@ -665,30 +848,35 @@ export default function ShopScreen() {
                             <>
                                 {/* Product Info */}
                                 <View style={{
-                                    backgroundColor: Colors.secondarySystemGroupedBackground,
-                                    borderRadius: 16,
-                                    borderCurve: 'continuous',
+                                    backgroundColor: Colors.white,
+                                    borderRadius: 0,
+                                    borderWidth: 2,
+                                    borderColor: Colors.black,
                                     padding: 16,
-                                    marginBottom: 24,
+                                    marginBottom: 16,
+                                    ...brutalistShadow,
                                 }}>
                                     <Text style={{
                                         fontSize: 20,
-                                        fontWeight: '700',
-                                        color: Colors.label,
+                                        fontWeight: '900',
+                                        color: Colors.black,
                                         marginBottom: 8,
+                                        textTransform: 'uppercase',
+                                        letterSpacing: 0.5,
                                     }}>
                                         {selectedProduct.name}
                                     </Text>
                                     <Text style={{
                                         fontSize: 15,
-                                        color: Colors.secondaryLabel,
+                                        color: Colors.mediumGray,
                                         marginBottom: 12,
+                                        fontWeight: '700',
                                     }}>
                                         {selectedProduct.description}
                                     </Text>
                                     <Text style={{
                                         fontSize: 24,
-                                        fontWeight: '700',
+                                        fontWeight: '900',
                                         color: Colors.epitechBlue,
                                         fontVariant: ['tabular-nums'],
                                     }}>
@@ -698,11 +886,13 @@ export default function ShopScreen() {
 
                                 {/* Quantity Slider */}
                                 <View style={{
-                                    backgroundColor: Colors.secondarySystemGroupedBackground,
-                                    borderRadius: 16,
-                                    borderCurve: 'continuous',
+                                    backgroundColor: Colors.white,
+                                    borderRadius: 0,
+                                    borderWidth: 2,
+                                    borderColor: Colors.black,
                                     padding: 16,
-                                    marginBottom: 24,
+                                    marginBottom: 16,
+                                    ...brutalistShadow,
                                 }}>
                                     <View style={{
                                         flexDirection: 'row',
@@ -712,8 +902,10 @@ export default function ShopScreen() {
                                     }}>
                                         <Text style={{
                                             fontSize: 17,
-                                            fontWeight: '600',
-                                            color: Colors.label,
+                                            fontWeight: '800',
+                                            color: Colors.black,
+                                            textTransform: 'uppercase',
+                                            letterSpacing: 1,
                                         }}>
                                             Quantité
                                         </Text>
@@ -721,13 +913,14 @@ export default function ShopScreen() {
                                             backgroundColor: Colors.epitechBlue,
                                             paddingHorizontal: 16,
                                             paddingVertical: 8,
-                                            borderRadius: 12,
-                                            borderCurve: 'continuous',
+                                            borderRadius: 0,
+                                            borderWidth: 2,
+                                            borderColor: Colors.black,
                                         }}>
                                             <Text style={{
                                                 fontSize: 20,
-                                                fontWeight: '700',
-                                                color: '#fff',
+                                                fontWeight: '900',
+                                                color: Colors.white,
                                                 fontVariant: ['tabular-nums'],
                                             }}>
                                                 {quantity}
@@ -741,19 +934,21 @@ export default function ShopScreen() {
                                         step={1}
                                         value={quantity}
                                         onValueChange={setQuantity}
-                                        minimumTrackTintColor="#0091D3"
-                                        maximumTrackTintColor="rgba(120, 120, 128, 0.2)"
-                                        thumbTintColor="#0091D3"
+                                        minimumTrackTintColor={Colors.epitechBlue}
+                                        maximumTrackTintColor={Colors.lightGray}
+                                        thumbTintColor={Colors.epitechBlue}
                                     />
                                 </View>
 
                                 {/* Total */}
                                 <View style={{
-                                    backgroundColor: Colors.secondarySystemGroupedBackground,
-                                    borderRadius: 16,
-                                    borderCurve: 'continuous',
+                                    backgroundColor: Colors.offWhite,
+                                    borderRadius: 0,
+                                    borderWidth: 2,
+                                    borderColor: Colors.black,
                                     padding: 16,
-                                    marginBottom: 24,
+                                    marginBottom: 16,
+                                    ...brutalistShadow,
                                 }}>
                                     <View style={{
                                         flexDirection: 'row',
@@ -762,14 +957,16 @@ export default function ShopScreen() {
                                     }}>
                                         <Text style={{
                                             fontSize: 17,
-                                            fontWeight: '600',
-                                            color: Colors.label,
+                                            fontWeight: '800',
+                                            color: Colors.black,
+                                            textTransform: 'uppercase',
+                                            letterSpacing: 1,
                                         }}>
                                             Total
                                         </Text>
                                         <Text style={{
                                             fontSize: 28,
-                                            fontWeight: '700',
+                                            fontWeight: '900',
                                             color: Colors.epitechBlue,
                                             fontVariant: ['tabular-nums'],
                                         }}>
@@ -780,11 +977,13 @@ export default function ShopScreen() {
 
                                 {/* Auth Method */}
                                 <View style={{
-                                    backgroundColor: Colors.secondarySystemGroupedBackground,
-                                    borderRadius: 16,
-                                    borderCurve: 'continuous',
+                                    backgroundColor: Colors.white,
+                                    borderRadius: 0,
+                                    borderWidth: 2,
+                                    borderColor: Colors.black,
                                     padding: 16,
-                                    marginBottom: 24,
+                                    marginBottom: 16,
+                                    ...brutalistShadow,
                                 }}>
                                     {biometricType !== 'none' && (
                                         <View style={{
@@ -795,15 +994,17 @@ export default function ShopScreen() {
                                         }}>
                                             <Text style={{
                                                 fontSize: 15,
-                                                fontWeight: '600',
-                                                color: Colors.label,
+                                                fontWeight: '800',
+                                                color: Colors.black,
+                                                textTransform: 'uppercase',
+                                                letterSpacing: 0.5,
                                             }}>
                                                 Utiliser {getBiometricLabel()}
                                             </Text>
                                             <Switch
                                                 value={authMethod === 'biometric'}
                                                 onValueChange={(value) => setAuthMethod(value ? 'biometric' : 'password')}
-                                                trackColor={{ false: Colors.systemFill, true: Colors.epitechBlue }}
+                                                trackColor={{ false: Colors.lightGray, true: Colors.epitechBlue }}
                                             />
                                         </View>
                                     )}
@@ -812,23 +1013,27 @@ export default function ShopScreen() {
                                         <View>
                                             <Text style={{
                                                 fontSize: 15,
-                                                fontWeight: '600',
-                                                color: Colors.label,
+                                                fontWeight: '800',
+                                                color: Colors.black,
                                                 marginBottom: 8,
+                                                textTransform: 'uppercase',
+                                                letterSpacing: 0.5,
                                             }}>
                                                 Mot de passe
                                             </Text>
                                             <TextInput
                                                 style={{
-                                                    backgroundColor: Colors.systemFill,
-                                                    borderRadius: 12,
-                                                    borderCurve: 'continuous',
+                                                    backgroundColor: Colors.offWhite,
+                                                    borderRadius: 0,
+                                                    borderWidth: 2,
+                                                    borderColor: Colors.black,
                                                     padding: 12,
                                                     fontSize: 16,
-                                                    color: Colors.label,
+                                                    color: Colors.black,
+                                                    fontWeight: '700',
                                                 }}
                                                 placeholder="Entrez votre mot de passe"
-                                                placeholderTextColor={Colors.tertiaryLabel}
+                                                placeholderTextColor={Colors.mediumGray}
                                                 value={password}
                                                 onChangeText={setPassword}
                                                 secureTextEntry
@@ -842,32 +1047,36 @@ export default function ShopScreen() {
                                 <TouchableOpacity
                                     style={{
                                         backgroundColor: Colors.epitechBlue,
-                                        borderRadius: 14,
-                                        borderCurve: 'continuous',
+                                        borderRadius: 0,
+                                        borderWidth: 2,
+                                        borderColor: Colors.black,
                                         padding: 16,
                                         alignItems: 'center',
                                         flexDirection: 'row',
                                         justifyContent: 'center',
                                         gap: 8,
+                                        ...brutalistShadow,
                                     }}
                                     onPress={handleConfirmPurchase}
                                     disabled={purchasing || (authMethod === 'password' && !password)}
                                 >
                                     {purchasing ? (
-                                        <ActivityIndicator color="#fff" />
+                                        <ActivityIndicator color={Colors.white} />
                                     ) : (
                                         <>
-                                            <SymbolView 
-                                                name={(authMethod === 'biometric' ? getBiometricIcon() : 'lock.fill') as any} 
+                                            <SymbolView
+                                                name={(authMethod === 'biometric' ? getBiometricIcon() : 'lock.fill') as any}
                                                 size={20}
-                                                tintColor="#fff"
+                                                tintColor={Colors.white}
                                             />
                                             <Text style={{
-                                                color: '#fff',
+                                                color: Colors.white,
                                                 fontSize: 17,
-                                                fontWeight: '700',
+                                                fontWeight: '900',
+                                                textTransform: 'uppercase',
+                                                letterSpacing: 1,
                                             }}>
-                                                {authMethod === 'biometric' 
+                                                {authMethod === 'biometric'
                                                     ? `Confirmer avec ${getBiometricLabel()}`
                                                     : 'Confirmer l\'achat'
                                                 }

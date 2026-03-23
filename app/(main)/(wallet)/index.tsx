@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { router, useFocusEffect } from 'expo-router';
 import React, { useCallback, useState } from 'react';
-import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../../lib/supabase';
 import { Colors } from '@/constants/NativeColors';
 
@@ -38,7 +38,6 @@ export default function WalletScreen() {
                     if (!user) return;
 
                     setCurrentUserId(user.id);
-
                     await fetchData(user.id);
 
                     subscription = supabase
@@ -56,7 +55,6 @@ export default function WalletScreen() {
                             }
                         )
                         .subscribe();
-
                 } catch (e) {
                     console.error(e);
                 }
@@ -129,96 +127,64 @@ export default function WalletScreen() {
             const bonus = tx.metadata?.bonus || 0;
             return {
                 icon: 'plus.circle.fill',
-                color: Colors.systemGreen,
-                bg: 'rgba(16, 185, 129, 0.15)',
+                color: Colors.success,
                 label: bonus > 0 ? `Rechargement (+${bonus} bonus)` : 'Rechargement',
                 prefix: '+',
-                amountColor: Colors.systemGreen,
+                amountColor: Colors.success,
             };
         }
 
         if (isPurchase) {
             const productName = tx.metadata?.product_name || 'Produit';
             let label = `Achat ${productName}`;
-
-            if (tx.status === 'pending_review') {
-                label += ' (en attente)';
-            } else if (tx.status === 'failed') {
-                const refunded = tx.metadata?.refunded;
-                label += refunded ? ' (remboursé)' : ' (échoué)';
+            if (tx.status === 'pending_review') label += ' (en attente)';
+            else if (tx.status === 'failed') {
+                label += tx.metadata?.refunded ? ' (rembourse)' : ' (echoue)';
             }
-
             return {
                 icon: 'cart.fill',
-                color: Colors.systemOrange,
-                bg: 'rgba(245, 158, 11, 0.15)',
+                color: Colors.accentOrange,
                 label,
                 prefix: '-',
-                amountColor: Colors.systemRed,
+                amountColor: Colors.accentOrange,
             };
         }
 
         if (isSender) {
-            let label = `Envoyé à ${tx.receiver?.full_name || 'Utilisateur'}`;
-            if (tx.status === 'pending_review') {
-                label += ' (en attente)';
-            } else if (tx.status === 'failed') {
-                label += ' (échoué)';
-            }
-
+            let label = `Envoye a ${tx.receiver?.full_name || 'Utilisateur'}`;
+            if (tx.status === 'pending_review') label += ' (en attente)';
+            else if (tx.status === 'failed') label += ' (echoue)';
             return {
                 icon: 'arrow.up.circle.fill',
-                color: Colors.systemRed,
-                bg: 'rgba(239, 68, 68, 0.15)',
+                color: Colors.accentOrange,
                 label,
                 prefix: '-',
-                amountColor: Colors.systemRed,
+                amountColor: Colors.accentOrange,
             };
         }
 
-        let label = `Reçu de ${tx.sender?.full_name || 'Utilisateur'}`;
-        if (tx.status === 'pending_review') {
-            label += ' (en attente)';
-        } else if (tx.status === 'failed') {
-            label += ' (échoué)';
-        }
-
+        let label = `Recu de ${tx.sender?.full_name || 'Utilisateur'}`;
+        if (tx.status === 'pending_review') label += ' (en attente)';
+        else if (tx.status === 'failed') label += ' (echoue)';
         return {
             icon: 'arrow.down.circle.fill',
-            color: Colors.systemGreen,
-            bg: 'rgba(16, 185, 129, 0.15)',
+            color: Colors.success,
             label,
             prefix: '+',
-            amountColor: Colors.systemGreen,
+            amountColor: Colors.success,
         };
     }
 
     function getStatusBadge(status: string) {
         switch (status) {
             case 'completed':
-                return { 
-                    label: 'Complété', 
-                    bg: 'rgba(16, 185, 129, 0.15)', 
-                    color: Colors.systemGreen 
-                };
+                return { label: 'COMPLETE', color: Colors.success };
             case 'pending_review':
-                return { 
-                    label: 'En attente', 
-                    bg: 'rgba(245, 158, 11, 0.15)', 
-                    color: Colors.systemOrange 
-                };
+                return { label: 'EN ATTENTE', color: Colors.accentOrange };
             case 'failed':
-                return { 
-                    label: 'Échoué', 
-                    bg: 'rgba(239, 68, 68, 0.15)', 
-                    color: Colors.systemRed 
-                };
+                return { label: 'ECHOUE', color: Colors.accentOrange };
             default:
-                return { 
-                    label: status, 
-                    bg: Colors.systemFill, 
-                    color: Colors.secondaryLabel 
-                };
+                return { label: status.toUpperCase(), color: Colors.mediumGray };
         }
     }
 
@@ -228,7 +194,7 @@ export default function WalletScreen() {
                 flex: 1,
                 justifyContent: 'center',
                 alignItems: 'center',
-                backgroundColor: Colors.systemGroupedBackground,
+                backgroundColor: Colors.white,
             }}>
                 <ActivityIndicator size="large" color={Colors.epitechBlue} />
             </View>
@@ -240,11 +206,11 @@ export default function WalletScreen() {
             contentInsetAdjustmentBehavior="automatic"
             style={{
                 flex: 1,
-                backgroundColor: Colors.systemGroupedBackground,
+                backgroundColor: Colors.white,
             }}
             contentContainerStyle={{
-                padding: 16,
-                gap: 24,
+                padding: 20,
+                paddingBottom: 40,
             }}
             refreshControl={
                 <RefreshControl
@@ -254,222 +220,219 @@ export default function WalletScreen() {
                 />
             }
         >
-            {/* Header */}
+            {/* ── Header ── */}
             <View style={{
                 flexDirection: 'row',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                paddingTop: 16,
+                paddingTop: 8,
+                marginBottom: 28,
             }}>
-                <View>
-                    <Text style={{ 
-                        color: Colors.secondaryLabel, 
-                        fontSize: 16,
-                        marginBottom: 4,
-                    }}>
-                        Bonjour,
-                    </Text>
-                    <Text style={{ 
-                        fontSize: 28, 
-                        fontWeight: '700', 
-                        color: Colors.label,
-                    }}>
-                        {fullName}
-                    </Text>
-                </View>
+                <Image
+                    source={require('../../../assets/images/epipay-logo.png')}
+                    style={{ width: 120, height: 40 }}
+                    resizeMode="contain"
+                />
                 <TouchableOpacity
                     style={{
-                        width: 48,
-                        height: 48,
+                        width: 40,
+                        height: 40,
                         backgroundColor: Colors.epitechBlue,
-                        borderRadius: 24,
                         alignItems: 'center',
                         justifyContent: 'center',
+                        borderWidth: 2,
+                        borderColor: Colors.black,
                     }}
                     onPress={() => router.push('/(profile)' as any)}
                 >
-                    <Text style={{ 
-                        color: '#fff', 
-                        fontWeight: '700', 
-                        fontSize: 20,
+                    <Text style={{
+                        color: Colors.white,
+                        fontWeight: '900',
+                        fontSize: 17,
                     }}>
                         {fullName.charAt(0)}
                     </Text>
                 </TouchableOpacity>
             </View>
 
-            {/* Balance Card */}
+            {/* ── Greeting ── */}
+            <View style={{ marginBottom: 24 }}>
+                <Text style={{
+                    color: Colors.mediumGray,
+                    fontSize: 13,
+                    fontWeight: '700',
+                    textTransform: 'uppercase',
+                    letterSpacing: 2,
+                    marginBottom: 4,
+                }}>
+                    Bonjour
+                </Text>
+                <Text style={{
+                    fontSize: 28,
+                    fontWeight: '900',
+                    color: Colors.black,
+                    textTransform: 'uppercase',
+                    letterSpacing: 0.5,
+                }}>
+                    {fullName}
+                </Text>
+            </View>
+
+            {/* ── Balance Card ── */}
             <View style={{
                 backgroundColor: Colors.epitechBlue,
-                borderRadius: 24,
-                borderCurve: 'continuous',
-                padding: 32,
-                boxShadow: '0 4px 12px rgba(0, 145, 211, 0.25)',
-                overflow: 'hidden',
+                padding: 28,
+                borderWidth: 3,
+                borderColor: Colors.black,
+                marginBottom: 32,
+                shadowColor: Colors.black,
+                shadowOffset: { width: 6, height: 6 },
+                shadowOpacity: 1,
+                shadowRadius: 0,
+                elevation: 0,
             }}>
-                <View style={{
-                    position: 'absolute',
-                    right: -40,
-                    top: -40,
-                    width: 160,
-                    height: 160,
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    borderRadius: 80,
-                }} />
-                <View style={{
-                    position: 'absolute',
-                    right: -20,
-                    bottom: 0,
-                    width: 96,
-                    height: 96,
-                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                    borderRadius: 48,
-                }} />
-
                 <Text style={{
-                    color: 'rgba(255, 255, 255, 0.75)',
-                    fontSize: 13,
-                    fontWeight: '600',
-                    marginBottom: 8,
+                    color: 'rgba(255, 255, 255, 0.6)',
+                    fontSize: 11,
+                    fontWeight: '900',
                     textTransform: 'uppercase',
-                    letterSpacing: 1,
+                    letterSpacing: 3,
+                    marginBottom: 12,
                 }}>
                     Solde disponible
                 </Text>
                 <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
                     <Text style={{
-                        color: '#fff',
-                        fontSize: 48,
-                        fontWeight: '700',
-                        marginRight: 8,
+                        color: Colors.white,
+                        fontSize: 52,
+                        fontWeight: '900',
                         fontVariant: ['tabular-nums'],
+                        letterSpacing: -2,
                     }}>
                         {balance?.toFixed(2)}
                     </Text>
                     <Text style={{
-                        color: Colors.epitechYellow,
-                        fontSize: 24,
-                        fontWeight: '700',
+                        color: Colors.neonGreen,
+                        fontSize: 22,
+                        fontWeight: '900',
+                        marginLeft: 8,
+                        textTransform: 'uppercase',
                     }}>
                         EPC
                     </Text>
                 </View>
             </View>
 
-            {/* Quick Actions */}
-            <View>
+            {/* ── Quick Actions ── */}
+            <View style={{ marginBottom: 32 }}>
                 <Text style={{
-                    fontSize: 20,
-                    fontWeight: '700',
-                    color: Colors.label,
+                    fontSize: 13,
+                    fontWeight: '900',
+                    color: Colors.mediumGray,
                     marginBottom: 16,
+                    textTransform: 'uppercase',
+                    letterSpacing: 3,
                 }}>
                     Actions rapides
                 </Text>
-                <View style={{ 
-                    flexDirection: 'row', 
-                    gap: 12,
-                }}>
+                <View style={{ flexDirection: 'row', gap: 12 }}>
+                    {/* Recharger */}
                     <TouchableOpacity
                         style={{
                             flex: 1,
-                            backgroundColor: Colors.secondarySystemGroupedBackground,
-                            padding: 16,
-                            borderRadius: 16,
-                            borderCurve: 'continuous',
-                            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
+                            backgroundColor: Colors.offWhite,
+                            padding: 20,
+                            borderWidth: 2,
+                            borderColor: Colors.black,
                             alignItems: 'center',
                             justifyContent: 'center',
+                            shadowColor: Colors.black,
+                            shadowOffset: { width: 3, height: 3 },
+                            shadowOpacity: 1,
+                            shadowRadius: 0,
                         }}
                         onPress={() => router.push('/top-up')}
                     >
-                        <View style={{
-                            backgroundColor: 'rgba(16, 185, 129, 0.15)',
-                            padding: 12,
-                            borderRadius: 24,
-                            borderCurve: 'continuous',
-                            marginBottom: 8,
-                        }}>
-                            <SymbolView 
-                                name="plus.circle.fill" 
-                                size={24}
-                                tintColor={Colors.systemGreen}
-                            />
-                        </View>
+                        <SymbolView
+                            name="plus.circle.fill"
+                            size={28}
+                            tintColor={Colors.success}
+                        />
                         <Text style={{
-                            fontWeight: '600',
-                            color: Colors.label,
-                            fontSize: 13,
+                            fontWeight: '800',
+                            color: Colors.black,
+                            fontSize: 10,
+                            marginTop: 10,
+                            textTransform: 'uppercase',
+                            letterSpacing: 0,
                         }}>
                             Recharger
                         </Text>
                     </TouchableOpacity>
 
+                    {/* Payer */}
                     <TouchableOpacity
                         style={{
                             flex: 1,
-                            backgroundColor: Colors.secondarySystemGroupedBackground,
-                            padding: 16,
-                            borderRadius: 16,
-                            borderCurve: 'continuous',
-                            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
+                            backgroundColor: Colors.offWhite,
+                            padding: 20,
+                            borderWidth: 2,
+                            borderColor: Colors.black,
                             alignItems: 'center',
                             justifyContent: 'center',
+                            shadowColor: Colors.black,
+                            shadowOffset: { width: 3, height: 3 },
+                            shadowOpacity: 1,
+                            shadowRadius: 0,
                         }}
                         onPress={() => router.push('/pay')}
                     >
-                        <View style={{
-                            backgroundColor: 'rgba(147, 51, 234, 0.15)',
-                            padding: 12,
-                            borderRadius: 24,
-                            borderCurve: 'continuous',
-                            marginBottom: 8,
-                        }}>
-                            <SymbolView 
-                                name="qrcode" 
-                                size={24}
-                                tintColor={Colors.systemPurple}
-                            />
-                        </View>
+                        <SymbolView
+                            name="qrcode"
+                            size={28}
+                            tintColor={Colors.accentMagenta}
+                        />
                         <Text style={{
-                            fontWeight: '600',
-                            color: Colors.label,
-                            fontSize: 13,
+                            fontWeight: '800',
+                            color: Colors.black,
+                            fontSize: 11,
+                            marginTop: 10,
+                            textTransform: 'uppercase',
+                            letterSpacing: 1.5,
                         }}>
                             Payer
                         </Text>
                     </TouchableOpacity>
 
+                    {/* Envoyer */}
                     <TouchableOpacity
                         style={{
                             flex: 1,
-                            backgroundColor: Colors.secondarySystemGroupedBackground,
-                            padding: 16,
-                            borderRadius: 16,
-                            borderCurve: 'continuous',
-                            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
+                            backgroundColor: Colors.offWhite,
+                            padding: 20,
+                            borderWidth: 2,
+                            borderColor: Colors.black,
                             alignItems: 'center',
                             justifyContent: 'center',
+                            shadowColor: Colors.black,
+                            shadowOffset: { width: 3, height: 3 },
+                            shadowOpacity: 1,
+                            shadowRadius: 0,
                         }}
                         onPress={() => router.push('/send')}
                     >
-                        <View style={{
-                            backgroundColor: 'rgba(0, 145, 211, 0.15)',
-                            padding: 12,
-                            borderRadius: 24,
-                            borderCurve: 'continuous',
-                            marginBottom: 8,
-                        }}>
-                            <SymbolView 
-                                name="paperplane.fill" 
-                                size={24}
-                                tintColor={Colors.epitechBlue}
-                            />
-                        </View>
+                        <SymbolView
+                            name="paperplane.fill"
+                            size={28}
+                            tintColor={Colors.epitechBlue}
+                        />
                         <Text style={{
-                            fontWeight: '600',
-                            color: Colors.label,
-                            fontSize: 13,
+                            fontWeight: '800',
+                            color: Colors.black,
+                            fontSize: 11,
+                            marginTop: 10,
+                            textTransform: 'uppercase',
+                            letterSpacing: 1.5,
                         }}>
                             Envoyer
                         </Text>
@@ -477,7 +440,7 @@ export default function WalletScreen() {
                 </View>
             </View>
 
-            {/* Recent Transactions */}
+            {/* ── Recent Transactions ── */}
             <View>
                 <View style={{
                     flexDirection: 'row',
@@ -486,17 +449,21 @@ export default function WalletScreen() {
                     marginBottom: 16,
                 }}>
                     <Text style={{
-                        fontSize: 20,
-                        fontWeight: '700',
-                        color: Colors.label,
+                        fontSize: 13,
+                        fontWeight: '900',
+                        color: Colors.mediumGray,
+                        textTransform: 'uppercase',
+                        letterSpacing: 3,
                     }}>
-                        Activité récente
+                        Activite recente
                     </Text>
                     <TouchableOpacity onPress={() => router.push('/(history)' as any)}>
                         <Text style={{
                             color: Colors.epitechBlue,
-                            fontWeight: '600',
-                            fontSize: 15,
+                            fontWeight: '800',
+                            fontSize: 13,
+                            textTransform: 'uppercase',
+                            letterSpacing: 1,
                         }}>
                             Voir tout
                         </Text>
@@ -505,10 +472,9 @@ export default function WalletScreen() {
 
                 {recentTransactions.length > 0 ? (
                     <View style={{
-                        backgroundColor: Colors.secondarySystemGroupedBackground,
-                        borderRadius: 16,
-                        borderCurve: 'continuous',
-                        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
+                        backgroundColor: Colors.white,
+                        borderWidth: 2,
+                        borderColor: Colors.black,
                         overflow: 'hidden',
                     }}>
                         {recentTransactions.map((tx, index) => {
@@ -519,52 +485,58 @@ export default function WalletScreen() {
                                     key={tx.id}
                                     style={{
                                         padding: 16,
-                                        borderBottomWidth: index < recentTransactions.length - 1 ? 1 : 0,
-                                        borderBottomColor: Colors.separator,
+                                        borderBottomWidth: index < recentTransactions.length - 1 ? 2 : 0,
+                                        borderBottomColor: Colors.lightGray,
                                     }}
                                 >
                                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                         <View style={{
-                                            backgroundColor: display.bg,
-                                            padding: 10,
-                                            borderRadius: 20,
-                                            borderCurve: 'continuous',
+                                            width: 40,
+                                            height: 40,
+                                            backgroundColor: Colors.offWhite,
+                                            borderWidth: 2,
+                                            borderColor: display.color,
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
                                             marginRight: 12,
                                         }}>
-                                            <SymbolView 
-                                                name={display.icon as any} 
-                                                size={20}
+                                            <SymbolView
+                                                name={display.icon as any}
+                                                size={18}
                                                 tintColor={display.color}
                                             />
                                         </View>
                                         <View style={{ flex: 1 }}>
                                             <Text style={{
-                                                fontWeight: '600',
-                                                color: Colors.label,
-                                                fontSize: 15,
+                                                fontWeight: '700',
+                                                color: Colors.black,
+                                                fontSize: 14,
                                             }} numberOfLines={1}>
                                                 {display.label}
                                             </Text>
                                             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
                                                 <Text style={{
-                                                    color: Colors.tertiaryLabel,
-                                                    fontSize: 12,
+                                                    color: Colors.mediumGray,
+                                                    fontSize: 11,
+                                                    fontWeight: '600',
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: 0.5,
                                                 }}>
-                                                    {format(new Date(tx.created_at), "d MMM 'à' HH:mm", { locale: fr })}
+                                                    {format(new Date(tx.created_at), "d MMM 'a' HH:mm", { locale: fr })}
                                                 </Text>
                                                 {tx.status !== 'completed' && (
                                                     <View style={{
-                                                        backgroundColor: status.bg,
-                                                        paddingHorizontal: 8,
+                                                        borderWidth: 1.5,
+                                                        borderColor: status.color,
+                                                        paddingHorizontal: 6,
                                                         paddingVertical: 2,
-                                                        borderRadius: 10,
-                                                        borderCurve: 'continuous',
                                                         marginLeft: 8,
                                                     }}>
                                                         <Text style={{
                                                             color: status.color,
-                                                            fontSize: 11,
-                                                            fontWeight: '600',
+                                                            fontSize: 9,
+                                                            fontWeight: '900',
+                                                            letterSpacing: 1,
                                                         }}>
                                                             {status.label}
                                                         </Text>
@@ -573,12 +545,12 @@ export default function WalletScreen() {
                                             </View>
                                         </View>
                                         <Text style={{
-                                            fontWeight: '700',
+                                            fontWeight: '900',
                                             color: display.amountColor,
                                             fontSize: 15,
                                             fontVariant: ['tabular-nums'],
                                         }}>
-                                            {display.prefix}{tx.amount.toFixed(2)} EPC
+                                            {display.prefix}{tx.amount.toFixed(2)}
                                         </Text>
                                     </View>
                                 </View>
@@ -587,32 +559,37 @@ export default function WalletScreen() {
                     </View>
                 ) : (
                     <View style={{
-                        backgroundColor: Colors.secondarySystemGroupedBackground,
-                        borderRadius: 16,
-                        borderCurve: 'continuous',
-                        padding: 32,
-                        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
+                        backgroundColor: Colors.offWhite,
+                        borderWidth: 2,
+                        borderColor: Colors.black,
+                        padding: 40,
                         alignItems: 'center',
                     }}>
                         <View style={{
-                            backgroundColor: Colors.systemFill,
-                            padding: 16,
-                            borderRadius: 32,
-                            borderCurve: 'continuous',
-                            marginBottom: 12,
+                            width: 56,
+                            height: 56,
+                            backgroundColor: Colors.white,
+                            borderWidth: 2,
+                            borderColor: Colors.mediumGray,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginBottom: 16,
                         }}>
-                            <SymbolView 
-                                name="doc.text" 
-                                size={32}
-                                tintColor={Colors.tertiaryLabel}
+                            <SymbolView
+                                name="doc.text"
+                                size={24}
+                                tintColor={Colors.mediumGray}
                             />
                         </View>
                         <Text style={{
-                            color: Colors.secondaryLabel,
+                            color: Colors.mediumGray,
                             textAlign: 'center',
-                            fontSize: 15,
+                            fontSize: 13,
+                            fontWeight: '700',
+                            textTransform: 'uppercase',
+                            letterSpacing: 1.5,
                         }}>
-                            Aucune transaction récente
+                            Aucune transaction
                         </Text>
                     </View>
                 )}

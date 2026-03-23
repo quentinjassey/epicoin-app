@@ -69,7 +69,7 @@ export default function ProfileScreen() {
                 flex: 1,
                 justifyContent: 'center',
                 alignItems: 'center',
-                backgroundColor: Colors.systemGroupedBackground,
+                backgroundColor: Colors.white,
             }}>
                 <ActivityIndicator size="large" color={Colors.epitechBlue} />
             </View>
@@ -79,40 +79,44 @@ export default function ProfileScreen() {
     const menuItems = [
         {
             icon: 'person.circle',
-            label: 'Informations personnelles',
+            label: 'INFORMATIONS PERSONNELLES',
             description: 'Nom, email, campus',
-            color: Colors.systemBlue,
-            bg: 'rgba(59, 130, 246, 0.15)',
+            color: Colors.epitechBlue,
+            bg: Colors.offWhite,
+            route: '/(main)/(profile)/personal-info' as const,
         },
         {
             icon: 'shield.checkered',
-            label: 'Sécurité',
+            label: 'SÉCURITÉ',
             description: 'Mot de passe, biométrie',
-            color: Colors.systemGreen,
-            bg: 'rgba(16, 185, 129, 0.15)',
+            color: Colors.neonGreen,
+            bg: Colors.offWhite,
+            route: '/(main)/(profile)/security' as const,
         },
         {
             icon: 'bell.badge.fill',
-            label: 'Notifications',
+            label: 'NOTIFICATIONS',
             description: 'Gérer vos alertes',
-            color: Colors.systemOrange,
-            bg: 'rgba(245, 158, 11, 0.15)',
+            color: Colors.accentOrange,
+            bg: Colors.offWhite,
+            route: '/(main)/(profile)/notifications' as const,
         },
         {
             icon: 'questionmark.circle',
-            label: 'Aide & Support',
+            label: 'AIDE & SUPPORT',
             description: 'FAQ, contact',
-            color: Colors.systemPurple,
-            bg: 'rgba(139, 92, 246, 0.15)',
+            color: Colors.accentMagenta,
+            bg: Colors.offWhite,
+            route: '/(main)/(profile)/help' as const,
         },
     ];
 
     return (
-        <ScrollView 
+        <ScrollView
             contentInsetAdjustmentBehavior="automatic"
             style={{
                 flex: 1,
-                backgroundColor: Colors.systemGroupedBackground,
+                backgroundColor: Colors.white,
             }}
             contentContainerStyle={{
                 paddingBottom: 32,
@@ -124,55 +128,69 @@ export default function ProfileScreen() {
                 paddingTop: 100,
                 paddingBottom: 96,
                 paddingHorizontal: 24,
+                borderBottomWidth: 3,
+                borderBottomColor: Colors.black,
             }}>
                 <View style={{ alignItems: 'center' }}>
                     <View style={{
                         width: 96,
                         height: 96,
-                        backgroundColor: '#fff',
-                        borderRadius: 48,
-                        borderCurve: 'continuous',
+                        backgroundColor: Colors.white,
+                        borderRadius: 0,
                         alignItems: 'center',
                         justifyContent: 'center',
-                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                        borderWidth: 3,
+                        borderColor: Colors.black,
+                        shadowColor: Colors.black,
+                        shadowOffset: { width: 4, height: 4 },
+                        shadowOpacity: 1,
+                        shadowRadius: 0,
                         marginBottom: 16,
                     }}>
                         <Text style={{
                             color: Colors.epitechBlue,
                             fontSize: 40,
-                            fontWeight: '700',
+                            fontWeight: '900',
+                            letterSpacing: 2,
                         }}>
                             {profile?.full_name?.charAt(0) || '?'}
                         </Text>
                     </View>
                     <Text style={{
-                        color: '#fff',
+                        color: Colors.white,
                         fontSize: 28,
-                        fontWeight: '700',
+                        fontWeight: '900',
                         marginBottom: 4,
+                        letterSpacing: 1,
+                        textTransform: 'uppercase',
                     }}>
                         {profile?.full_name}
                     </Text>
                     <Text style={{
-                        color: 'rgba(255, 255, 255, 0.75)',
+                        color: Colors.white,
                         fontSize: 15,
+                        fontWeight: '700',
                         marginBottom: 12,
+                        opacity: 0.8,
                     }}>
                         {profile?.email}
                     </Text>
                     <View style={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        backgroundColor: Colors.white,
                         paddingHorizontal: 16,
                         paddingVertical: 6,
-                        borderRadius: 16,
-                        borderCurve: 'continuous',
+                        borderRadius: 0,
+                        borderWidth: 2,
+                        borderColor: Colors.black,
                     }}>
                         <Text style={{
-                            color: '#fff',
-                            fontWeight: '600',
+                            color: Colors.black,
+                            fontWeight: '800',
                             fontSize: 14,
+                            textTransform: 'uppercase',
+                            letterSpacing: 1,
                         }}>
-                            📍 Campus {profile?.campus}
+                            CAMPUS {profile?.campus}
                         </Text>
                     </View>
                 </View>
@@ -185,33 +203,41 @@ export default function ProfileScreen() {
                 marginBottom: 24,
             }}>
                 <View style={{
-                    backgroundColor: Colors.secondarySystemGroupedBackground,
-                    borderRadius: 16,
-                    borderCurve: 'continuous',
+                    backgroundColor: Colors.white,
+                    borderRadius: 0,
                     padding: 24,
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                    borderWidth: 3,
+                    borderColor: Colors.black,
+                    shadowColor: Colors.black,
+                    shadowOffset: { width: 4, height: 4 },
+                    shadowOpacity: 1,
+                    shadowRadius: 0,
                 }}>
                     <Text style={{
-                        color: Colors.secondaryLabel,
+                        color: Colors.mediumGray,
                         fontSize: 13,
+                        fontWeight: '800',
                         marginBottom: 4,
+                        textTransform: 'uppercase',
+                        letterSpacing: 1.5,
                     }}>
-                        Solde disponible
+                        SOLDE DISPONIBLE
                     </Text>
                     <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
                         <Text style={{
                             fontSize: 40,
-                            fontWeight: '700',
-                            color: Colors.label,
+                            fontWeight: '900',
+                            color: Colors.black,
                             fontVariant: ['tabular-nums'],
                         }}>
                             {profile?.balance?.toFixed(2)}
                         </Text>
                         <Text style={{
                             color: Colors.epitechBlue,
-                            fontWeight: '700',
+                            fontWeight: '900',
                             fontSize: 20,
                             marginLeft: 8,
+                            letterSpacing: 2,
                         }}>
                             EPC
                         </Text>
@@ -222,66 +248,75 @@ export default function ProfileScreen() {
             {/* Menu items */}
             <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>
                 <Text style={{
-                    color: Colors.secondaryLabel,
+                    color: Colors.black,
                     fontSize: 13,
-                    fontWeight: '600',
+                    fontWeight: '900',
                     textTransform: 'uppercase',
                     marginBottom: 12,
-                    letterSpacing: 0.5,
+                    letterSpacing: 2,
                 }}>
-                    Paramètres
+                    PARAMÈTRES
                 </Text>
                 <View style={{
-                    backgroundColor: Colors.secondarySystemGroupedBackground,
-                    borderRadius: 16,
-                    borderCurve: 'continuous',
+                    backgroundColor: Colors.white,
+                    borderRadius: 0,
                     overflow: 'hidden',
-                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
+                    borderWidth: 3,
+                    borderColor: Colors.black,
+                    shadowColor: Colors.black,
+                    shadowOffset: { width: 4, height: 4 },
+                    shadowOpacity: 1,
+                    shadowRadius: 0,
                 }}>
                     {menuItems.map((item, index) => (
                         <TouchableOpacity
                             key={item.label}
+                            onPress={() => item.route && router.push(item.route)}
                             style={{
                                 flexDirection: 'row',
                                 alignItems: 'center',
                                 padding: 16,
-                                borderBottomWidth: index < menuItems.length - 1 ? 1 : 0,
-                                borderBottomColor: Colors.separator,
+                                borderBottomWidth: index < menuItems.length - 1 ? 2 : 0,
+                                borderBottomColor: Colors.black,
                             }}
                         >
                             <View style={{
                                 backgroundColor: item.bg,
                                 padding: 12,
-                                borderRadius: 20,
-                                borderCurve: 'continuous',
+                                borderRadius: 0,
                                 marginRight: 16,
+                                borderWidth: 2,
+                                borderColor: Colors.black,
                             }}>
-                                <SymbolView 
-                                    name={item.icon as any} 
+                                <SymbolView
+                                    name={item.icon as any}
                                     size={22}
                                     tintColor={item.color}
                                 />
                             </View>
                             <View style={{ flex: 1 }}>
                                 <Text style={{
-                                    fontWeight: '600',
-                                    color: Colors.label,
-                                    fontSize: 16,
+                                    fontWeight: '800',
+                                    color: Colors.black,
+                                    fontSize: 14,
                                     marginBottom: 2,
+                                    letterSpacing: 0.5,
+                                    textTransform: 'uppercase',
                                 }}>
                                     {item.label}
                                 </Text>
                                 <Text style={{
-                                    color: Colors.tertiaryLabel,
+                                    color: Colors.mediumGray,
                                     fontSize: 13,
+                                    fontWeight: '700',
                                 }}>
                                     {item.description}
                                 </Text>
                             </View>
-                            <SymbolView 
-                                name="chevron.right" 
+                            <SymbolView
+                                name="chevron.right"
                                 size={14}
-                                tintColor={Colors.quaternaryLabel}
+                                tintColor={Colors.black}
                             />
                         </TouchableOpacity>
                     ))}
@@ -292,60 +327,68 @@ export default function ProfileScreen() {
             {profile?.is_admin && (
                 <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>
                     <Text style={{
-                        color: Colors.secondaryLabel,
+                        color: Colors.black,
                         fontSize: 13,
-                        fontWeight: '600',
+                        fontWeight: '900',
                         textTransform: 'uppercase',
                         marginBottom: 12,
-                        letterSpacing: 0.5,
+                        letterSpacing: 2,
                     }}>
-                        Administration
+                        ADMINISTRATION
                     </Text>
                     <TouchableOpacity
                         style={{
-                            backgroundColor: Colors.secondarySystemGroupedBackground,
-                            borderRadius: 16,
-                            borderCurve: 'continuous',
+                            backgroundColor: Colors.white,
+                            borderRadius: 0,
                             padding: 16,
-                            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
+                            borderWidth: 3,
+                            borderColor: Colors.black,
+                            shadowColor: Colors.black,
+                            shadowOffset: { width: 4, height: 4 },
+                            shadowOpacity: 1,
+                            shadowRadius: 0,
                             flexDirection: 'row',
                             alignItems: 'center',
                         }}
                         onPress={() => router.push('/admin')}
                     >
                         <View style={{
-                            backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                            backgroundColor: Colors.offWhite,
                             padding: 12,
-                            borderRadius: 20,
-                            borderCurve: 'continuous',
+                            borderRadius: 0,
                             marginRight: 16,
+                            borderWidth: 2,
+                            borderColor: Colors.black,
                         }}>
-                            <SymbolView 
-                                name="gearshape.fill" 
+                            <SymbolView
+                                name="gearshape.fill"
                                 size={22}
-                                tintColor={Colors.systemRed}
+                                tintColor={Colors.accentOrange}
                             />
                         </View>
                         <View style={{ flex: 1 }}>
                             <Text style={{
-                                fontWeight: '600',
-                                color: Colors.label,
-                                fontSize: 16,
+                                fontWeight: '800',
+                                color: Colors.black,
+                                fontSize: 14,
                                 marginBottom: 2,
+                                letterSpacing: 0.5,
+                                textTransform: 'uppercase',
                             }}>
-                                Panel Administrateur
+                                PANEL ADMINISTRATEUR
                             </Text>
                             <Text style={{
-                                color: Colors.tertiaryLabel,
+                                color: Colors.mediumGray,
                                 fontSize: 13,
+                                fontWeight: '700',
                             }}>
                                 Gérer l'écosystème EpiCoin
                             </Text>
                         </View>
-                        <SymbolView 
-                            name="chevron.right" 
+                        <SymbolView
+                            name="chevron.right"
                             size={14}
-                            tintColor={Colors.quaternaryLabel}
+                            tintColor={Colors.black}
                         />
                     </TouchableOpacity>
                 </View>
@@ -355,30 +398,35 @@ export default function ProfileScreen() {
             <View style={{ paddingHorizontal: 24, marginBottom: 48 }}>
                 <TouchableOpacity
                     style={{
-                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                        borderWidth: 1,
-                        borderColor: 'rgba(239, 68, 68, 0.3)',
-                        borderRadius: 16,
-                        borderCurve: 'continuous',
+                        backgroundColor: Colors.white,
+                        borderWidth: 3,
+                        borderColor: Colors.accentOrange,
+                        borderRadius: 0,
                         padding: 16,
                         flexDirection: 'row',
                         alignItems: 'center',
                         justifyContent: 'center',
+                        shadowColor: Colors.black,
+                        shadowOffset: { width: 4, height: 4 },
+                        shadowOpacity: 1,
+                        shadowRadius: 0,
                     }}
                     onPress={handleSignOut}
                 >
-                    <SymbolView 
-                        name="rectangle.portrait.and.arrow.right" 
+                    <SymbolView
+                        name="rectangle.portrait.and.arrow.right"
                         size={22}
-                        tintColor={Colors.systemRed}
+                        tintColor={Colors.accentOrange}
                     />
                     <Text style={{
-                        color: Colors.systemRed,
-                        fontWeight: '700',
+                        color: Colors.accentOrange,
+                        fontWeight: '900',
                         marginLeft: 8,
                         fontSize: 16,
+                        textTransform: 'uppercase',
+                        letterSpacing: 1.5,
                     }}>
-                        Se déconnecter
+                        SE DÉCONNECTER
                     </Text>
                 </TouchableOpacity>
             </View>
@@ -386,10 +434,13 @@ export default function ProfileScreen() {
             {/* Version */}
             <View style={{ alignItems: 'center', paddingBottom: 32 }}>
                 <Text style={{
-                    color: Colors.quaternaryLabel,
+                    color: Colors.mediumGray,
                     fontSize: 13,
+                    fontWeight: '800',
+                    textTransform: 'uppercase',
+                    letterSpacing: 2,
                 }}>
-                    EpiPay v1.0.0
+                    EPIPAY V1.0.0
                 </Text>
             </View>
         </ScrollView>

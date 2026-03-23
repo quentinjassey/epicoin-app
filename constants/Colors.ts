@@ -1,29 +1,28 @@
-// Couleurs officielles EpiPay / Epitech
-const epitechBlue = '#0091D3';
-const epitechYellow = '#FFFC9A';
+// Epitech Brand Colors — light brutalist theme
+const epitechBlue = '#013AFB';
+const neonGreen = '#00ff97';
 
 export default {
     light: {
-        text: '#111827',
-        background: '#f9fafb',
+        text: '#181818',
+        background: '#FFFFFF',
         tint: epitechBlue,
-        tabIconDefault: '#9ca3af',
+        tabIconDefault: '#999999',
         tabIconSelected: epitechBlue,
-        card: '#ffffff',
-        border: '#e5e7eb',
+        card: '#FFFFFF',
+        border: '#181818',
     },
     dark: {
-        text: '#f9fafb',
-        background: '#111827',
+        text: '#181818',
+        background: '#FFFFFF',
         tint: epitechBlue,
-        tabIconDefault: '#6b7280',
+        tabIconDefault: '#999999',
         tabIconSelected: epitechBlue,
-        card: '#1f2937',
-        border: '#374151',
+        card: '#FFFFFF',
+        border: '#181818',
     },
-    // Couleurs de marque
     brand: {
         primary: epitechBlue,
-        secondary: epitechYellow,
+        secondary: neonGreen,
     },
 };

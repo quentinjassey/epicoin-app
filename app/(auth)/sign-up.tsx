@@ -1,7 +1,7 @@
 import { SymbolView } from 'expo-symbols';
 import { Link, router } from 'expo-router';
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../lib/supabase';
 import { Colors } from '@/constants/NativeColors';
 
@@ -37,12 +37,12 @@ export default function SignUp() {
         }
 
         if (!email.endsWith('@epitech.digital')) {
-            Alert.alert('Accès restreint', 'Seuls les emails @epitech.digital sont autorisés.');
+            Alert.alert('Acces restreint', 'Seuls les emails @epitech.digital sont autorises.');
             return;
         }
 
         if (password.length < 6) {
-            Alert.alert('Erreur', 'Le mot de passe doit contenir au moins 6 caractères');
+            Alert.alert('Erreur', 'Le mot de passe doit contenir au moins 6 caracteres');
             return;
         }
 
@@ -68,8 +68,8 @@ export default function SignUp() {
             setLoading(false);
         } else {
             Alert.alert(
-                'Inscription réussie',
-                'Vérifiez votre boîte mail pour confirmer votre compte.',
+                'Inscription reussie',
+                'Verifiez votre boite mail pour confirmer votre compte.',
                 [{ text: 'OK', onPress: () => router.replace('/(auth)/sign-in') }]
             );
             setLoading(false);
@@ -78,13 +78,40 @@ export default function SignUp() {
 
     const selectedCampus = CAMPUSES.find(c => c.name === campus);
 
+    const inputLabelStyle = {
+        color: Colors.mediumGray,
+        fontWeight: '800' as const,
+        marginBottom: 8,
+        fontSize: 11,
+        textTransform: 'uppercase' as const,
+        letterSpacing: 2,
+    };
+
+    const inputContainerStyle = {
+        flexDirection: 'row' as const,
+        alignItems: 'center' as const,
+        backgroundColor: Colors.offWhite,
+        borderWidth: 2,
+        borderColor: Colors.black,
+        paddingHorizontal: 16,
+    };
+
+    const inputStyle = {
+        flex: 1,
+        padding: 16,
+        color: Colors.black,
+        fontSize: 16,
+        fontWeight: '600' as const,
+    };
+
     return (
-        <KeyboardAvoidingView 
+        <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={{ flex: 1, backgroundColor: Colors.systemBackground }}
+            style={{ flex: 1, backgroundColor: Colors.white }}
         >
-            <ScrollView 
+            <ScrollView
                 contentInsetAdjustmentBehavior="automatic"
+                keyboardShouldPersistTaps="handled"
                 contentContainerStyle={{
                     flexGrow: 1,
                     justifyContent: 'center',
@@ -92,97 +119,50 @@ export default function SignUp() {
                     paddingVertical: 48,
                 }}
             >
-                <View style={{ marginBottom: 24, alignItems: 'center' }}>
-                    <View style={{
-                        backgroundColor: Colors.epitechBlue,
-                        width: 64,
-                        height: 64,
-                        borderRadius: 16,
-                        borderCurve: 'continuous',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        marginBottom: 12,
-                        boxShadow: '0 4px 12px rgba(0, 145, 211, 0.25)',
-                    }}>
-                        <SymbolView name="wallet.pass.fill" size={32} tintColor="#fff" />
-                    </View>
+                {/* Logo */}
+                <View style={{ marginBottom: 32, alignItems: 'center' }}>
+                    <Image
+                        source={require('../../assets/images/epipay-logo.png')}
+                        style={{ width: 160, height: 54 }}
+                        resizeMode="contain"
+                    />
                     <Text style={{
-                        fontSize: 24,
+                        color: Colors.mediumGray,
+                        fontSize: 13,
                         fontWeight: '700',
-                        color: Colors.label,
-                        marginBottom: 4,
+                        textTransform: 'uppercase',
+                        letterSpacing: 2,
+                        marginTop: 12,
                     }}>
-                        Créer un compte
-                    </Text>
-                    <Text style={{
-                        color: Colors.secondaryLabel,
-                        fontSize: 15,
-                    }}>
-                        Rejoignez l'économie EpiPay
+                        Creer un compte
                     </Text>
                 </View>
 
                 <View style={{ width: '100%', maxWidth: 400, alignSelf: 'center' }}>
+                    {/* Nom complet */}
                     <View style={{ marginBottom: 16 }}>
-                        <Text style={{
-                            color: Colors.secondaryLabel,
-                            fontWeight: '600',
-                            marginBottom: 8,
-                            fontSize: 15,
-                        }}>
-                            Nom complet
-                        </Text>
-                        <View style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            backgroundColor: Colors.secondarySystemBackground,
-                            borderRadius: 12,
-                            borderCurve: 'continuous',
-                            paddingHorizontal: 16,
-                        }}>
-                            <SymbolView name="person.fill" size={20} tintColor={Colors.tertiaryLabel} />
+                        <Text style={inputLabelStyle}>Nom complet</Text>
+                        <View style={inputContainerStyle}>
+                            <SymbolView name="person.fill" size={20} tintColor={Colors.mediumGray} />
                             <TextInput
-                                style={{
-                                    flex: 1,
-                                    padding: 16,
-                                    color: Colors.label,
-                                    fontSize: 16,
-                                }}
+                                style={inputStyle}
                                 placeholder="Jean Dupont"
-                                placeholderTextColor={Colors.tertiaryLabel}
+                                placeholderTextColor={Colors.quaternaryLabel}
                                 value={fullName}
                                 onChangeText={setFullName}
                             />
                         </View>
                     </View>
 
+                    {/* Email */}
                     <View style={{ marginBottom: 16 }}>
-                        <Text style={{
-                            color: Colors.secondaryLabel,
-                            fontWeight: '600',
-                            marginBottom: 8,
-                            fontSize: 15,
-                        }}>
-                            Email
-                        </Text>
-                        <View style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            backgroundColor: Colors.secondarySystemBackground,
-                            borderRadius: 12,
-                            borderCurve: 'continuous',
-                            paddingHorizontal: 16,
-                        }}>
-                            <SymbolView name="envelope.fill" size={20} tintColor={Colors.tertiaryLabel} />
+                        <Text style={inputLabelStyle}>Email</Text>
+                        <View style={inputContainerStyle}>
+                            <SymbolView name="envelope.fill" size={20} tintColor={Colors.mediumGray} />
                             <TextInput
-                                style={{
-                                    flex: 1,
-                                    padding: 16,
-                                    color: Colors.label,
-                                    fontSize: 16,
-                                }}
+                                style={inputStyle}
                                 placeholder="prenom.nom@epitech.digital"
-                                placeholderTextColor={Colors.tertiaryLabel}
+                                placeholderTextColor={Colors.quaternaryLabel}
                                 value={email}
                                 onChangeText={setEmail}
                                 autoCapitalize="none"
@@ -191,154 +171,122 @@ export default function SignUp() {
                         </View>
                     </View>
 
+                    {/* Campus */}
                     <View style={{ marginBottom: 16 }}>
-                        <Text style={{
-                            color: Colors.secondaryLabel,
-                            fontWeight: '600',
-                            marginBottom: 8,
-                            fontSize: 15,
-                        }}>
-                            Campus
-                        </Text>
+                        <Text style={inputLabelStyle}>Campus</Text>
                         <TouchableOpacity
                             onPress={() => setShowCampusModal(true)}
                             style={{
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                backgroundColor: Colors.secondarySystemBackground,
-                                borderRadius: 12,
-                                borderCurve: 'continuous',
-                                paddingHorizontal: 16,
+                                ...inputContainerStyle,
                                 paddingVertical: 16,
                             }}
                         >
-                            <SymbolView name="location.fill" size={20} tintColor={Colors.tertiaryLabel} />
+                            <SymbolView name="location.fill" size={20} tintColor={Colors.mediumGray} />
                             <Text style={{
                                 flex: 1,
                                 marginLeft: 16,
-                                color: campus ? Colors.label : Colors.tertiaryLabel,
+                                color: campus ? Colors.black : Colors.quaternaryLabel,
                                 fontSize: 16,
+                                fontWeight: '600',
                             }}>
-                                {selectedCampus ? `${selectedCampus.icon} ${selectedCampus.name}` : 'Sélectionner un campus'}
+                                {selectedCampus ? `${selectedCampus.icon} ${selectedCampus.name}` : 'Selectionner un campus'}
                             </Text>
-                            <SymbolView name="chevron.down" size={16} tintColor={Colors.tertiaryLabel} />
+                            <SymbolView name="chevron.down" size={16} tintColor={Colors.mediumGray} />
                         </TouchableOpacity>
                     </View>
 
+                    {/* Mot de passe */}
                     <View style={{ marginBottom: 16 }}>
-                        <Text style={{
-                            color: Colors.secondaryLabel,
-                            fontWeight: '600',
-                            marginBottom: 8,
-                            fontSize: 15,
-                        }}>
-                            Mot de passe
-                        </Text>
-                        <View style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            backgroundColor: Colors.secondarySystemBackground,
-                            borderRadius: 12,
-                            borderCurve: 'continuous',
-                            paddingHorizontal: 16,
-                        }}>
-                            <SymbolView name="lock.fill" size={20} tintColor={Colors.tertiaryLabel} />
+                        <Text style={inputLabelStyle}>Mot de passe</Text>
+                        <View style={inputContainerStyle}>
+                            <SymbolView name="lock.fill" size={20} tintColor={Colors.mediumGray} />
                             <TextInput
-                                style={{
-                                    flex: 1,
-                                    padding: 16,
-                                    color: Colors.label,
-                                    fontSize: 16,
-                                }}
-                                placeholder="Min. 6 caractères"
-                                placeholderTextColor={Colors.tertiaryLabel}
+                                style={inputStyle}
+                                placeholder="Min. 6 caracteres"
+                                placeholderTextColor={Colors.quaternaryLabel}
                                 value={password}
                                 onChangeText={setPassword}
                                 secureTextEntry={!showPassword}
+                                autoCorrect={false}
+                                autoComplete="off"
+                                textContentType="oneTimeCode"
                             />
                             <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                                <SymbolView 
-                                    name={showPassword ? 'eye.slash.fill' : 'eye.fill'} 
+                                <SymbolView
+                                    name={showPassword ? 'eye.slash.fill' : 'eye.fill'}
                                     size={20}
-                                    tintColor={Colors.tertiaryLabel}
+                                    tintColor={Colors.mediumGray}
                                 />
                             </TouchableOpacity>
                         </View>
                     </View>
 
+                    {/* Confirmer */}
                     <View style={{ marginBottom: 24 }}>
-                        <Text style={{
-                            color: Colors.secondaryLabel,
-                            fontWeight: '600',
-                            marginBottom: 8,
-                            fontSize: 15,
-                        }}>
-                            Confirmer le mot de passe
-                        </Text>
-                        <View style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            backgroundColor: Colors.secondarySystemBackground,
-                            borderRadius: 12,
-                            borderCurve: 'continuous',
-                            paddingHorizontal: 16,
-                        }}>
-                            <SymbolView name="lock.fill" size={20} tintColor={Colors.tertiaryLabel} />
+                        <Text style={inputLabelStyle}>Confirmer le mot de passe</Text>
+                        <View style={inputContainerStyle}>
+                            <SymbolView name="lock.fill" size={20} tintColor={Colors.mediumGray} />
                             <TextInput
-                                style={{
-                                    flex: 1,
-                                    padding: 16,
-                                    color: Colors.label,
-                                    fontSize: 16,
-                                }}
+                                style={inputStyle}
                                 placeholder="Confirmer"
-                                placeholderTextColor={Colors.tertiaryLabel}
+                                placeholderTextColor={Colors.quaternaryLabel}
                                 value={confirmPassword}
                                 onChangeText={setConfirmPassword}
                                 secureTextEntry
+                                autoCorrect={false}
+                                autoComplete="off"
+                                textContentType="oneTimeCode"
                             />
                         </View>
                     </View>
 
+                    {/* Submit */}
                     <TouchableOpacity
                         style={{
-                            backgroundColor: loading ? Colors.systemFill : Colors.epitechBlue,
-                            borderRadius: 12,
-                            borderCurve: 'continuous',
+                            backgroundColor: loading ? Colors.lightGray : Colors.epitechBlue,
                             padding: 16,
                             alignItems: 'center',
-                            boxShadow: loading ? 'none' : '0 2px 8px rgba(0, 145, 211, 0.25)',
+                            borderWidth: 2,
+                            borderColor: Colors.black,
+                            shadowColor: Colors.black,
+                            shadowOffset: { width: 4, height: 4 },
+                            shadowOpacity: 1,
+                            shadowRadius: 0,
                         }}
                         onPress={signUpWithEmail}
                         disabled={loading}
                     >
                         {loading ? (
-                            <ActivityIndicator color="#fff" />
+                            <ActivityIndicator color={Colors.black} />
                         ) : (
                             <Text style={{
-                                color: '#fff',
-                                fontSize: 17,
-                                fontWeight: '700',
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: '900',
+                                textTransform: 'uppercase',
+                                letterSpacing: 2,
                             }}>
                                 S'inscrire
                             </Text>
                         )}
                     </TouchableOpacity>
 
+                    {/* Login link */}
                     <View style={{
                         flexDirection: 'row',
                         justifyContent: 'center',
                         marginTop: 24,
                     }}>
-                        <Text style={{ color: Colors.secondaryLabel, fontSize: 15 }}>
-                            Déjà un compte ?{' '}
+                        <Text style={{ color: Colors.mediumGray, fontSize: 14, fontWeight: '600' }}>
+                            Deja un compte ?{' '}
                         </Text>
                         <Link href="/(auth)/sign-in" asChild>
                             <TouchableOpacity>
                                 <Text style={{
                                     color: Colors.epitechBlue,
-                                    fontWeight: '600',
-                                    fontSize: 15,
+                                    fontWeight: '900',
+                                    fontSize: 14,
+                                    textTransform: 'uppercase',
                                 }}>
                                     Se connecter
                                 </Text>
@@ -348,28 +296,35 @@ export default function SignUp() {
                 </View>
             </ScrollView>
 
+            {/* Campus Modal */}
             <Modal
                 visible={showCampusModal}
                 animationType="slide"
                 presentationStyle="formSheet"
                 onRequestClose={() => setShowCampusModal(false)}
             >
-                <View style={{ flex: 1, backgroundColor: Colors.systemGroupedBackground }}>
+                <View style={{ flex: 1, backgroundColor: Colors.offWhite }}>
                     <View style={{
                         flexDirection: 'row',
                         alignItems: 'center',
                         justifyContent: 'space-between',
                         padding: 16,
                         paddingTop: 24,
-                        backgroundColor: Colors.secondarySystemBackground,
-                        borderBottomWidth: 1,
-                        borderBottomColor: Colors.separator,
+                        backgroundColor: Colors.white,
+                        borderBottomWidth: 2,
+                        borderBottomColor: Colors.black,
                     }}>
-                        <Text style={{ fontSize: 20, fontWeight: '700', color: Colors.label }}>
+                        <Text style={{
+                            fontSize: 18,
+                            fontWeight: '900',
+                            color: Colors.black,
+                            textTransform: 'uppercase',
+                            letterSpacing: 1,
+                        }}>
                             Choisir votre campus
                         </Text>
                         <TouchableOpacity onPress={() => setShowCampusModal(false)}>
-                            <SymbolView name="xmark.circle.fill" size={28} tintColor={Colors.tertiaryLabel} />
+                            <SymbolView name="xmark.circle.fill" size={28} tintColor={Colors.mediumGray} />
                         </TouchableOpacity>
                     </View>
 
@@ -382,11 +337,11 @@ export default function SignUp() {
                                     setShowCampusModal(false);
                                 }}
                                 style={{
-                                    backgroundColor: campus === c.name 
-                                        ? Colors.epitechBlue 
-                                        : Colors.secondarySystemGroupedBackground,
-                                    borderRadius: 12,
-                                    borderCurve: 'continuous',
+                                    backgroundColor: campus === c.name
+                                        ? Colors.epitechBlue
+                                        : Colors.white,
+                                    borderWidth: 2,
+                                    borderColor: campus === c.name ? Colors.epitechBlue : Colors.black,
                                     padding: 16,
                                     flexDirection: 'row',
                                     alignItems: 'center',
@@ -395,14 +350,16 @@ export default function SignUp() {
                                 <Text style={{ fontSize: 24, marginRight: 12 }}>{c.icon}</Text>
                                 <Text style={{
                                     flex: 1,
-                                    fontSize: 17,
-                                    fontWeight: '600',
-                                    color: campus === c.name ? '#fff' : Colors.label,
+                                    fontSize: 16,
+                                    fontWeight: '700',
+                                    color: campus === c.name ? Colors.white : Colors.black,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: 0.5,
                                 }}>
                                     {c.name}
                                 </Text>
                                 {campus === c.name && (
-                                    <SymbolView name="checkmark.circle.fill" size={24} tintColor="#fff" />
+                                    <SymbolView name="checkmark.circle.fill" size={24} tintColor={Colors.white} />
                                 )}
                             </TouchableOpacity>
                         ))}

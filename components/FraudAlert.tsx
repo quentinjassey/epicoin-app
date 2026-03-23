@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { Colors } from '@/constants/NativeColors';
 
 interface FraudReason {
   factor: string;
@@ -22,39 +23,37 @@ interface FraudAlertProps {
 const getSeverityColor = (severity: 'low' | 'medium' | 'high') => {
   switch (severity) {
     case 'high':
-      return '#DC2626'; // red-600
+      return Colors.accentOrange;
     case 'medium':
-      return '#F59E0B'; // amber-500
+      return Colors.systemOrange;
     case 'low':
-      return '#10B981'; // green-500
+      return Colors.success;
   }
 };
 
 const getSeverityIcon = (severity: 'low' | 'medium' | 'high') => {
   switch (severity) {
     case 'high':
-      return '🔴';
+      return '!!';
     case 'medium':
-      return '🟡';
+      return '!';
     case 'low':
-      return '🔵';
+      return 'i';
   }
 };
 
 const getStatusInfo = (status: 'pending_review' | 'blocked') => {
   if (status === 'blocked') {
     return {
-      icon: '❌',
-      title: 'Transaction refusée',
+      title: 'TRANSACTION REFUSEE',
       subtitle: 'Cette transaction a été bloquée pour protéger votre compte',
-      color: '#DC2626',
+      color: Colors.accentOrange,
     };
   } else {
     return {
-      icon: '⚠️',
-      title: 'Transaction en attente de vérification',
+      title: 'TRANSACTION EN ATTENTE',
       subtitle: 'Un administrateur validera cette transaction sous 24h',
-      color: '#F59E0B',
+      color: Colors.systemOrange,
     };
   }
 };
@@ -92,8 +91,8 @@ export default function FraudAlert({
       'Vous recevrez une notification dès qu\'une décision aura été prise.',
       [
         { text: 'Annuler', style: 'cancel' },
-        { 
-          text: 'Confirmer la contestation', 
+        {
+          text: 'Confirmer la contestation',
           style: 'default',
           onPress: onContestDecision
         }
@@ -105,7 +104,6 @@ export default function FraudAlert({
     <View style={[styles.container, { borderColor: statusInfo.color }]}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.icon}>{statusInfo.icon}</Text>
         <View style={styles.headerText}>
           <Text style={[styles.title, { color: statusInfo.color }]}>
             {statusInfo.title}
@@ -117,18 +115,18 @@ export default function FraudAlert({
       {/* Transaction Details */}
       <View style={styles.detailsSection}>
         <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Montant :</Text>
+          <Text style={styles.detailLabel}>MONTANT :</Text>
           <Text style={styles.detailValue}>{amount.toFixed(2)} EPC</Text>
         </View>
         {recipient && (
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Destinataire :</Text>
+            <Text style={styles.detailLabel}>DESTINATAIRE :</Text>
             <Text style={styles.detailValue}>{recipient}</Text>
           </View>
         )}
         <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Score de risque :</Text>
-          <Text style={[styles.detailValue, { color: statusInfo.color, fontWeight: '600' }]}>
+          <Text style={styles.detailLabel}>SCORE DE RISQUE :</Text>
+          <Text style={[styles.detailValue, { color: statusInfo.color, fontWeight: '900' }]}>
             {fraudScore}/100
           </Text>
         </View>
@@ -137,11 +135,15 @@ export default function FraudAlert({
       {/* Fraud Reasons */}
       {reasons && reasons.length > 0 && (
         <View style={styles.reasonsSection}>
-          <Text style={styles.reasonsTitle}>Raisons détectées :</Text>
+          <Text style={styles.reasonsTitle}>RAISONS DETECTEES :</Text>
           {reasons.slice(0, 3).map((reason, index) => (
             <View key={index} style={styles.reasonItem}>
               <View style={styles.reasonHeader}>
-                <Text style={styles.reasonIcon}>{getSeverityIcon(reason.severity)}</Text>
+                <View style={[styles.severityBadge, { borderColor: getSeverityColor(reason.severity) }]}>
+                  <Text style={[styles.severityText, { color: getSeverityColor(reason.severity) }]}>
+                    {getSeverityIcon(reason.severity)}
+                  </Text>
+                </View>
                 <Text style={[styles.reasonDescription, { flex: 1 }]}>
                   {reason.description}
                 </Text>
@@ -162,28 +164,28 @@ export default function FraudAlert({
 
       {/* Actions */}
       <View style={styles.actions}>
-        <TouchableOpacity 
-          style={[styles.button, styles.secondaryButton]} 
+        <TouchableOpacity
+          style={[styles.button, styles.secondaryButton]}
           onPress={handleLearnMore}
         >
-          <Text style={styles.secondaryButtonText}>En savoir plus</Text>
+          <Text style={styles.secondaryButtonText}>EN SAVOIR PLUS</Text>
         </TouchableOpacity>
 
         {onContestDecision && (
-          <TouchableOpacity 
-            style={[styles.button, styles.primaryButton]} 
+          <TouchableOpacity
+            style={[styles.button, styles.primaryButton]}
             onPress={handleContestDecision}
           >
-            <Text style={styles.primaryButtonText}>Contester</Text>
+            <Text style={styles.primaryButtonText}>CONTESTER</Text>
           </TouchableOpacity>
         )}
 
         {onDismiss && status === 'pending_review' && (
-          <TouchableOpacity 
-            style={[styles.button, styles.primaryButton]} 
+          <TouchableOpacity
+            style={[styles.button, styles.primaryButton]}
             onPress={onDismiss}
           >
-            <Text style={styles.primaryButtonText}>Compris</Text>
+            <Text style={styles.primaryButtonText}>COMPRIS</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -196,15 +198,15 @@ export default function FraudAlert({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: Colors.white,
+    borderRadius: 0,
     borderWidth: 2,
     padding: 20,
     margin: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    shadowColor: Colors.black,
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
     elevation: 5,
   },
   header: {
@@ -212,28 +214,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  icon: {
-    fontSize: 40,
-    marginRight: 12,
-  },
   headerText: {
     flex: 1,
   },
   title: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '900',
     marginBottom: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   subtitle: {
     fontSize: 14,
-    color: '#6B7280',
+    color: Colors.secondaryLabel,
     lineHeight: 20,
+    fontWeight: '700',
   },
   detailsSection: {
-    backgroundColor: '#F9FAFB',
-    borderRadius: 8,
+    backgroundColor: Colors.offWhite,
+    borderRadius: 0,
     padding: 12,
     marginBottom: 16,
+    borderWidth: 2,
+    borderColor: Colors.black,
   },
   detailRow: {
     flexDirection: 'row',
@@ -243,22 +246,26 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '500',
+    color: Colors.secondaryLabel,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   detailValue: {
     fontSize: 14,
-    color: '#111827',
-    fontWeight: '600',
+    color: Colors.black,
+    fontWeight: '800',
   },
   reasonsSection: {
     marginBottom: 16,
   },
   reasonsTitle: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#111827',
+    fontWeight: '900',
+    color: Colors.black,
     marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   reasonItem: {
     marginBottom: 8,
@@ -267,26 +274,39 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
-  reasonIcon: {
-    fontSize: 14,
+  severityBadge: {
+    width: 22,
+    height: 22,
+    borderRadius: 0,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginRight: 8,
-    marginTop: 2,
+    marginTop: 0,
+  },
+  severityText: {
+    fontSize: 12,
+    fontWeight: '900',
   },
   reasonDescription: {
     fontSize: 13,
-    color: '#374151',
+    color: Colors.black,
     lineHeight: 18,
+    fontWeight: '700',
   },
   explanationBox: {
-    backgroundColor: '#FEF3C7',
-    borderRadius: 8,
+    backgroundColor: Colors.offWhite,
+    borderRadius: 0,
     padding: 12,
     marginBottom: 16,
+    borderWidth: 2,
+    borderColor: Colors.systemOrange,
   },
   explanationText: {
     fontSize: 13,
-    color: '#92400E',
+    color: Colors.black,
     lineHeight: 18,
+    fontWeight: '700',
   },
   actions: {
     flexDirection: 'row',
@@ -297,32 +317,41 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     paddingHorizontal: 16,
-    borderRadius: 8,
+    borderRadius: 0,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: Colors.black,
+    shadowColor: Colors.black,
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
   },
   primaryButton: {
-    backgroundColor: '#3B82F6',
+    backgroundColor: Colors.epitechBlue,
   },
   secondaryButton: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
+    backgroundColor: Colors.white,
   },
   primaryButtonText: {
-    color: '#fff',
+    color: Colors.white,
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   secondaryButtonText: {
-    color: '#374151',
+    color: Colors.black,
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   transactionId: {
     fontSize: 11,
-    color: '#9CA3AF',
+    color: Colors.tertiaryLabel,
     textAlign: 'center',
+    fontWeight: '700',
+    fontFamily: 'monospace',
   },
 });
-

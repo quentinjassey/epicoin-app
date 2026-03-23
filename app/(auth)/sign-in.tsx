@@ -1,7 +1,7 @@
 import { SymbolView } from 'expo-symbols';
 import { Link, router } from 'expo-router';
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../lib/supabase';
 import { Colors } from '@/constants/NativeColors';
 
@@ -33,12 +33,13 @@ export default function SignIn() {
     }
 
     return (
-        <KeyboardAvoidingView 
+        <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={{ flex: 1, backgroundColor: Colors.systemBackground }}
+            style={{ flex: 1, backgroundColor: Colors.white }}
         >
-            <ScrollView 
+            <ScrollView
                 contentInsetAdjustmentBehavior="automatic"
+                keyboardShouldPersistTaps="handled"
                 contentContainerStyle={{
                     flexGrow: 1,
                     justifyContent: 'center',
@@ -46,31 +47,20 @@ export default function SignIn() {
                     padding: 24,
                 }}
             >
-                <View style={{ marginBottom: 32, alignItems: 'center' }}>
-                    <View style={{
-                        backgroundColor: Colors.epitechBlue,
-                        width: 80,
-                        height: 80,
-                        borderRadius: 20,
-                        borderCurve: 'continuous',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        marginBottom: 16,
-                        boxShadow: '0 4px 12px rgba(0, 145, 211, 0.25)',
-                    }}>
-                        <SymbolView name="wallet.pass.fill" size={40} tintColor="#fff" />
-                    </View>
+                {/* Logo */}
+                <View style={{ marginBottom: 40, alignItems: 'center' }}>
+                    <Image
+                        source={require('../../assets/images/epipay-logo.png')}
+                        style={{ width: 200, height: 68 }}
+                        resizeMode="contain"
+                    />
                     <Text style={{
-                        fontSize: 32,
+                        color: Colors.mediumGray,
+                        fontSize: 13,
                         fontWeight: '700',
-                        color: Colors.label,
-                        marginBottom: 4,
-                    }}>
-                        EpiPay
-                    </Text>
-                    <Text style={{
-                        color: Colors.secondaryLabel,
-                        fontSize: 15,
+                        textTransform: 'uppercase',
+                        letterSpacing: 2,
+                        marginTop: 12,
                     }}>
                         Portefeuille digital Epitech
                     </Text>
@@ -79,40 +69,46 @@ export default function SignIn() {
                 <View style={{ width: '100%', maxWidth: 400 }}>
                     <Text style={{
                         fontSize: 28,
-                        fontWeight: '700',
+                        fontWeight: '900',
                         marginBottom: 24,
-                        color: Colors.label,
+                        color: Colors.black,
+                        textTransform: 'uppercase',
+                        letterSpacing: 1,
                     }}>
                         Connexion
                     </Text>
 
+                    {/* Email */}
                     <View style={{ marginBottom: 16 }}>
                         <Text style={{
-                            color: Colors.secondaryLabel,
-                            fontWeight: '600',
+                            color: Colors.mediumGray,
+                            fontWeight: '800',
                             marginBottom: 8,
-                            fontSize: 15,
+                            fontSize: 11,
+                            textTransform: 'uppercase',
+                            letterSpacing: 2,
                         }}>
                             Email
                         </Text>
                         <View style={{
                             flexDirection: 'row',
                             alignItems: 'center',
-                            backgroundColor: Colors.secondarySystemBackground,
-                            borderRadius: 12,
-                            borderCurve: 'continuous',
+                            backgroundColor: Colors.offWhite,
+                            borderWidth: 2,
+                            borderColor: Colors.black,
                             paddingHorizontal: 16,
                         }}>
-                            <SymbolView name="envelope.fill" size={20} tintColor={Colors.tertiaryLabel} />
+                            <SymbolView name="envelope.fill" size={20} tintColor={Colors.mediumGray} />
                             <TextInput
                                 style={{
                                     flex: 1,
                                     padding: 16,
-                                    color: Colors.label,
+                                    color: Colors.black,
                                     fontSize: 16,
+                                    fontWeight: '600',
                                 }}
                                 placeholder="prenom.nom@epitech.digital"
-                                placeholderTextColor={Colors.tertiaryLabel}
+                                placeholderTextColor={Colors.quaternaryLabel}
                                 value={email}
                                 onChangeText={setEmail}
                                 autoCapitalize="none"
@@ -121,55 +117,66 @@ export default function SignIn() {
                         </View>
                     </View>
 
+                    {/* Password */}
                     <View style={{ marginBottom: 24 }}>
                         <Text style={{
-                            color: Colors.secondaryLabel,
-                            fontWeight: '600',
+                            color: Colors.mediumGray,
+                            fontWeight: '800',
                             marginBottom: 8,
-                            fontSize: 15,
+                            fontSize: 11,
+                            textTransform: 'uppercase',
+                            letterSpacing: 2,
                         }}>
                             Mot de passe
                         </Text>
                         <View style={{
                             flexDirection: 'row',
                             alignItems: 'center',
-                            backgroundColor: Colors.secondarySystemBackground,
-                            borderRadius: 12,
-                            borderCurve: 'continuous',
+                            backgroundColor: Colors.offWhite,
+                            borderWidth: 2,
+                            borderColor: Colors.black,
                             paddingHorizontal: 16,
                         }}>
-                            <SymbolView name="lock.fill" size={20} tintColor={Colors.tertiaryLabel} />
+                            <SymbolView name="lock.fill" size={20} tintColor={Colors.mediumGray} />
                             <TextInput
                                 style={{
                                     flex: 1,
                                     padding: 16,
-                                    color: Colors.label,
+                                    color: Colors.black,
                                     fontSize: 16,
+                                    fontWeight: '600',
                                 }}
                                 placeholder="••••••••"
-                                placeholderTextColor={Colors.tertiaryLabel}
+                                placeholderTextColor={Colors.quaternaryLabel}
                                 value={password}
                                 onChangeText={setPassword}
                                 secureTextEntry={!showPassword}
+                                autoCorrect={false}
+                                autoComplete="off"
+                                textContentType="oneTimeCode"
                             />
                             <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                                <SymbolView 
-                                    name={showPassword ? 'eye.slash.fill' : 'eye.fill'} 
+                                <SymbolView
+                                    name={showPassword ? 'eye.slash.fill' : 'eye.fill'}
                                     size={20}
-                                    tintColor={Colors.tertiaryLabel}
+                                    tintColor={Colors.mediumGray}
                                 />
                             </TouchableOpacity>
                         </View>
                     </View>
 
+                    {/* Submit */}
                     <TouchableOpacity
                         style={{
-                            backgroundColor: loading ? Colors.systemFill : Colors.epitechBlue,
-                            borderRadius: 12,
-                            borderCurve: 'continuous',
+                            backgroundColor: loading ? Colors.lightGray : Colors.epitechBlue,
                             padding: 16,
                             alignItems: 'center',
-                            boxShadow: loading ? 'none' : '0 2px 8px rgba(0, 145, 211, 0.25)',
+                            borderWidth: 2,
+                            borderColor: Colors.black,
+                            shadowColor: Colors.black,
+                            shadowOffset: { width: 4, height: 4 },
+                            shadowOpacity: 1,
+                            shadowRadius: 0,
                             flexDirection: 'row',
                             justifyContent: 'center',
                         }}
@@ -177,36 +184,40 @@ export default function SignIn() {
                         disabled={loading}
                     >
                         {loading ? (
-                            <ActivityIndicator color="#fff" />
+                            <ActivityIndicator color={Colors.black} />
                         ) : (
-                            <>
-                                <Text style={{
-                                    color: '#fff',
-                                    fontSize: 17,
-                                    fontWeight: '700',
-                                    marginRight: 8,
-                                }}>
-                                    Se connecter
-                                </Text>
-                                <SymbolView name="arrow.right.circle.fill" size={20} tintColor="#fff" />
-                            </>
+                            <Text style={{
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: '900',
+                                textTransform: 'uppercase',
+                                letterSpacing: 2,
+                            }}>
+                                Se connecter
+                            </Text>
                         )}
                     </TouchableOpacity>
 
+                    {/* Sign up link */}
                     <View style={{
                         flexDirection: 'row',
                         justifyContent: 'center',
                         marginTop: 24,
                     }}>
-                        <Text style={{ color: Colors.secondaryLabel, fontSize: 15 }}>
+                        <Text style={{
+                            color: Colors.mediumGray,
+                            fontSize: 14,
+                            fontWeight: '600',
+                        }}>
                             Pas encore de compte ?{' '}
                         </Text>
                         <Link href="/(auth)/sign-up" asChild>
                             <TouchableOpacity>
                                 <Text style={{
                                     color: Colors.epitechBlue,
-                                    fontWeight: '600',
-                                    fontSize: 15,
+                                    fontWeight: '900',
+                                    fontSize: 14,
+                                    textTransform: 'uppercase',
                                 }}>
                                     S'inscrire
                                 </Text>

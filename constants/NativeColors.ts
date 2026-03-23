@@ -1,135 +1,65 @@
-import { PlatformColor, Platform } from 'react-native';
+import { Platform } from 'react-native';
 
+// ── Epitech Brand Palette — Light Brutalist ─────────────
 export const Colors = {
-  // Labels
-  label: Platform.select({
-    ios: PlatformColor('label'),
-    default: '#000000',
-  }),
-  secondaryLabel: Platform.select({
-    ios: PlatformColor('secondaryLabel'),
-    default: '#6B7280',
-  }),
-  tertiaryLabel: Platform.select({
-    ios: PlatformColor('tertiaryLabel'),
-    default: '#9CA3AF',
-  }),
-  quaternaryLabel: Platform.select({
-    ios: PlatformColor('quaternaryLabel'),
-    default: '#D1D5DB',
-  }),
+  // ── Brand ──
+  epitechBlue: '#013AFB',
+  neonGreen: '#00ff97',
+  accentOrange: '#ff5a3a',
+  accentMagenta: '#ff1ef7',
 
-  // Backgrounds
-  systemBackground: Platform.select({
-    ios: PlatformColor('systemBackground'),
-    default: '#FFFFFF',
-  }),
-  secondarySystemBackground: Platform.select({
-    ios: PlatformColor('secondarySystemBackground'),
-    default: '#F3F4F6',
-  }),
-  tertiarySystemBackground: Platform.select({
-    ios: PlatformColor('tertiarySystemBackground'),
-    default: '#E5E7EB',
-  }),
+  // ── Neutrals ──
+  black: '#181818',
+  darkGray: '#313131',
+  mediumGray: '#555555',
+  lightGray: '#eeeeee',
+  offWhite: '#F2F4F8',
+  white: '#FFFFFF',
 
-  // Grouped backgrounds
-  systemGroupedBackground: Platform.select({
-    ios: PlatformColor('systemGroupedBackground'),
-    default: '#F3F4F6',
-  }),
-  secondarySystemGroupedBackground: Platform.select({
-    ios: PlatformColor('secondarySystemGroupedBackground'),
-    default: '#FFFFFF',
-  }),
+  // ── Labels ──
+  label: '#181818',
+  secondaryLabel: '#555555',
+  tertiaryLabel: '#999999',
+  quaternaryLabel: '#CCCCCC',
 
-  // Fills
-  systemFill: Platform.select({
-    ios: PlatformColor('systemFill'),
-    default: 'rgba(120, 120, 128, 0.2)',
-  }),
-  secondarySystemFill: Platform.select({
-    ios: PlatformColor('secondarySystemFill'),
-    default: 'rgba(120, 120, 128, 0.16)',
-  }),
-  tertiarySystemFill: Platform.select({
-    ios: PlatformColor('tertiarySystemFill'),
-    default: 'rgba(120, 120, 128, 0.12)',
-  }),
+  // ── Backgrounds ──
+  systemBackground: '#FFFFFF',
+  secondarySystemBackground: '#F2F4F8',
+  tertiarySystemBackground: '#E8EAEF',
 
-  // Separators
-  separator: Platform.select({
-    ios: PlatformColor('separator'),
-    default: 'rgba(60, 60, 67, 0.29)',
-  }),
-  opaqueSeparator: Platform.select({
-    ios: PlatformColor('opaqueSeparator'),
-    default: '#C6C6C8',
-  }),
+  // ── Grouped backgrounds ──
+  systemGroupedBackground: '#F2F4F8',
+  secondarySystemGroupedBackground: '#FFFFFF',
 
-  // Epitech brand colors
-  epitechBlue: '#0091D3',
-  epitechYellow: '#FFFC9A',
+  // ── Fills ──
+  systemFill: 'rgba(0, 0, 0, 0.05)',
+  secondarySystemFill: 'rgba(0, 0, 0, 0.04)',
+  tertiarySystemFill: 'rgba(0, 0, 0, 0.03)',
 
-  // Status colors
-  systemGreen: Platform.select({
-    ios: PlatformColor('systemGreen'),
-    default: '#10B981',
-  }),
-  systemRed: Platform.select({
-    ios: PlatformColor('systemRed'),
-    default: '#DC2626',
-  }),
-  systemOrange: Platform.select({
-    ios: PlatformColor('systemOrange'),
-    default: '#F59E0B',
-  }),
-  systemYellow: Platform.select({
-    ios: PlatformColor('systemYellow'),
-    default: '#FBBF24',
-  }),
-  systemBlue: Platform.select({
-    ios: PlatformColor('systemBlue'),
-    default: '#3B82F6',
-  }),
-  systemPurple: Platform.select({
-    ios: PlatformColor('systemPurple'),
-    default: '#8B5CF6',
-  }),
-  systemPink: Platform.select({
-    ios: PlatformColor('systemPink'),
-    default: '#EC4899',
-  }),
-  systemIndigo: Platform.select({
-    ios: PlatformColor('systemIndigo'),
-    default: '#6366F1',
-  }),
-  systemTeal: Platform.select({
-    ios: PlatformColor('systemTeal'),
-    default: '#14B8A6',
-  }),
-  systemGray: Platform.select({
-    ios: PlatformColor('systemGray'),
-    default: '#6B7280',
-  }),
+  // ── Separators ──
+  separator: 'rgba(0, 0, 0, 0.1)',
+  opaqueSeparator: '#D0D0D0',
 
-  // Alias for common usage
-  success: Platform.select({
-    ios: PlatformColor('systemGreen'),
-    default: '#10B981',
-  }),
-  error: Platform.select({
-    ios: PlatformColor('systemRed'),
-    default: '#DC2626',
-  }),
-  warning: Platform.select({
-    ios: PlatformColor('systemOrange'),
-    default: '#F59E0B',
-  }),
-  info: Platform.select({
-    ios: PlatformColor('systemBlue'),
-    default: '#3B82F6',
-  }),
+  // ── Status colors ──
+  systemGreen: '#00C853',
+  systemRed: '#ff5a3a',
+  systemOrange: '#F59E0B',
+  systemYellow: '#FBBF24',
+  systemBlue: '#013AFB',
+  systemPurple: '#ff1ef7',
+  systemPink: '#ff1ef7',
+  systemIndigo: '#013AFB',
+  systemTeal: '#00C853',
+  systemGray: '#555555',
+
+  // ── Aliases ──
+  success: '#00C853',
+  error: '#ff5a3a',
+  warning: '#F59E0B',
+  info: '#013AFB',
+
+  // Legacy alias
+  epitechYellow: '#00ff97',
 };
 
 // Helper function to get color with opacity

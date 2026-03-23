@@ -27,7 +27,7 @@ export default function AdminUsers() {
 
     useEffect(() => {
         if (searchQuery) {
-            const filtered = users.filter(user => 
+            const filtered = users.filter(user =>
                 user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 user.campus?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -44,7 +44,7 @@ export default function AdminUsers() {
                 .from('profiles')
                 .select('*')
                 .order('created_at', { ascending: false });
-            
+
             if (error) throw error;
             setUsers(data || []);
             setFilteredUsers(data || []);
@@ -64,24 +64,28 @@ export default function AdminUsers() {
     const totalBalance = users.reduce((sum, user) => sum + (user.balance || 0), 0);
 
     return (
-        <View style={{ flex: 1, backgroundColor: Colors.systemGroupedBackground }}>
+        <View style={{ flex: 1, backgroundColor: Colors.white }}>
             {/* Stats */}
             <View style={{ padding: 16, flexDirection: 'row', gap: 12 }}>
                 <View style={{
                     flex: 1,
-                    backgroundColor: Colors.secondarySystemGroupedBackground,
+                    backgroundColor: Colors.white,
                     padding: 16,
-                    borderRadius: 12,
-                    borderCurve: 'continuous',
-                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
+                    borderRadius: 0,
+                    borderWidth: 2,
+                    borderColor: Colors.black,
+                    shadowColor: Colors.black,
+                    shadowOffset: { width: 3, height: 3 },
+                    shadowOpacity: 1,
+                    shadowRadius: 0,
                 }}>
-                    <Text style={{ color: Colors.secondaryLabel, fontSize: 13, marginBottom: 4 }}>
+                    <Text style={{ color: Colors.secondaryLabel, fontSize: 13, marginBottom: 4, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1 }}>
                         Utilisateurs
                     </Text>
                     <Text style={{
                         fontSize: 24,
-                        fontWeight: '700',
-                        color: Colors.label,
+                        fontWeight: '900',
+                        color: Colors.black,
                         fontVariant: ['tabular-nums'],
                     }}>
                         {users.length}
@@ -89,18 +93,22 @@ export default function AdminUsers() {
                 </View>
                 <View style={{
                     flex: 1,
-                    backgroundColor: Colors.secondarySystemGroupedBackground,
+                    backgroundColor: Colors.white,
                     padding: 16,
-                    borderRadius: 12,
-                    borderCurve: 'continuous',
-                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
+                    borderRadius: 0,
+                    borderWidth: 2,
+                    borderColor: Colors.black,
+                    shadowColor: Colors.black,
+                    shadowOffset: { width: 3, height: 3 },
+                    shadowOpacity: 1,
+                    shadowRadius: 0,
                 }}>
-                    <Text style={{ color: Colors.secondaryLabel, fontSize: 13, marginBottom: 4 }}>
+                    <Text style={{ color: Colors.secondaryLabel, fontSize: 13, marginBottom: 4, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1 }}>
                         Total EPC
                     </Text>
                     <Text style={{
                         fontSize: 24,
-                        fontWeight: '700',
+                        fontWeight: '900',
                         color: Colors.epitechBlue,
                         fontVariant: ['tabular-nums'],
                     }}>
@@ -114,19 +122,21 @@ export default function AdminUsers() {
                 <View style={{
                     flexDirection: 'row',
                     alignItems: 'center',
-                    backgroundColor: Colors.secondarySystemGroupedBackground,
-                    borderRadius: 12,
-                    borderCurve: 'continuous',
+                    backgroundColor: Colors.offWhite,
+                    borderRadius: 0,
                     paddingHorizontal: 16,
                     paddingVertical: 10,
+                    borderWidth: 2,
+                    borderColor: Colors.black,
                 }}>
-                    <SymbolView name="magnifyingglass" size={18} tintColor={Colors.tertiaryLabel} />
+                    <SymbolView name="magnifyingglass" size={18} tintColor={Colors.secondaryLabel} />
                     <TextInput
                         style={{
                             flex: 1,
                             marginLeft: 12,
                             fontSize: 16,
-                            color: Colors.label,
+                            color: Colors.black,
+                            fontWeight: '700',
                         }}
                         placeholder="Rechercher un utilisateur..."
                         placeholderTextColor={Colors.tertiaryLabel}
@@ -135,7 +145,7 @@ export default function AdminUsers() {
                     />
                     {searchQuery.length > 0 && (
                         <TouchableOpacity onPress={() => setSearchQuery('')}>
-                            <SymbolView name="xmark.circle.fill" size={18} tintColor={Colors.tertiaryLabel} />
+                            <SymbolView name="xmark.circle.fill" size={18} tintColor={Colors.secondaryLabel} />
                         </TouchableOpacity>
                     )}
                 </View>
@@ -151,34 +161,39 @@ export default function AdminUsers() {
                     keyExtractor={(item) => item.id}
                     contentContainerStyle={{ padding: 16, paddingTop: 0 }}
                     refreshControl={
-                        <RefreshControl 
-                            refreshing={refreshing} 
+                        <RefreshControl
+                            refreshing={refreshing}
                             onRefresh={onRefresh}
                             tintColor={Colors.epitechBlue}
                         />
                     }
                     renderItem={({ item }) => (
                         <View style={{
-                            backgroundColor: Colors.secondarySystemGroupedBackground,
+                            backgroundColor: Colors.white,
                             padding: 16,
-                            borderRadius: 12,
-                            borderCurve: 'continuous',
+                            borderRadius: 0,
                             marginBottom: 12,
-                            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
+                            borderWidth: 2,
+                            borderColor: Colors.black,
+                            shadowColor: Colors.black,
+                            shadowOffset: { width: 3, height: 3 },
+                            shadowOpacity: 1,
+                            shadowRadius: 0,
                         }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                 <View style={{
                                     width: 48,
                                     height: 48,
-                                    backgroundColor: 'rgba(0, 145, 211, 0.1)',
-                                    borderRadius: 24,
-                                    borderCurve: 'continuous',
+                                    backgroundColor: Colors.offWhite,
+                                    borderRadius: 0,
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     marginRight: 16,
+                                    borderWidth: 2,
+                                    borderColor: Colors.black,
                                 }}>
                                     <Text style={{
-                                        fontWeight: '700',
+                                        fontWeight: '900',
                                         color: Colors.epitechBlue,
                                         fontSize: 18,
                                     }}>
@@ -189,24 +204,27 @@ export default function AdminUsers() {
                                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                         <Text style={{
                                             fontSize: 17,
-                                            fontWeight: '700',
-                                            color: Colors.label,
+                                            fontWeight: '800',
+                                            color: Colors.black,
                                         }}>
                                             {item.full_name || 'Inconnu'}
                                         </Text>
                                         {item.is_admin && (
                                             <View style={{
-                                                backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                                                backgroundColor: Colors.offWhite,
                                                 paddingHorizontal: 8,
                                                 paddingVertical: 2,
-                                                borderRadius: 8,
-                                                borderCurve: 'continuous',
+                                                borderRadius: 0,
                                                 marginLeft: 8,
+                                                borderWidth: 2,
+                                                borderColor: Colors.accentOrange,
                                             }}>
                                                 <Text style={{
-                                                    color: Colors.systemRed,
+                                                    color: Colors.accentOrange,
                                                     fontSize: 11,
-                                                    fontWeight: '700',
+                                                    fontWeight: '900',
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: 0.5,
                                                 }}>
                                                     Admin
                                                 </Text>
@@ -217,6 +235,7 @@ export default function AdminUsers() {
                                         color: Colors.secondaryLabel,
                                         fontSize: 13,
                                         marginTop: 2,
+                                        fontWeight: '700',
                                     }}>
                                         {item.email}
                                     </Text>
@@ -225,23 +244,25 @@ export default function AdminUsers() {
                                             color: Colors.tertiaryLabel,
                                             fontSize: 12,
                                             marginTop: 2,
+                                            fontWeight: '700',
                                         }}>
-                                            📍 {item.campus}
+                                            {item.campus}
                                         </Text>
                                     )}
                                 </View>
                                 <View style={{ alignItems: 'flex-end' }}>
                                     <Text style={{
                                         color: Colors.epitechBlue,
-                                        fontWeight: '700',
+                                        fontWeight: '900',
                                         fontSize: 17,
                                         fontVariant: ['tabular-nums'],
                                     }}>
                                         {item.balance?.toFixed(2)}
                                     </Text>
                                     <Text style={{
-                                        color: Colors.tertiaryLabel,
+                                        color: Colors.secondaryLabel,
                                         fontSize: 12,
+                                        fontWeight: '700',
                                     }}>
                                         EPC
                                     </Text>
@@ -257,9 +278,12 @@ export default function AdminUsers() {
                         }}>
                             <SymbolView name="person.3.fill" size={48} tintColor={Colors.tertiaryLabel} />
                             <Text style={{
-                                color: Colors.secondaryLabel,
+                                color: Colors.black,
                                 fontSize: 17,
                                 marginTop: 16,
+                                fontWeight: '800',
+                                textTransform: 'uppercase',
+                                letterSpacing: 1,
                             }}>
                                 Aucun utilisateur trouvé
                             </Text>

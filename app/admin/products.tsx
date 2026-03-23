@@ -161,7 +161,7 @@ export default function AdminProducts() {
                 flex: 1,
                 justifyContent: 'center',
                 alignItems: 'center',
-                backgroundColor: Colors.systemGroupedBackground,
+                backgroundColor: Colors.white,
             }}>
                 <ActivityIndicator size="large" color={Colors.epitechBlue} />
             </View>
@@ -169,22 +169,27 @@ export default function AdminProducts() {
     }
 
     return (
-        <View style={{ flex: 1, backgroundColor: Colors.systemGroupedBackground }}>
+        <View style={{ flex: 1, backgroundColor: Colors.white }}>
             <View style={{ padding: 16 }}>
                 <TouchableOpacity
                     style={{
                         backgroundColor: Colors.epitechBlue,
-                        borderRadius: 12,
-                        borderCurve: 'continuous',
+                        borderRadius: 0,
                         padding: 16,
                         flexDirection: 'row',
                         alignItems: 'center',
                         justifyContent: 'center',
+                        borderWidth: 2,
+                        borderColor: Colors.black,
+                        shadowColor: Colors.black,
+                        shadowOffset: { width: 3, height: 3 },
+                        shadowOpacity: 1,
+                        shadowRadius: 0,
                     }}
                     onPress={openAddModal}
                 >
-                    <SymbolView name="plus.circle.fill" size={20} tintColor="#fff" />
-                    <Text style={{ color: '#fff', fontWeight: '700', marginLeft: 8, fontSize: 16 }}>
+                    <SymbolView name="plus.circle.fill" size={20} tintColor={Colors.white} />
+                    <Text style={{ color: Colors.white, fontWeight: '900', marginLeft: 8, fontSize: 16, textTransform: 'uppercase', letterSpacing: 1 }}>
                         Ajouter un produit
                     </Text>
                 </TouchableOpacity>
@@ -195,53 +200,58 @@ export default function AdminProducts() {
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={{ padding: 16, paddingTop: 0 }}
                 refreshControl={
-                    <RefreshControl 
-                        refreshing={refreshing} 
+                    <RefreshControl
+                        refreshing={refreshing}
                         onRefresh={() => { setRefreshing(true); fetchProducts(); }}
                         tintColor={Colors.epitechBlue}
                     />
                 }
                 renderItem={({ item }) => (
                     <View style={{
-                        backgroundColor: Colors.secondarySystemGroupedBackground,
+                        backgroundColor: Colors.white,
                         padding: 16,
-                        borderRadius: 12,
-                        borderCurve: 'continuous',
+                        borderRadius: 0,
                         marginBottom: 12,
-                        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
+                        borderWidth: 2,
+                        borderColor: Colors.black,
+                        shadowColor: Colors.black,
+                        shadowOffset: { width: 3, height: 3 },
+                        shadowOpacity: 1,
+                        shadowRadius: 0,
                     }}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
-                            <Text style={{ fontSize: 17, fontWeight: '700', color: Colors.label, flex: 1 }}>
+                            <Text style={{ fontSize: 17, fontWeight: '800', color: Colors.black, flex: 1 }}>
                                 {item.name}
                             </Text>
                             <TouchableOpacity
                                 onPress={() => openEditModal(item)}
                                 style={{
-                                    backgroundColor: Colors.systemFill,
-                                    borderRadius: 8,
-                                    borderCurve: 'continuous',
+                                    backgroundColor: Colors.offWhite,
+                                    borderRadius: 0,
                                     padding: 8,
                                     marginLeft: 12,
+                                    borderWidth: 2,
+                                    borderColor: Colors.black,
                                 }}
                             >
                                 <SymbolView name="pencil" size={16} tintColor={Colors.epitechBlue} />
                             </TouchableOpacity>
                         </View>
                         {item.description && (
-                            <Text style={{ color: Colors.secondaryLabel, fontSize: 13, marginBottom: 8 }}>
+                            <Text style={{ color: Colors.secondaryLabel, fontSize: 13, marginBottom: 8, fontWeight: '700' }}>
                                 {item.description}
                             </Text>
                         )}
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                             <Text style={{
                                 fontSize: 20,
-                                fontWeight: '700',
+                                fontWeight: '900',
                                 color: Colors.epitechBlue,
                                 fontVariant: ['tabular-nums'],
                             }}>
                                 {item.price_epicoin.toFixed(2)} EPC
                             </Text>
-                            <Text style={{ color: Colors.secondaryLabel, fontSize: 14 }}>
+                            <Text style={{ color: Colors.secondaryLabel, fontSize: 14, fontWeight: '700' }}>
                                 Stock: {item.stock_quantity}
                             </Text>
                         </View>
@@ -255,36 +265,38 @@ export default function AdminProducts() {
                 presentationStyle="formSheet"
                 onRequestClose={() => setModalVisible(false)}
             >
-                <View style={{ flex: 1, backgroundColor: Colors.systemGroupedBackground }}>
+                <View style={{ flex: 1, backgroundColor: Colors.white }}>
                     <View style={{
                         padding: 16,
                         paddingTop: 24,
-                        backgroundColor: Colors.secondarySystemBackground,
-                        borderBottomWidth: 1,
-                        borderBottomColor: Colors.separator,
+                        backgroundColor: Colors.white,
+                        borderBottomWidth: 2,
+                        borderBottomColor: Colors.black,
                         flexDirection: 'row',
                         alignItems: 'center',
                         justifyContent: 'space-between',
                     }}>
-                        <Text style={{ fontSize: 20, fontWeight: '700', color: Colors.label }}>
+                        <Text style={{ fontSize: 20, fontWeight: '900', color: Colors.black, textTransform: 'uppercase', letterSpacing: 1 }}>
                             {editingProduct ? 'Modifier le produit' : 'Nouveau produit'}
                         </Text>
                         <TouchableOpacity onPress={() => setModalVisible(false)}>
-                            <SymbolView name="xmark.circle.fill" size={28} tintColor={Colors.tertiaryLabel} />
+                            <SymbolView name="xmark.circle.fill" size={28} tintColor={Colors.black} />
                         </TouchableOpacity>
                     </View>
 
                     <ScrollView contentContainerStyle={{ padding: 24, gap: 16 }}>
                         <View>
-                            <Text style={{ color: Colors.secondaryLabel, fontWeight: '600', marginBottom: 8 }}>Nom</Text>
+                            <Text style={{ color: Colors.black, fontWeight: '800', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1, fontSize: 13 }}>Nom</Text>
                             <TextInput
                                 style={{
-                                    backgroundColor: Colors.systemFill,
-                                    borderRadius: 12,
-                                    borderCurve: 'continuous',
+                                    backgroundColor: Colors.offWhite,
+                                    borderRadius: 0,
                                     padding: 12,
                                     fontSize: 16,
-                                    color: Colors.label,
+                                    color: Colors.black,
+                                    borderWidth: 2,
+                                    borderColor: Colors.black,
+                                    fontWeight: '700',
                                 }}
                                 placeholder="Ex: Coca-Cola"
                                 placeholderTextColor={Colors.tertiaryLabel}
@@ -294,17 +306,19 @@ export default function AdminProducts() {
                         </View>
 
                         <View>
-                            <Text style={{ color: Colors.secondaryLabel, fontWeight: '600', marginBottom: 8 }}>Description</Text>
+                            <Text style={{ color: Colors.black, fontWeight: '800', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1, fontSize: 13 }}>Description</Text>
                             <TextInput
                                 style={{
-                                    backgroundColor: Colors.systemFill,
-                                    borderRadius: 12,
-                                    borderCurve: 'continuous',
+                                    backgroundColor: Colors.offWhite,
+                                    borderRadius: 0,
                                     padding: 12,
                                     fontSize: 16,
-                                    color: Colors.label,
+                                    color: Colors.black,
                                     minHeight: 80,
                                     textAlignVertical: 'top',
+                                    borderWidth: 2,
+                                    borderColor: Colors.black,
+                                    fontWeight: '700',
                                 }}
                                 placeholder="Description du produit (optionnel)"
                                 placeholderTextColor={Colors.tertiaryLabel}
@@ -316,15 +330,17 @@ export default function AdminProducts() {
                         </View>
 
                         <View>
-                            <Text style={{ color: Colors.secondaryLabel, fontWeight: '600', marginBottom: 8 }}>Prix (EPC)</Text>
+                            <Text style={{ color: Colors.black, fontWeight: '800', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1, fontSize: 13 }}>Prix (EPC)</Text>
                             <TextInput
                                 style={{
-                                    backgroundColor: Colors.systemFill,
-                                    borderRadius: 12,
-                                    borderCurve: 'continuous',
+                                    backgroundColor: Colors.offWhite,
+                                    borderRadius: 0,
                                     padding: 12,
                                     fontSize: 16,
-                                    color: Colors.label,
+                                    color: Colors.black,
+                                    borderWidth: 2,
+                                    borderColor: Colors.black,
+                                    fontWeight: '700',
                                 }}
                                 placeholder="2.50"
                                 placeholderTextColor={Colors.tertiaryLabel}
@@ -335,15 +351,17 @@ export default function AdminProducts() {
                         </View>
 
                         <View>
-                            <Text style={{ color: Colors.secondaryLabel, fontWeight: '600', marginBottom: 8 }}>Stock</Text>
+                            <Text style={{ color: Colors.black, fontWeight: '800', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1, fontSize: 13 }}>Stock</Text>
                             <TextInput
                                 style={{
-                                    backgroundColor: Colors.systemFill,
-                                    borderRadius: 12,
-                                    borderCurve: 'continuous',
+                                    backgroundColor: Colors.offWhite,
+                                    borderRadius: 0,
                                     padding: 12,
                                     fontSize: 16,
-                                    color: Colors.label,
+                                    color: Colors.black,
+                                    borderWidth: 2,
+                                    borderColor: Colors.black,
+                                    fontWeight: '700',
                                 }}
                                 placeholder="10"
                                 placeholderTextColor={Colors.tertiaryLabel}
@@ -356,19 +374,24 @@ export default function AdminProducts() {
                         <TouchableOpacity
                             style={{
                                 backgroundColor: Colors.epitechBlue,
-                                borderRadius: 14,
-                                borderCurve: 'continuous',
+                                borderRadius: 0,
                                 padding: 16,
                                 alignItems: 'center',
                                 marginTop: 16,
+                                borderWidth: 2,
+                                borderColor: Colors.black,
+                                shadowColor: Colors.black,
+                                shadowOffset: { width: 3, height: 3 },
+                                shadowOpacity: 1,
+                                shadowRadius: 0,
                             }}
                             onPress={handleSave}
                             disabled={saving}
                         >
                             {saving ? (
-                                <ActivityIndicator color="#fff" />
+                                <ActivityIndicator color={Colors.white} />
                             ) : (
-                                <Text style={{ color: '#fff', fontSize: 17, fontWeight: '700' }}>
+                                <Text style={{ color: Colors.white, fontSize: 17, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 1 }}>
                                     {editingProduct ? 'Modifier' : 'Ajouter'}
                                 </Text>
                             )}

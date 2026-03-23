@@ -101,28 +101,28 @@ export default function HistoryScreen() {
     if (isTopUp) {
       return {
         name: "plus.circle.fill",
-        color: Colors.systemGreen,
-        bg: "rgba(16, 185, 129, 0.15)",
+        color: Colors.success,
+        bg: Colors.white,
       };
     }
     if (isPurchase) {
       return {
         name: "cart.fill",
-        color: Colors.systemOrange,
-        bg: "rgba(245, 158, 11, 0.15)",
+        color: Colors.accentOrange,
+        bg: Colors.white,
       };
     }
     if (isSender) {
       return {
         name: "arrow.up.circle.fill",
-        color: Colors.systemRed,
-        bg: "rgba(239, 68, 68, 0.15)",
+        color: Colors.accentOrange,
+        bg: Colors.white,
       };
     }
     return {
       name: "arrow.down.circle.fill",
-      color: Colors.systemGreen,
-      bg: "rgba(16, 185, 129, 0.15)",
+      color: Colors.success,
+      bg: Colors.white,
     };
   }
 
@@ -165,44 +165,44 @@ export default function HistoryScreen() {
     const isPurchase = tx.type === "payment" || tx.type === "purchase";
 
     if (isTopUp) {
-      return { prefix: "+", color: Colors.systemGreen };
+      return { prefix: "+", color: Colors.success };
     }
 
     if (isPurchase) {
-      return { prefix: "-", color: Colors.systemRed };
+      return { prefix: "-", color: Colors.accentOrange };
     }
 
     if (isSender) {
-      return { prefix: "-", color: Colors.systemRed };
+      return { prefix: "-", color: Colors.accentOrange };
     }
-    return { prefix: "+", color: Colors.systemGreen };
+    return { prefix: "+", color: Colors.success };
   }
 
   function getStatusBadge(status: string) {
     switch (status) {
       case "completed":
         return {
-          label: "Complété",
-          bg: "rgba(16, 185, 129, 0.15)",
-          color: Colors.systemGreen,
+          label: "COMPLETE",
+          borderColor: Colors.success,
+          color: Colors.success,
         };
       case "pending_review":
         return {
-          label: "En attente",
-          bg: "rgba(245, 158, 11, 0.15)",
-          color: Colors.systemOrange,
+          label: "EN ATTENTE",
+          borderColor: Colors.accentOrange,
+          color: Colors.accentOrange,
         };
       case "failed":
         return {
-          label: "Échoué",
-          bg: "rgba(239, 68, 68, 0.15)",
-          color: Colors.systemRed,
+          label: "ECHOUE",
+          borderColor: Colors.accentOrange,
+          color: Colors.accentOrange,
         };
       default:
         return {
-          label: status,
-          bg: Colors.systemFill,
-          color: Colors.secondaryLabel,
+          label: status.toUpperCase(),
+          borderColor: Colors.mediumGray,
+          color: Colors.mediumGray,
         };
     }
   }
@@ -217,12 +217,16 @@ export default function HistoryScreen() {
       <View
         key={item.id}
         style={{
-          backgroundColor: Colors.secondarySystemGroupedBackground,
+          backgroundColor: Colors.white,
           padding: 16,
-          borderRadius: 16,
-          borderCurve: "continuous",
+          borderRadius: 0,
           marginBottom: 12,
-          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.06)",
+          borderWidth: 2,
+          borderColor: Colors.black,
+          shadowColor: Colors.black,
+          shadowOffset: { width: 3, height: 3 },
+          shadowOpacity: 1,
+          shadowRadius: 0,
         }}
       >
         <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -230,9 +234,10 @@ export default function HistoryScreen() {
             style={{
               backgroundColor: icon.bg,
               padding: 12,
-              borderRadius: 24,
-              borderCurve: "continuous",
+              borderRadius: 0,
               marginRight: 16,
+              borderWidth: 2,
+              borderColor: Colors.black,
             }}
           >
             <SymbolView
@@ -245,9 +250,11 @@ export default function HistoryScreen() {
           <View style={{ flex: 1 }}>
             <Text
               style={{
-                fontWeight: "600",
-                color: Colors.label,
+                fontWeight: "800",
+                color: Colors.black,
                 fontSize: 15,
+                textTransform: "uppercase",
+                letterSpacing: 0.5,
               }}
               numberOfLines={1}
             >
@@ -262,8 +269,10 @@ export default function HistoryScreen() {
             >
               <Text
                 style={{
-                  color: Colors.tertiaryLabel,
+                  color: Colors.mediumGray,
                   fontSize: 12,
+                  fontWeight: "700",
+                  letterSpacing: 0.3,
                 }}
               >
                 {format(new Date(item.created_at), "d MMM 'à' HH:mm", {
@@ -273,19 +282,22 @@ export default function HistoryScreen() {
               {item.status !== "completed" && (
                 <View
                   style={{
-                    backgroundColor: status.bg,
+                    backgroundColor: "transparent",
                     paddingHorizontal: 8,
                     paddingVertical: 2,
-                    borderRadius: 10,
-                    borderCurve: "continuous",
+                    borderRadius: 0,
                     marginLeft: 8,
+                    borderWidth: 2,
+                    borderColor: status.borderColor,
                   }}
                 >
                   <Text
                     style={{
                       color: status.color,
-                      fontSize: 11,
-                      fontWeight: "600",
+                      fontSize: 10,
+                      fontWeight: "900",
+                      textTransform: "uppercase",
+                      letterSpacing: 1,
                     }}
                   >
                     {status.label}
@@ -297,10 +309,11 @@ export default function HistoryScreen() {
 
           <Text
             style={{
-              fontWeight: "700",
+              fontWeight: "900",
               fontSize: 16,
               color: amount.color,
               fontVariant: ["tabular-nums"],
+              letterSpacing: 0.5,
             }}
           >
             {amount.prefix}
@@ -318,7 +331,7 @@ export default function HistoryScreen() {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: Colors.systemGroupedBackground,
+          backgroundColor: Colors.white,
         }}
       >
         <ActivityIndicator size="large" color={Colors.epitechBlue} />
@@ -330,7 +343,7 @@ export default function HistoryScreen() {
     <ScrollView
       style={{
         flex: 1,
-        backgroundColor: Colors.systemGroupedBackground,
+        backgroundColor: Colors.white,
       }}
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{
@@ -349,10 +362,12 @@ export default function HistoryScreen() {
       <Text
         style={{
           fontSize: 34,
-          fontWeight: "700",
-          color: Colors.label,
+          fontWeight: "900",
+          color: Colors.black,
           marginBottom: 24,
           paddingHorizontal: 8,
+          textTransform: "uppercase",
+          letterSpacing: 2,
         }}
       >
         Historique
@@ -369,37 +384,45 @@ export default function HistoryScreen() {
         >
           <View
             style={{
-              backgroundColor: Colors.systemFill,
+              backgroundColor: Colors.offWhite,
               padding: 24,
-              borderRadius: 48,
-              borderCurve: "continuous",
+              borderRadius: 0,
               marginBottom: 16,
+              borderWidth: 2,
+              borderColor: Colors.black,
+              shadowColor: Colors.black,
+              shadowOffset: { width: 3, height: 3 },
+              shadowOpacity: 1,
+              shadowRadius: 0,
             }}
           >
             <SymbolView
               name="doc.text"
               size={48}
-              tintColor={Colors.tertiaryLabel}
+              tintColor={Colors.mediumGray}
             />
           </View>
           <Text
             style={{
-              color: Colors.secondaryLabel,
+              color: Colors.black,
               fontSize: 17,
-              fontWeight: "600",
+              fontWeight: "900",
               marginBottom: 8,
+              textTransform: "uppercase",
+              letterSpacing: 1.5,
             }}
           >
             Aucune transaction
           </Text>
           <Text
             style={{
-              color: Colors.tertiaryLabel,
+              color: Colors.mediumGray,
               textAlign: "center",
               marginTop: 8,
               paddingHorizontal: 32,
               fontSize: 15,
               lineHeight: 20,
+              fontWeight: "700",
             }}
           >
             Vos transactions apparaîtront ici une fois que vous aurez effectué

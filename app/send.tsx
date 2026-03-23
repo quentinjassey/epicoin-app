@@ -191,34 +191,39 @@ export default function SendScreen() {
     return (
         <ScrollView
             contentInsetAdjustmentBehavior="automatic"
-            style={{ flex: 1, backgroundColor: Colors.systemGroupedBackground }}
+            style={{ flex: 1, backgroundColor: Colors.white }}
             contentContainerStyle={{ padding: 24, paddingTop: 24, paddingBottom: 54 }}
             keyboardShouldPersistTaps="handled"
         >
             {/* Carte Solde */}
             <View style={{
-                backgroundColor: Colors.secondarySystemGroupedBackground,
-                borderRadius: 16,
-                borderCurve: 'continuous',
+                backgroundColor: Colors.offWhite,
+                borderRadius: 0,
                 padding: 20,
                 marginBottom: 24,
-                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
+                borderWidth: 2,
+                borderColor: Colors.black,
+                shadowColor: Colors.black,
+                shadowOffset: { width: 4, height: 4 },
+                shadowOpacity: 1,
+                shadowRadius: 0,
             }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
                     <SymbolView name="dollarsign.circle.fill" size={20} tintColor={Colors.epitechBlue} />
                     <Text style={{
                         fontSize: 13,
-                        fontWeight: '600',
+                        fontWeight: '800',
                         color: Colors.secondaryLabel,
                         marginLeft: 8,
                         textTransform: 'uppercase',
+                        letterSpacing: 2,
                     }}>
                         Solde disponible
                     </Text>
                 </View>
                 <Text style={{
                     fontSize: 32,
-                    fontWeight: '700',
+                    fontWeight: '900',
                     color: Colors.epitechBlue,
                     fontVariant: ['tabular-nums'],
                 }}>
@@ -230,9 +235,11 @@ export default function SendScreen() {
             <View style={{ marginBottom: 24 }}>
                 <Text style={{
                     fontSize: 15,
-                    fontWeight: '600',
-                    color: Colors.label,
+                    fontWeight: '800',
+                    color: Colors.black,
                     marginBottom: 12,
+                    textTransform: 'uppercase',
+                    letterSpacing: 2,
                 }}>
                     Destinataire
                 </Text>
@@ -240,18 +247,19 @@ export default function SendScreen() {
                 {!selectedUser ? (
                     <>
                         <View style={{
-                            backgroundColor: Colors.secondarySystemGroupedBackground,
-                            borderRadius: 12,
-                            borderCurve: 'continuous',
+                            backgroundColor: Colors.white,
+                            borderRadius: 0,
                             flexDirection: 'row',
                             alignItems: 'center',
                             paddingHorizontal: 12,
                             paddingVertical: 12,
                             marginBottom: 8,
+                            borderWidth: 2,
+                            borderColor: Colors.black,
                         }}>
                             <SymbolView name="magnifyingglass" size={18} tintColor={Colors.tertiaryLabel} style={{ marginRight: 8 }} />
                             <TextInput
-                                style={{ flex: 1, fontSize: 17, color: Colors.label }}
+                                style={{ flex: 1, fontSize: 17, color: Colors.black }}
                                 placeholder="Nom ou email..."
                                 placeholderTextColor={Colors.tertiaryLabel}
                                 value={searchQuery}
@@ -263,11 +271,15 @@ export default function SendScreen() {
 
                         {searchResults.length > 0 && (
                             <View style={{
-                                backgroundColor: Colors.secondarySystemGroupedBackground,
-                                borderRadius: 12,
-                                borderCurve: 'continuous',
+                                backgroundColor: Colors.white,
+                                borderRadius: 0,
                                 overflow: 'hidden',
-                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                                borderWidth: 2,
+                                borderColor: Colors.black,
+                                shadowColor: Colors.black,
+                                shadowOffset: { width: 3, height: 3 },
+                                shadowOpacity: 1,
+                                shadowRadius: 0,
                             }}>
                                 {searchResults.map((user, i) => (
                                     <TouchableOpacity
@@ -281,25 +293,27 @@ export default function SendScreen() {
                                             padding: 12,
                                             flexDirection: 'row',
                                             alignItems: 'center',
-                                            borderBottomWidth: i < searchResults.length - 1 ? 1 : 0,
-                                            borderBottomColor: Colors.separator,
+                                            borderBottomWidth: i < searchResults.length - 1 ? 2 : 0,
+                                            borderBottomColor: Colors.black,
                                         }}
                                     >
                                         <View style={{
                                             width: 40,
                                             height: 40,
                                             backgroundColor: Colors.epitechBlue,
-                                            borderRadius: 20,
+                                            borderRadius: 0,
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                             marginRight: 12,
+                                            borderWidth: 2,
+                                            borderColor: Colors.black,
                                         }}>
-                                            <Text style={{ color: '#fff', fontSize: 18, fontWeight: '700' }}>
+                                            <Text style={{ color: Colors.white, fontSize: 18, fontWeight: '900' }}>
                                                 {user.full_name.charAt(0).toUpperCase()}
                                             </Text>
                                         </View>
                                         <View style={{ flex: 1 }}>
-                                            <Text style={{ fontSize: 16, fontWeight: '600', color: Colors.label }}>
+                                            <Text style={{ fontSize: 16, fontWeight: '700', color: Colors.black }}>
                                                 {user.full_name}
                                             </Text>
                                             <Text style={{ fontSize: 13, color: Colors.secondaryLabel }}>
@@ -314,28 +328,34 @@ export default function SendScreen() {
                 ) : (
                     <View style={{
                         backgroundColor: Colors.epitechBlue,
-                        borderRadius: 12,
-                        borderCurve: 'continuous',
+                        borderRadius: 0,
                         padding: 16,
                         flexDirection: 'row',
                         alignItems: 'center',
-                        boxShadow: '0 2px 8px rgba(0, 145, 211, 0.25)',
+                        borderWidth: 2,
+                        borderColor: Colors.black,
+                        shadowColor: Colors.black,
+                        shadowOffset: { width: 4, height: 4 },
+                        shadowOpacity: 1,
+                        shadowRadius: 0,
                     }}>
                         <View style={{
                             width: 48,
                             height: 48,
                             backgroundColor: 'rgba(255, 255, 255, 0.25)',
-                            borderRadius: 24,
+                            borderRadius: 0,
                             alignItems: 'center',
                             justifyContent: 'center',
                             marginRight: 12,
+                            borderWidth: 2,
+                            borderColor: Colors.white,
                         }}>
-                            <Text style={{ color: '#fff', fontSize: 20, fontWeight: '700' }}>
+                            <Text style={{ color: Colors.white, fontSize: 20, fontWeight: '900' }}>
                                 {selectedUser.full_name.charAt(0).toUpperCase()}
                             </Text>
                         </View>
                         <View style={{ flex: 1 }}>
-                            <Text style={{ fontSize: 17, fontWeight: '700', color: '#fff' }}>
+                            <Text style={{ fontSize: 17, fontWeight: '900', color: Colors.white }}>
                                 {selectedUser.full_name}
                             </Text>
                             <Text style={{ fontSize: 13, color: 'rgba(255, 255, 255, 0.75)' }}>
@@ -353,26 +373,32 @@ export default function SendScreen() {
             <View style={{ marginBottom: 24 }}>
                 <Text style={{
                     fontSize: 15,
-                    fontWeight: '600',
-                    color: Colors.label,
+                    fontWeight: '800',
+                    color: Colors.black,
                     marginBottom: 12,
+                    textTransform: 'uppercase',
+                    letterSpacing: 2,
                 }}>
                     Montant
                 </Text>
                 <View style={{
-                    backgroundColor: Colors.secondarySystemGroupedBackground,
-                    borderRadius: 16,
-                    borderCurve: 'continuous',
+                    backgroundColor: Colors.white,
+                    borderRadius: 0,
                     padding: 20,
-                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
+                    borderWidth: 2,
+                    borderColor: Colors.black,
+                    shadowColor: Colors.black,
+                    shadowOffset: { width: 4, height: 4 },
+                    shadowOpacity: 1,
+                    shadowRadius: 0,
                 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <TextInput
                             style={{
                                 flex: 1,
                                 fontSize: 40,
-                                fontWeight: '700',
-                                color: Colors.label,
+                                fontWeight: '900',
+                                color: Colors.black,
                                 fontVariant: ['tabular-nums'],
                             }}
                             placeholder="0"
@@ -389,7 +415,7 @@ export default function SendScreen() {
                         />
                         <Text style={{
                             fontSize: 24,
-                            fontWeight: '700',
+                            fontWeight: '900',
                             color: Colors.epitechBlue,
                             marginLeft: 8,
                         }}>
@@ -401,17 +427,20 @@ export default function SendScreen() {
                             flexDirection: 'row',
                             alignItems: 'center',
                             marginTop: 12,
-                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            backgroundColor: Colors.offWhite,
                             padding: 12,
-                            borderRadius: 8,
-                            borderCurve: 'continuous',
+                            borderRadius: 0,
+                            borderWidth: 2,
+                            borderColor: Colors.accentOrange,
                         }}>
-                            <SymbolView name="exclamationmark.triangle.fill" size={16} tintColor={Colors.systemRed} />
+                            <SymbolView name="exclamationmark.triangle.fill" size={16} tintColor={Colors.accentOrange} />
                             <Text style={{
                                 fontSize: 13,
-                                color: Colors.systemRed,
+                                color: Colors.accentOrange,
                                 marginLeft: 8,
-                                fontWeight: '600',
+                                fontWeight: '800',
+                                textTransform: 'uppercase',
+                                letterSpacing: 1,
                             }}>
                                 Solde insuffisant
                             </Text>
@@ -424,23 +453,29 @@ export default function SendScreen() {
             <View style={{ marginBottom: 32 }}>
                 <Text style={{
                     fontSize: 15,
-                    fontWeight: '600',
-                    color: Colors.label,
+                    fontWeight: '800',
+                    color: Colors.black,
                     marginBottom: 12,
+                    textTransform: 'uppercase',
+                    letterSpacing: 2,
                 }}>
                     Note (optionnel)
                 </Text>
                 <View style={{
-                    backgroundColor: Colors.secondarySystemGroupedBackground,
-                    borderRadius: 12,
-                    borderCurve: 'continuous',
+                    backgroundColor: Colors.white,
+                    borderRadius: 0,
                     padding: 16,
-                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
+                    borderWidth: 2,
+                    borderColor: Colors.black,
+                    shadowColor: Colors.black,
+                    shadowOffset: { width: 3, height: 3 },
+                    shadowOpacity: 1,
+                    shadowRadius: 0,
                 }}>
                     <TextInput
                         style={{
                             fontSize: 16,
-                            color: Colors.label,
+                            color: Colors.black,
                             minHeight: 80,
                             textAlignVertical: 'top',
                         }}
@@ -456,6 +491,7 @@ export default function SendScreen() {
                         color: Colors.tertiaryLabel,
                         textAlign: 'right',
                         marginTop: 8,
+                        fontWeight: '700',
                     }}>
                         {note.length}/100
                     </Text>
@@ -465,28 +501,34 @@ export default function SendScreen() {
             {/* Bouton Envoyer */}
             <TouchableOpacity
                 style={{
-                    backgroundColor: canSend && !processing ? Colors.epitechBlue : Colors.systemFill,
-                    borderRadius: 14,
-                    borderCurve: 'continuous',
+                    backgroundColor: canSend && !processing ? Colors.epitechBlue : Colors.lightGray,
+                    borderRadius: 0,
                     padding: 18,
                     alignItems: 'center',
                     flexDirection: 'row',
                     justifyContent: 'center',
-                    boxShadow: canSend && !processing ? '0 4px 12px rgba(0, 145, 211, 0.3)' : 'none',
+                    borderWidth: 2,
+                    borderColor: Colors.black,
+                    shadowColor: Colors.black,
+                    shadowOffset: { width: 4, height: 4 },
+                    shadowOpacity: canSend && !processing ? 1 : 0,
+                    shadowRadius: 0,
                 }}
                 onPress={handleSend}
                 disabled={!canSend || processing}
             >
                 {processing ? (
-                    <ActivityIndicator color="#fff" />
+                    <ActivityIndicator color={Colors.white} />
                 ) : (
                     <>
-                        <SymbolView name="paperplane.fill" size={20} tintColor={canSend ? '#fff' : Colors.tertiaryLabel} />
+                        <SymbolView name="paperplane.fill" size={20} tintColor={canSend ? Colors.white : Colors.tertiaryLabel} />
                         <Text style={{
-                            color: canSend ? '#fff' : Colors.tertiaryLabel,
+                            color: canSend ? Colors.white : Colors.tertiaryLabel,
                             fontSize: 17,
-                            fontWeight: '700',
+                            fontWeight: '900',
                             marginLeft: 8,
+                            textTransform: 'uppercase',
+                            letterSpacing: 1,
                         }}>
                             Envoyer {amount ? `${amount} EPC` : ''}
                         </Text>
@@ -506,6 +548,7 @@ export default function SendScreen() {
                         color: Colors.tertiaryLabel,
                         fontSize: 13,
                         marginLeft: 8,
+                        fontWeight: '700',
                     }}>
                         Authentification biométrique activée
                     </Text>

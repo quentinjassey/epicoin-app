@@ -198,16 +198,18 @@ function TopUpContent() {
   return (
     <ScrollView
       contentInsetAdjustmentBehavior="automatic"
-      style={{ flex: 1, backgroundColor: Colors.systemGroupedBackground }}
+      style={{ flex: 1, backgroundColor: Colors.white }}
       contentContainerStyle={{ padding: 24, paddingBottom: 48 }}
     >
       <View style={{ marginBottom: 32 }}>
         <Text
           style={{
             fontSize: 28,
-            fontWeight: "700",
-            color: Colors.label,
+            fontWeight: "900",
+            color: Colors.black,
             marginBottom: 8,
+            textTransform: "uppercase",
+            letterSpacing: 1,
           }}
         >
           Recharger votre compte
@@ -217,6 +219,7 @@ function TopUpContent() {
             fontSize: 15,
             color: Colors.secondaryLabel,
             lineHeight: 20,
+            fontWeight: "700",
           }}
         >
           Choisissez un montant et profitez de bonus exclusifs
@@ -236,15 +239,15 @@ function TopUpContent() {
               style={{
                 backgroundColor: isSelected
                   ? Colors.epitechBlue
-                  : Colors.secondarySystemGroupedBackground,
-                borderRadius: 16,
-                borderCurve: "continuous",
+                  : Colors.white,
+                borderRadius: 0,
                 padding: 20,
-                borderWidth: isSelected ? 2 : 0,
-                borderColor: Colors.epitechBlue,
-                boxShadow: isSelected
-                  ? "0 4px 12px rgba(0, 145, 211, 0.25)"
-                  : "0 1px 3px rgba(0, 0, 0, 0.06)",
+                borderWidth: 2,
+                borderColor: Colors.black,
+                shadowColor: Colors.black,
+                shadowOffset: { width: isSelected ? 4 : 3, height: isSelected ? 4 : 3 },
+                shadowOpacity: 1,
+                shadowRadius: 0,
               }}
             >
               <View
@@ -265,8 +268,8 @@ function TopUpContent() {
                     <Text
                       style={{
                         fontSize: 32,
-                        fontWeight: "700",
-                        color: isSelected ? "#fff" : Colors.label,
+                        fontWeight: "900",
+                        color: isSelected ? Colors.white : Colors.black,
                         marginRight: 8,
                         fontVariant: ["tabular-nums"],
                       }}
@@ -278,19 +281,21 @@ function TopUpContent() {
                         style={{
                           backgroundColor: isSelected
                             ? "rgba(255, 255, 255, 0.25)"
-                            : Colors.systemOrange,
+                            : Colors.accentOrange,
                           paddingHorizontal: 8,
                           paddingVertical: 4,
-                          borderRadius: 8,
-                          borderCurve: "continuous",
+                          borderRadius: 0,
+                          borderWidth: 2,
+                          borderColor: isSelected ? Colors.white : Colors.black,
                         }}
                       >
                         <Text
                           style={{
-                            color: isSelected ? "#fff" : "#fff",
+                            color: Colors.white,
                             fontSize: 11,
-                            fontWeight: "700",
+                            fontWeight: "900",
                             textTransform: "uppercase",
+                            letterSpacing: 1,
                           }}
                         >
                           {option.popular ? "Populaire" : "Meilleure valeur"}
@@ -306,6 +311,7 @@ function TopUpContent() {
                         ? "rgba(255, 255, 255, 0.75)"
                         : Colors.secondaryLabel,
                       marginBottom: 4,
+                      fontWeight: "700",
                     }}
                   >
                     {baseEpc} EPC{" "}
@@ -315,7 +321,7 @@ function TopUpContent() {
                   <Text
                     style={{
                       fontSize: 20,
-                      fontWeight: "700",
+                      fontWeight: "900",
                       color: isSelected
                         ? Colors.epitechYellow
                         : Colors.epitechBlue,
@@ -330,7 +336,7 @@ function TopUpContent() {
                   <SymbolView
                     name="checkmark.circle.fill"
                     size={32}
-                    tintColor="#fff"
+                    tintColor={Colors.white}
                   />
                 )}
               </View>
@@ -342,11 +348,16 @@ function TopUpContent() {
       {selectedOption && (
         <View
           style={{
-            backgroundColor: Colors.secondarySystemGroupedBackground,
-            borderRadius: 16,
-            borderCurve: "continuous",
+            backgroundColor: Colors.offWhite,
+            borderRadius: 0,
             padding: 20,
             marginBottom: 24,
+            borderWidth: 2,
+            borderColor: Colors.black,
+            shadowColor: Colors.black,
+            shadowOffset: { width: 3, height: 3 },
+            shadowOpacity: 1,
+            shadowRadius: 0,
           }}
         >
           <View
@@ -359,14 +370,16 @@ function TopUpContent() {
             <SymbolView
               name="info.circle.fill"
               size={20}
-              tintColor={Colors.systemBlue}
+              tintColor={Colors.epitechBlue}
             />
             <Text
               style={{
                 fontSize: 15,
-                fontWeight: "600",
-                color: Colors.label,
+                fontWeight: "800",
+                color: Colors.black,
                 marginLeft: 8,
+                textTransform: "uppercase",
+                letterSpacing: 2,
               }}
             >
               Récapitulatif
@@ -376,11 +389,11 @@ function TopUpContent() {
             <View
               style={{ flexDirection: "row", justifyContent: "space-between" }}
             >
-              <Text style={{ color: Colors.secondaryLabel }}>Montant</Text>
+              <Text style={{ color: Colors.secondaryLabel, fontWeight: "700" }}>Montant</Text>
               <Text
                 style={{
-                  fontWeight: "600",
-                  color: Colors.label,
+                  fontWeight: "800",
+                  color: Colors.black,
                   fontVariant: ["tabular-nums"],
                 }}
               >
@@ -390,11 +403,11 @@ function TopUpContent() {
             <View
               style={{ flexDirection: "row", justifyContent: "space-between" }}
             >
-              <Text style={{ color: Colors.secondaryLabel }}>EPC de base</Text>
+              <Text style={{ color: Colors.secondaryLabel, fontWeight: "700" }}>EPC de base</Text>
               <Text
                 style={{
-                  fontWeight: "600",
-                  color: Colors.label,
+                  fontWeight: "800",
+                  color: Colors.black,
                   fontVariant: ["tabular-nums"],
                 }}
               >
@@ -408,11 +421,11 @@ function TopUpContent() {
                   justifyContent: "space-between",
                 }}
               >
-                <Text style={{ color: Colors.systemGreen }}>Bonus</Text>
+                <Text style={{ color: Colors.neonGreen, fontWeight: "700" }}>Bonus</Text>
                 <Text
                   style={{
-                    fontWeight: "600",
-                    color: Colors.systemGreen,
+                    fontWeight: "800",
+                    color: Colors.neonGreen,
                     fontVariant: ["tabular-nums"],
                   }}
                 >
@@ -422,8 +435,8 @@ function TopUpContent() {
             )}
             <View
               style={{
-                height: 1,
-                backgroundColor: Colors.separator,
+                height: 2,
+                backgroundColor: Colors.black,
                 marginVertical: 8,
               }}
             />
@@ -431,14 +444,14 @@ function TopUpContent() {
               style={{ flexDirection: "row", justifyContent: "space-between" }}
             >
               <Text
-                style={{ fontSize: 17, fontWeight: "700", color: Colors.label }}
+                style={{ fontSize: 17, fontWeight: "900", color: Colors.black, textTransform: "uppercase" }}
               >
                 Total
               </Text>
               <Text
                 style={{
                   fontSize: 20,
-                  fontWeight: "700",
+                  fontWeight: "900",
                   color: Colors.epitechBlue,
                   fontVariant: ["tabular-nums"],
                 }}
@@ -454,28 +467,35 @@ function TopUpContent() {
         style={{
           backgroundColor: selectedOption
             ? Colors.epitechBlue
-            : Colors.systemFill,
-          borderRadius: 14,
-          borderCurve: "continuous",
+            : Colors.lightGray,
+          borderRadius: 0,
           padding: 16,
           alignItems: "center",
           flexDirection: "row",
           justifyContent: "center",
+          borderWidth: 2,
+          borderColor: Colors.black,
+          shadowColor: Colors.black,
+          shadowOffset: { width: 4, height: 4 },
+          shadowOpacity: selectedOption ? 1 : 0,
+          shadowRadius: 0,
         }}
         onPress={handlePayment}
         disabled={!selectedOption || loading}
       >
         {loading ? (
-          <ActivityIndicator color="#fff" />
+          <ActivityIndicator color={Colors.white} />
         ) : (
           <>
-            <SymbolView name="creditcard.fill" size={20} tintColor="#fff" />
+            <SymbolView name="creditcard.fill" size={20} tintColor={selectedOption ? Colors.white : Colors.tertiaryLabel} />
             <Text
               style={{
-                color: "#fff",
+                color: selectedOption ? Colors.white : Colors.tertiaryLabel,
                 fontSize: 17,
-                fontWeight: "700",
+                fontWeight: "900",
                 marginLeft: 8,
+                textTransform: "uppercase",
+                letterSpacing: 1,
               }}
             >
               Payer {selectedOption ? `${selectedOption.euros}€` : ""}
@@ -502,6 +522,7 @@ function TopUpContent() {
             color: Colors.tertiaryLabel,
             fontSize: 13,
             marginLeft: 8,
+            fontWeight: "700",
           }}
         >
           Paiement sécurisé par Stripe

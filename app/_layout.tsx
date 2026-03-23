@@ -75,62 +75,55 @@ function RootLayoutNav() {
         }
     }, [session, segments, initialized]);
 
-    // Thème personnalisé avec les couleurs Epitech
-    const EpitechLightTheme = {
+    // Epitech Brutalist Theme — light mode
+    const EpitechTheme = {
         ...DefaultTheme,
         colors: {
             ...DefaultTheme.colors,
-            primary: '#0091D3',
-            background: '#f9fafb',
-            card: '#ffffff',
-            text: '#111827',
-            border: '#e5e7eb',
-        },
-    };
-
-    const EpitechDarkTheme = {
-        ...DarkTheme,
-        colors: {
-            ...DarkTheme.colors,
-            primary: '#0091D3',
+            primary: '#013AFB',
+            background: '#FFFFFF',
+            card: '#FFFFFF',
+            text: '#181818',
+            border: '#181818',
+            notification: '#013AFB',
         },
     };
 
     return (
-        <ThemeProvider value={colorScheme === 'dark' ? EpitechDarkTheme : EpitechLightTheme}>
+        <ThemeProvider value={EpitechTheme}>
             <Stack>
                 <Stack.Screen name="(main)" options={{ headerShown: false }} />
                 <Stack.Screen name="(auth)" options={{ headerShown: false }} />
                 <Stack.Screen name="admin" options={{ headerShown: false }} />
-                <Stack.Screen 
-                    name="send" 
-                    options={{ 
+                <Stack.Screen
+                    name="send"
+                    options={{
                         presentation: 'formSheet',
                         sheetGrabberVisible: true,
                         sheetAllowedDetents: [0.9],
                         title: 'Envoyer',
-                        headerTintColor: '#0091D3',
-                    }} 
+                        headerTintColor: '#00ff97',
+                    }}
                 />
-                <Stack.Screen 
-                    name="pay" 
-                    options={{ 
+                <Stack.Screen
+                    name="pay"
+                    options={{
                         presentation: 'formSheet',
                         sheetGrabberVisible: true,
                         sheetAllowedDetents: [0.85],
                         title: 'Payer',
                         headerShown: false,
-                    }} 
+                    }}
                 />
-                <Stack.Screen 
-                    name="top-up" 
-                    options={{ 
+                <Stack.Screen
+                    name="top-up"
+                    options={{
                         presentation: 'formSheet',
                         sheetGrabberVisible: true,
                         sheetAllowedDetents: [0.85],
                         title: 'Recharger',
-                        headerTintColor: '#0091D3',
-                    }} 
+                        headerTintColor: '#00ff97',
+                    }}
                 />
             </Stack>
         </ThemeProvider>

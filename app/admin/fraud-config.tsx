@@ -1,12 +1,12 @@
 import { SymbolView } from 'expo-symbols';
 import React, { useEffect, useState } from 'react';
-import { 
-    ActivityIndicator, 
-    Alert, 
-    ScrollView, 
-    Text, 
-    TextInput, 
-    TouchableOpacity, 
+import {
+    ActivityIndicator,
+    Alert,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
     View,
     Switch,
 } from 'react-native';
@@ -38,9 +38,9 @@ export default function FraudConfigScreen() {
     async function fetchConfig() {
         try {
             const { data, error } = await supabase.rpc('get_fraud_config');
-            
+
             if (error) throw error;
-            
+
             if (data && data.length > 0) {
                 const configData = data[0];
                 setConfig({
@@ -63,14 +63,14 @@ export default function FraudConfigScreen() {
             Alert.alert('Erreur', 'La somme des poids ML et heuristique doit être égale à 100%');
             return;
         }
-        
+
         if (config.threshold_approve >= config.threshold_review) {
             Alert.alert('Erreur', 'Le seuil d\'approbation doit être inférieur au seuil de révision');
             return;
         }
 
         setSaving(true);
-        
+
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
@@ -86,7 +86,7 @@ export default function FraudConfigScreen() {
             });
 
             if (error) throw error;
-            
+
             if (!data.success) {
                 throw new Error(data.message || 'Erreur lors de la sauvegarde');
             }
@@ -139,7 +139,7 @@ export default function FraudConfigScreen() {
                 flex: 1,
                 justifyContent: 'center',
                 alignItems: 'center',
-                backgroundColor: Colors.systemGroupedBackground,
+                backgroundColor: Colors.white,
             }}>
                 <ActivityIndicator size="large" color={Colors.epitechBlue} />
             </View>
@@ -147,58 +147,72 @@ export default function FraudConfigScreen() {
     }
 
     return (
-        <ScrollView 
+        <ScrollView
             contentInsetAdjustmentBehavior="automatic"
-            style={{ flex: 1, backgroundColor: Colors.systemGroupedBackground }}
+            style={{ flex: 1, backgroundColor: Colors.white }}
             contentContainerStyle={{ padding: 24 }}
         >
             {/* Header */}
             <View style={{
-                backgroundColor: Colors.systemPurple,
-                borderRadius: 16,
-                borderCurve: 'continuous',
+                backgroundColor: Colors.accentMagenta,
+                borderRadius: 0,
                 padding: 24,
                 marginBottom: 24,
+                borderWidth: 2,
+                borderColor: Colors.black,
+                shadowColor: Colors.black,
+                shadowOffset: { width: 3, height: 3 },
+                shadowOpacity: 1,
+                shadowRadius: 0,
             }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                    <SymbolView name="slider.horizontal.3" size={24} tintColor="#fff" />
+                    <SymbolView name="slider.horizontal.3" size={24} tintColor={Colors.white} />
                     <Text style={{
-                        color: '#fff',
-                        fontWeight: '700',
+                        color: Colors.white,
+                        fontWeight: '900',
                         fontSize: 20,
                         marginLeft: 8,
+                        textTransform: 'uppercase',
+                        letterSpacing: 1,
                     }}>
                         Configuration Fraude
                     </Text>
                 </View>
-                <Text style={{ color: 'rgba(255, 255, 255, 0.75)', fontSize: 15 }}>
+                <Text style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: 15, fontWeight: '700' }}>
                     Ajustez les poids et seuils du système de détection
                 </Text>
             </View>
 
             {/* ML vs Heuristic Weight */}
             <View style={{
-                backgroundColor: Colors.secondarySystemGroupedBackground,
-                borderRadius: 16,
-                borderCurve: 'continuous',
+                backgroundColor: Colors.white,
+                borderRadius: 0,
                 padding: 20,
                 marginBottom: 24,
+                borderWidth: 2,
+                borderColor: Colors.black,
+                shadowColor: Colors.black,
+                shadowOffset: { width: 3, height: 3 },
+                shadowOpacity: 1,
+                shadowRadius: 0,
             }}>
                 <Text style={{
                     fontSize: 17,
-                    fontWeight: '700',
-                    color: Colors.label,
+                    fontWeight: '900',
+                    color: Colors.black,
                     marginBottom: 16,
+                    textTransform: 'uppercase',
+                    letterSpacing: 1,
                 }}>
                     Pondération ML vs Heuristique
                 </Text>
 
                 <View style={{ marginBottom: 20 }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
-                        <Text style={{ color: Colors.secondaryLabel, fontSize: 15 }}>ML (Machine Learning)</Text>
+                        <Text style={{ color: Colors.secondaryLabel, fontSize: 15, fontWeight: '700' }}>ML (Machine Learning)</Text>
                         <Text style={{
-                            fontWeight: '700',
-                            color: Colors.systemPurple,
+                            fontWeight: '900',
+                            color: Colors.accentMagenta,
                             fontSize: 17,
                             fontVariant: ['tabular-nums'],
                         }}>
@@ -212,18 +226,18 @@ export default function FraudConfigScreen() {
                         step={0.05}
                         value={config.ml_weight}
                         onValueChange={updateMLWeight}
-                        minimumTrackTintColor="#8B5CF6"
-                        maximumTrackTintColor="rgba(120, 120, 128, 0.2)"
-                        thumbTintColor="#8B5CF6"
+                        minimumTrackTintColor={Colors.accentMagenta}
+                        maximumTrackTintColor={Colors.offWhite}
+                        thumbTintColor={Colors.accentMagenta}
                     />
                 </View>
 
                 <View>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
-                        <Text style={{ color: Colors.secondaryLabel, fontSize: 15 }}>Heuristique (Règles)</Text>
+                        <Text style={{ color: Colors.secondaryLabel, fontSize: 15, fontWeight: '700' }}>Heuristique (Règles)</Text>
                         <Text style={{
-                            fontWeight: '700',
-                            color: Colors.systemBlue,
+                            fontWeight: '900',
+                            color: Colors.epitechBlue,
                             fontSize: 17,
                             fontVariant: ['tabular-nums'],
                         }}>
@@ -232,15 +246,16 @@ export default function FraudConfigScreen() {
                     </View>
                     <View style={{
                         height: 8,
-                        backgroundColor: Colors.systemFill,
-                        borderRadius: 4,
-                        borderCurve: 'continuous',
+                        backgroundColor: Colors.offWhite,
+                        borderRadius: 0,
                         overflow: 'hidden',
+                        borderWidth: 1,
+                        borderColor: Colors.black,
                     }}>
                         <View style={{
                             height: '100%',
                             width: `${config.heuristic_weight * 100}%`,
-                            backgroundColor: Colors.systemBlue,
+                            backgroundColor: Colors.epitechBlue,
                         }} />
                     </View>
                 </View>
@@ -248,73 +263,82 @@ export default function FraudConfigScreen() {
 
             {/* Thresholds */}
             <View style={{
-                backgroundColor: Colors.secondarySystemGroupedBackground,
-                borderRadius: 16,
-                borderCurve: 'continuous',
+                backgroundColor: Colors.white,
+                borderRadius: 0,
                 padding: 20,
                 marginBottom: 24,
+                borderWidth: 2,
+                borderColor: Colors.black,
+                shadowColor: Colors.black,
+                shadowOffset: { width: 3, height: 3 },
+                shadowOpacity: 1,
+                shadowRadius: 0,
             }}>
                 <Text style={{
                     fontSize: 17,
-                    fontWeight: '700',
-                    color: Colors.label,
+                    fontWeight: '900',
+                    color: Colors.black,
                     marginBottom: 16,
+                    textTransform: 'uppercase',
+                    letterSpacing: 1,
                 }}>
                     Seuils de décision
                 </Text>
 
                 <View style={{ marginBottom: 20 }}>
-                    <Text style={{ color: Colors.secondaryLabel, fontSize: 15, marginBottom: 8 }}>
+                    <Text style={{ color: Colors.secondaryLabel, fontSize: 15, marginBottom: 8, fontWeight: '700' }}>
                         Seuil d'approbation automatique
                     </Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                         <TextInput
                             style={{
                                 flex: 1,
-                                backgroundColor: Colors.systemFill,
-                                borderRadius: 12,
-                                borderCurve: 'continuous',
+                                backgroundColor: Colors.offWhite,
+                                borderRadius: 0,
                                 padding: 12,
                                 fontSize: 16,
-                                color: Colors.label,
+                                color: Colors.black,
                                 fontWeight: '700',
                                 fontVariant: ['tabular-nums'],
+                                borderWidth: 2,
+                                borderColor: Colors.black,
                             }}
                             value={config.threshold_approve.toString()}
                             onChangeText={(text) => setConfig({ ...config, threshold_approve: parseInt(text) || 0 })}
                             keyboardType="number-pad"
                         />
-                        <Text style={{ color: Colors.secondaryLabel, fontSize: 15 }}>/ 100</Text>
+                        <Text style={{ color: Colors.secondaryLabel, fontSize: 15, fontWeight: '700' }}>/ 100</Text>
                     </View>
-                    <Text style={{ color: Colors.tertiaryLabel, fontSize: 13, marginTop: 8 }}>
+                    <Text style={{ color: Colors.tertiaryLabel, fontSize: 13, marginTop: 8, fontWeight: '700' }}>
                         Scores inférieurs sont approuvés automatiquement
                     </Text>
                 </View>
 
                 <View>
-                    <Text style={{ color: Colors.secondaryLabel, fontSize: 15, marginBottom: 8 }}>
+                    <Text style={{ color: Colors.secondaryLabel, fontSize: 15, marginBottom: 8, fontWeight: '700' }}>
                         Seuil de révision manuelle
                     </Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                         <TextInput
                             style={{
                                 flex: 1,
-                                backgroundColor: Colors.systemFill,
-                                borderRadius: 12,
-                                borderCurve: 'continuous',
+                                backgroundColor: Colors.offWhite,
+                                borderRadius: 0,
                                 padding: 12,
                                 fontSize: 16,
-                                color: Colors.label,
+                                color: Colors.black,
                                 fontWeight: '700',
                                 fontVariant: ['tabular-nums'],
+                                borderWidth: 2,
+                                borderColor: Colors.black,
                             }}
                             value={config.threshold_review.toString()}
                             onChangeText={(text) => setConfig({ ...config, threshold_review: parseInt(text) || 0 })}
                             keyboardType="number-pad"
                         />
-                        <Text style={{ color: Colors.secondaryLabel, fontSize: 15 }}>/ 100</Text>
+                        <Text style={{ color: Colors.secondaryLabel, fontSize: 15, fontWeight: '700' }}>/ 100</Text>
                     </View>
-                    <Text style={{ color: Colors.tertiaryLabel, fontSize: 13, marginTop: 8 }}>
+                    <Text style={{ color: Colors.tertiaryLabel, fontSize: 13, marginTop: 8, fontWeight: '700' }}>
                         Scores entre {config.threshold_approve} et {config.threshold_review} nécessitent une révision
                     </Text>
                 </View>
@@ -322,17 +346,24 @@ export default function FraudConfigScreen() {
 
             {/* Visualization */}
             <View style={{
-                backgroundColor: Colors.secondarySystemGroupedBackground,
-                borderRadius: 16,
-                borderCurve: 'continuous',
+                backgroundColor: Colors.white,
+                borderRadius: 0,
                 padding: 20,
                 marginBottom: 24,
+                borderWidth: 2,
+                borderColor: Colors.black,
+                shadowColor: Colors.black,
+                shadowOffset: { width: 3, height: 3 },
+                shadowOpacity: 1,
+                shadowRadius: 0,
             }}>
                 <Text style={{
                     fontSize: 17,
-                    fontWeight: '700',
-                    color: Colors.label,
+                    fontWeight: '900',
+                    color: Colors.black,
                     marginBottom: 16,
+                    textTransform: 'uppercase',
+                    letterSpacing: 1,
                 }}>
                     Zones de décision
                 </Text>
@@ -342,12 +373,13 @@ export default function FraudConfigScreen() {
                         <View style={{
                             width: 12,
                             height: 12,
-                            backgroundColor: Colors.systemGreen,
-                            borderRadius: 6,
-                            borderCurve: 'continuous',
+                            backgroundColor: Colors.success,
+                            borderRadius: 0,
                             marginRight: 8,
+                            borderWidth: 1,
+                            borderColor: Colors.black,
                         }} />
-                        <Text style={{ color: Colors.label, fontSize: 14 }}>
+                        <Text style={{ color: Colors.black, fontSize: 14, fontWeight: '700' }}>
                             0 - {config.threshold_approve} : Approbation auto
                         </Text>
                     </View>
@@ -356,11 +388,12 @@ export default function FraudConfigScreen() {
                             width: 12,
                             height: 12,
                             backgroundColor: Colors.systemOrange,
-                            borderRadius: 6,
-                            borderCurve: 'continuous',
+                            borderRadius: 0,
                             marginRight: 8,
+                            borderWidth: 1,
+                            borderColor: Colors.black,
                         }} />
-                        <Text style={{ color: Colors.label, fontSize: 14 }}>
+                        <Text style={{ color: Colors.black, fontSize: 14, fontWeight: '700' }}>
                             {config.threshold_approve} - {config.threshold_review} : Révision manuelle
                         </Text>
                     </View>
@@ -368,12 +401,13 @@ export default function FraudConfigScreen() {
                         <View style={{
                             width: 12,
                             height: 12,
-                            backgroundColor: Colors.systemRed,
-                            borderRadius: 6,
-                            borderCurve: 'continuous',
+                            backgroundColor: Colors.accentOrange,
+                            borderRadius: 0,
                             marginRight: 8,
+                            borderWidth: 1,
+                            borderColor: Colors.black,
                         }} />
-                        <Text style={{ color: Colors.label, fontSize: 14 }}>
+                        <Text style={{ color: Colors.black, fontSize: 14, fontWeight: '700' }}>
                             {config.threshold_review} - 100 : Blocage auto
                         </Text>
                     </View>
@@ -385,21 +419,28 @@ export default function FraudConfigScreen() {
                 <TouchableOpacity
                     style={{
                         backgroundColor: Colors.epitechBlue,
-                        borderRadius: 14,
-                        borderCurve: 'continuous',
+                        borderRadius: 0,
                         padding: 16,
                         alignItems: 'center',
+                        borderWidth: 2,
+                        borderColor: Colors.black,
+                        shadowColor: Colors.black,
+                        shadowOffset: { width: 3, height: 3 },
+                        shadowOpacity: 1,
+                        shadowRadius: 0,
                     }}
                     onPress={saveConfig}
                     disabled={saving}
                 >
                     {saving ? (
-                        <ActivityIndicator color="#fff" />
+                        <ActivityIndicator color={Colors.white} />
                     ) : (
                         <Text style={{
-                            color: '#fff',
+                            color: Colors.white,
                             fontSize: 17,
-                            fontWeight: '700',
+                            fontWeight: '900',
+                            textTransform: 'uppercase',
+                            letterSpacing: 1,
                         }}>
                             Enregistrer la configuration
                         </Text>
@@ -408,18 +449,25 @@ export default function FraudConfigScreen() {
 
                 <TouchableOpacity
                     style={{
-                        backgroundColor: Colors.systemFill,
-                        borderRadius: 14,
-                        borderCurve: 'continuous',
+                        backgroundColor: Colors.offWhite,
+                        borderRadius: 0,
                         padding: 16,
                         alignItems: 'center',
+                        borderWidth: 2,
+                        borderColor: Colors.black,
+                        shadowColor: Colors.black,
+                        shadowOffset: { width: 3, height: 3 },
+                        shadowOpacity: 1,
+                        shadowRadius: 0,
                     }}
                     onPress={resetToDefaults}
                 >
                     <Text style={{
-                        color: Colors.label,
+                        color: Colors.black,
                         fontSize: 17,
-                        fontWeight: '600',
+                        fontWeight: '800',
+                        textTransform: 'uppercase',
+                        letterSpacing: 1,
                     }}>
                         Réinitialiser aux valeurs par défaut
                     </Text>

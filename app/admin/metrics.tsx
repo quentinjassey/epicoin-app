@@ -72,8 +72,8 @@ export default function MetricsScreen() {
             const averageTransaction = totalTransactions > 0 ? totalVolume / totalTransactions : 0;
 
             const stats = fraudData as FraudStats;
-            const totalRiskTransactions = (stats.transactions.high_risk_count || 0) + 
-                                         (stats.transactions.medium_risk_count || 0) + 
+            const totalRiskTransactions = (stats.transactions.high_risk_count || 0) +
+                                         (stats.transactions.medium_risk_count || 0) +
                                          (stats.transactions.low_risk_count || 0);
             const fraudRate = totalTransactions > 0 ? (totalRiskTransactions / totalTransactions) * 100 : 0;
 
@@ -150,7 +150,7 @@ export default function MetricsScreen() {
                 flex: 1,
                 justifyContent: 'center',
                 alignItems: 'center',
-                backgroundColor: Colors.systemGroupedBackground,
+                backgroundColor: Colors.white,
             }}>
                 <ActivityIndicator size="large" color={Colors.epitechBlue} />
             </View>
@@ -158,19 +158,21 @@ export default function MetricsScreen() {
     }
 
     return (
-        <ScrollView 
+        <ScrollView
             contentInsetAdjustmentBehavior="automatic"
-            style={{ flex: 1, backgroundColor: Colors.systemGroupedBackground }}
+            style={{ flex: 1, backgroundColor: Colors.white }}
             contentContainerStyle={{ padding: 16 }}
         >
             {/* Sélecteur de période */}
-            <View style={{ 
-                flexDirection: 'row', 
-                gap: 8, 
+            <View style={{
+                flexDirection: 'row',
+                gap: 8,
                 marginBottom: 16,
-                backgroundColor: Colors.secondarySystemGroupedBackground,
-                borderRadius: 10,
+                backgroundColor: Colors.offWhite,
+                borderRadius: 0,
                 padding: 4,
+                borderWidth: 2,
+                borderColor: Colors.black,
             }}>
                 {[7, 30, 90].map((days) => (
                     <TouchableOpacity
@@ -179,16 +181,19 @@ export default function MetricsScreen() {
                             flex: 1,
                             paddingVertical: 8,
                             paddingHorizontal: 12,
-                            borderRadius: 8,
+                            borderRadius: 0,
                             backgroundColor: period === days ? Colors.epitechBlue : 'transparent',
+                            borderWidth: period === days ? 2 : 0,
+                            borderColor: Colors.black,
                         }}
                         onPress={() => setPeriod(days)}
                     >
                         <Text style={{
-                            color: period === days ? '#fff' : Colors.label,
-                            fontWeight: period === days ? '700' : '500',
+                            color: period === days ? Colors.white : Colors.black,
+                            fontWeight: '900',
                             textAlign: 'center',
                             fontSize: 15,
+                            textTransform: 'uppercase',
                         }}>
                             {days}j
                         </Text>
@@ -199,31 +204,37 @@ export default function MetricsScreen() {
             {metrics && (
                 <>
                     {/* Métriques principales */}
-                    <Text style={{ 
-                        fontSize: 13, 
-                        fontWeight: '700', 
+                    <Text style={{
+                        fontSize: 13,
+                        fontWeight: '900',
                         textTransform: 'uppercase',
-                        color: Colors.secondaryLabel,
+                        color: Colors.black,
                         marginBottom: 8,
                         marginLeft: 4,
+                        letterSpacing: 2,
                     }}>
                         Vue d'ensemble
                     </Text>
 
                     <View style={{ gap: 12, marginBottom: 24 }}>
                         <View style={{
-                            backgroundColor: Colors.secondarySystemGroupedBackground,
-                            borderRadius: 12,
-                            borderCurve: 'continuous',
+                            backgroundColor: Colors.white,
+                            borderRadius: 0,
                             padding: 16,
+                            borderWidth: 2,
+                            borderColor: Colors.black,
+                            shadowColor: Colors.black,
+                            shadowOffset: { width: 3, height: 3 },
+                            shadowOpacity: 1,
+                            shadowRadius: 0,
                         }}>
-                            <Text style={{ color: Colors.secondaryLabel, fontSize: 13, marginBottom: 4 }}>
+                            <Text style={{ color: Colors.secondaryLabel, fontSize: 13, marginBottom: 4, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1 }}>
                                 Total Transactions
                             </Text>
                             <Text style={{
                                 fontSize: 32,
-                                fontWeight: '700',
-                                color: Colors.label,
+                                fontWeight: '900',
+                                color: Colors.black,
                                 fontVariant: ['tabular-nums'],
                             }}>
                                 {metrics.total_transactions}
@@ -233,17 +244,22 @@ export default function MetricsScreen() {
                         <View style={{ flexDirection: 'row', gap: 12 }}>
                             <View style={{
                                 flex: 1,
-                                backgroundColor: Colors.secondarySystemGroupedBackground,
-                                borderRadius: 12,
-                                borderCurve: 'continuous',
+                                backgroundColor: Colors.white,
+                                borderRadius: 0,
                                 padding: 16,
+                                borderWidth: 2,
+                                borderColor: Colors.black,
+                                shadowColor: Colors.black,
+                                shadowOffset: { width: 3, height: 3 },
+                                shadowOpacity: 1,
+                                shadowRadius: 0,
                             }}>
-                                <Text style={{ color: Colors.secondaryLabel, fontSize: 13, marginBottom: 4 }}>
+                                <Text style={{ color: Colors.secondaryLabel, fontSize: 13, marginBottom: 4, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1 }}>
                                     Volume Total
                                 </Text>
                                 <Text style={{
                                     fontSize: 24,
-                                    fontWeight: '700',
+                                    fontWeight: '900',
                                     color: Colors.epitechBlue,
                                     fontVariant: ['tabular-nums'],
                                 }}>
@@ -253,18 +269,23 @@ export default function MetricsScreen() {
 
                             <View style={{
                                 flex: 1,
-                                backgroundColor: Colors.secondarySystemGroupedBackground,
-                                borderRadius: 12,
-                                borderCurve: 'continuous',
+                                backgroundColor: Colors.white,
+                                borderRadius: 0,
                                 padding: 16,
+                                borderWidth: 2,
+                                borderColor: Colors.black,
+                                shadowColor: Colors.black,
+                                shadowOffset: { width: 3, height: 3 },
+                                shadowOpacity: 1,
+                                shadowRadius: 0,
                             }}>
-                                <Text style={{ color: Colors.secondaryLabel, fontSize: 13, marginBottom: 4 }}>
+                                <Text style={{ color: Colors.secondaryLabel, fontSize: 13, marginBottom: 4, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1 }}>
                                     Moyenne/TX
                                 </Text>
                                 <Text style={{
                                     fontSize: 24,
-                                    fontWeight: '700',
-                                    color: Colors.label,
+                                    fontWeight: '900',
+                                    color: Colors.black,
                                     fontVariant: ['tabular-nums'],
                                 }}>
                                     {metrics.average_transaction.toFixed(0)} EPC
@@ -274,13 +295,14 @@ export default function MetricsScreen() {
                     </View>
 
                     {/* Métriques de fraude */}
-                    <Text style={{ 
-                        fontSize: 13, 
-                        fontWeight: '700', 
+                    <Text style={{
+                        fontSize: 13,
+                        fontWeight: '900',
                         textTransform: 'uppercase',
-                        color: Colors.secondaryLabel,
+                        color: Colors.black,
                         marginBottom: 8,
                         marginLeft: 4,
+                        letterSpacing: 2,
                     }}>
                         Détection de fraude
                     </Text>
@@ -289,18 +311,23 @@ export default function MetricsScreen() {
                         <View style={{ flexDirection: 'row', gap: 12 }}>
                             <View style={{
                                 flex: 1,
-                                backgroundColor: Colors.secondarySystemGroupedBackground,
-                                borderRadius: 12,
-                                borderCurve: 'continuous',
+                                backgroundColor: Colors.white,
+                                borderRadius: 0,
                                 padding: 16,
+                                borderWidth: 2,
+                                borderColor: Colors.black,
+                                shadowColor: Colors.black,
+                                shadowOffset: { width: 3, height: 3 },
+                                shadowOpacity: 1,
+                                shadowRadius: 0,
                             }}>
-                                <Text style={{ color: Colors.secondaryLabel, fontSize: 13, marginBottom: 4 }}>
+                                <Text style={{ color: Colors.secondaryLabel, fontSize: 13, marginBottom: 4, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1 }}>
                                     Taux de Fraude
                                 </Text>
                                 <Text style={{
                                     fontSize: 28,
-                                    fontWeight: '700',
-                                    color: metrics.fraud_rate > 5 ? Colors.systemRed : Colors.systemGreen,
+                                    fontWeight: '900',
+                                    color: metrics.fraud_rate > 5 ? Colors.accentOrange : Colors.success,
                                     fontVariant: ['tabular-nums'],
                                 }}>
                                     {metrics.fraud_rate.toFixed(1)}%
@@ -309,18 +336,23 @@ export default function MetricsScreen() {
 
                             <View style={{
                                 flex: 1,
-                                backgroundColor: Colors.secondarySystemGroupedBackground,
-                                borderRadius: 12,
-                                borderCurve: 'continuous',
+                                backgroundColor: Colors.white,
+                                borderRadius: 0,
                                 padding: 16,
+                                borderWidth: 2,
+                                borderColor: Colors.black,
+                                shadowColor: Colors.black,
+                                shadowOffset: { width: 3, height: 3 },
+                                shadowOpacity: 1,
+                                shadowRadius: 0,
                             }}>
-                                <Text style={{ color: Colors.secondaryLabel, fontSize: 13, marginBottom: 4 }}>
+                                <Text style={{ color: Colors.secondaryLabel, fontSize: 13, marginBottom: 4, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1 }}>
                                     Score Moyen
                                 </Text>
                                 <Text style={{
                                     fontSize: 28,
-                                    fontWeight: '700',
-                                    color: metrics.avg_fraud_score > 50 ? Colors.systemOrange : Colors.systemGreen,
+                                    fontWeight: '900',
+                                    color: metrics.avg_fraud_score > 50 ? Colors.systemOrange : Colors.success,
                                     fontVariant: ['tabular-nums'],
                                 }}>
                                     {metrics.avg_fraud_score.toFixed(1)}
@@ -329,39 +361,44 @@ export default function MetricsScreen() {
                         </View>
 
                         <View style={{
-                            backgroundColor: Colors.secondarySystemGroupedBackground,
-                            borderRadius: 12,
-                            borderCurve: 'continuous',
+                            backgroundColor: Colors.white,
+                            borderRadius: 0,
                             padding: 16,
                             gap: 12,
+                            borderWidth: 2,
+                            borderColor: Colors.black,
+                            shadowColor: Colors.black,
+                            shadowOffset: { width: 3, height: 3 },
+                            shadowOpacity: 1,
+                            shadowRadius: 0,
                         }}>
-                            <Text style={{ fontSize: 15, fontWeight: '700', color: Colors.label, marginBottom: 4 }}>
+                            <Text style={{ fontSize: 15, fontWeight: '900', color: Colors.black, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 }}>
                                 Répartition des risques
                             </Text>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.systemRed }} />
-                                    <Text style={{ color: Colors.secondaryLabel, fontSize: 15 }}>Risque élevé</Text>
+                                    <View style={{ width: 8, height: 8, borderRadius: 0, backgroundColor: Colors.accentOrange, borderWidth: 1, borderColor: Colors.black }} />
+                                    <Text style={{ color: Colors.secondaryLabel, fontSize: 15, fontWeight: '700' }}>Risque élevé</Text>
                                 </View>
-                                <Text style={{ fontWeight: '700', color: Colors.systemRed, fontSize: 17, fontVariant: ['tabular-nums'] }}>
+                                <Text style={{ fontWeight: '900', color: Colors.accentOrange, fontSize: 17, fontVariant: ['tabular-nums'] }}>
                                     {metrics.high_risk_count}
                                 </Text>
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.systemOrange }} />
-                                    <Text style={{ color: Colors.secondaryLabel, fontSize: 15 }}>Risque moyen</Text>
+                                    <View style={{ width: 8, height: 8, borderRadius: 0, backgroundColor: Colors.systemOrange, borderWidth: 1, borderColor: Colors.black }} />
+                                    <Text style={{ color: Colors.secondaryLabel, fontSize: 15, fontWeight: '700' }}>Risque moyen</Text>
                                 </View>
-                                <Text style={{ fontWeight: '700', color: Colors.systemOrange, fontSize: 17, fontVariant: ['tabular-nums'] }}>
+                                <Text style={{ fontWeight: '900', color: Colors.systemOrange, fontSize: 17, fontVariant: ['tabular-nums'] }}>
                                     {metrics.medium_risk_count}
                                 </Text>
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.systemYellow }} />
-                                    <Text style={{ color: Colors.secondaryLabel, fontSize: 15 }}>Risque faible</Text>
+                                    <View style={{ width: 8, height: 8, borderRadius: 0, backgroundColor: Colors.systemYellow, borderWidth: 1, borderColor: Colors.black }} />
+                                    <Text style={{ color: Colors.secondaryLabel, fontSize: 15, fontWeight: '700' }}>Risque faible</Text>
                                 </View>
-                                <Text style={{ fontWeight: '700', color: Colors.systemYellow, fontSize: 17, fontVariant: ['tabular-nums'] }}>
+                                <Text style={{ fontWeight: '900', color: Colors.systemYellow, fontSize: 17, fontVariant: ['tabular-nums'] }}>
                                     {metrics.low_risk_count}
                                 </Text>
                             </View>
@@ -369,58 +406,64 @@ export default function MetricsScreen() {
                     </View>
 
                     {/* Alertes */}
-                    <Text style={{ 
-                        fontSize: 13, 
-                        fontWeight: '700', 
+                    <Text style={{
+                        fontSize: 13,
+                        fontWeight: '900',
                         textTransform: 'uppercase',
-                        color: Colors.secondaryLabel,
+                        color: Colors.black,
                         marginBottom: 8,
                         marginLeft: 4,
+                        letterSpacing: 2,
                     }}>
                         Alertes de fraude
                     </Text>
 
                     <View style={{
-                        backgroundColor: Colors.secondarySystemGroupedBackground,
-                        borderRadius: 12,
-                        borderCurve: 'continuous',
+                        backgroundColor: Colors.white,
+                        borderRadius: 0,
                         padding: 16,
                         marginBottom: 24,
                         gap: 12,
+                        borderWidth: 2,
+                        borderColor: Colors.black,
+                        shadowColor: Colors.black,
+                        shadowOffset: { width: 3, height: 3 },
+                        shadowOpacity: 1,
+                        shadowRadius: 0,
                     }}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                                 <SymbolView name="clock" size={16} tintColor={Colors.systemOrange} />
-                                <Text style={{ color: Colors.secondaryLabel, fontSize: 15 }}>En attente</Text>
+                                <Text style={{ color: Colors.secondaryLabel, fontSize: 15, fontWeight: '700' }}>En attente</Text>
                             </View>
-                            <Text style={{ fontWeight: '700', color: Colors.systemOrange, fontSize: 17, fontVariant: ['tabular-nums'] }}>
+                            <Text style={{ fontWeight: '900', color: Colors.systemOrange, fontSize: 17, fontVariant: ['tabular-nums'] }}>
                                 {metrics.alerts_pending}
                             </Text>
                         </View>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                                <SymbolView name="checkmark.circle" size={16} tintColor={Colors.systemGreen} />
-                                <Text style={{ color: Colors.secondaryLabel, fontSize: 15 }}>Approuvées</Text>
+                                <SymbolView name="checkmark.circle" size={16} tintColor={Colors.success} />
+                                <Text style={{ color: Colors.secondaryLabel, fontSize: 15, fontWeight: '700' }}>Approuvées</Text>
                             </View>
-                            <Text style={{ fontWeight: '700', color: Colors.systemGreen, fontSize: 17, fontVariant: ['tabular-nums'] }}>
+                            <Text style={{ fontWeight: '900', color: Colors.success, fontSize: 17, fontVariant: ['tabular-nums'] }}>
                                 {metrics.alerts_approved}
                             </Text>
                         </View>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                                <SymbolView name="xmark.circle" size={16} tintColor={Colors.systemRed} />
-                                <Text style={{ color: Colors.secondaryLabel, fontSize: 15 }}>Rejetées</Text>
+                                <SymbolView name="xmark.circle" size={16} tintColor={Colors.accentOrange} />
+                                <Text style={{ color: Colors.secondaryLabel, fontSize: 15, fontWeight: '700' }}>Rejetées</Text>
                             </View>
-                            <Text style={{ fontWeight: '700', color: Colors.systemRed, fontSize: 17, fontVariant: ['tabular-nums'] }}>
+                            <Text style={{ fontWeight: '900', color: Colors.accentOrange, fontSize: 17, fontVariant: ['tabular-nums'] }}>
                                 {metrics.alerts_rejected}
                             </Text>
                         </View>
                         {metrics.max_fraud_score > 0 && (
                             <>
-                                <View style={{ height: 1, backgroundColor: Colors.separator, marginVertical: 4 }} />
+                                <View style={{ height: 2, backgroundColor: Colors.black, marginVertical: 4 }} />
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <Text style={{ color: Colors.secondaryLabel, fontSize: 13 }}>Score max détecté</Text>
-                                    <Text style={{ fontWeight: '700', color: Colors.systemRed, fontSize: 17, fontVariant: ['tabular-nums'] }}>
+                                    <Text style={{ color: Colors.secondaryLabel, fontSize: 13, fontWeight: '700' }}>Score max détecté</Text>
+                                    <Text style={{ fontWeight: '900', color: Colors.accentOrange, fontSize: 17, fontVariant: ['tabular-nums'] }}>
                                         {metrics.max_fraud_score.toFixed(1)}
                                     </Text>
                                 </View>
@@ -433,23 +476,28 @@ export default function MetricsScreen() {
             <TouchableOpacity
                 style={{
                     backgroundColor: Colors.epitechBlue,
-                    borderRadius: 14,
-                    borderCurve: 'continuous',
+                    borderRadius: 0,
                     padding: 16,
                     alignItems: 'center',
                     flexDirection: 'row',
                     justifyContent: 'center',
                     marginBottom: 24,
+                    borderWidth: 2,
+                    borderColor: Colors.black,
+                    shadowColor: Colors.black,
+                    shadowOffset: { width: 3, height: 3 },
+                    shadowOpacity: 1,
+                    shadowRadius: 0,
                 }}
                 onPress={exportLogs}
                 disabled={exporting}
             >
                 {exporting ? (
-                    <ActivityIndicator color="#fff" />
+                    <ActivityIndicator color={Colors.white} />
                 ) : (
                     <>
-                        <SymbolView name="square.and.arrow.up" size={20} tintColor="#fff" />
-                        <Text style={{ color: '#fff', fontSize: 17, fontWeight: '700', marginLeft: 8 }}>
+                        <SymbolView name="square.and.arrow.up" size={20} tintColor={Colors.white} />
+                        <Text style={{ color: Colors.white, fontSize: 17, fontWeight: '900', marginLeft: 8, textTransform: 'uppercase', letterSpacing: 1 }}>
                             Exporter les logs (30j)
                         </Text>
                     </>

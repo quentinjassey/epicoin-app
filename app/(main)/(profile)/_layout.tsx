@@ -8,6 +8,10 @@ export default function ProfileStack() {
       }}
     >
       <Stack.Screen name="index" />
+      <Stack.Screen name="personal-info" />
+      <Stack.Screen name="security" />
+      <Stack.Screen name="notifications" />
+      <Stack.Screen name="help" />
     </Stack>
   );
 }
