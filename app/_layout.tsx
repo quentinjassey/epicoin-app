@@ -103,8 +103,9 @@ function RootLayoutNav() {
                         presentation: 'formSheet',
                         sheetGrabberVisible: true,
                         sheetAllowedDetents: [0.9],
-                        title: 'Envoyer',
-                        headerTintColor: '#00ff97',
+                        title: 'ENVOYER',
+                        headerTintColor: '#013AFB',
+                        headerTitleStyle: { color: '#013AFB', fontWeight: '900', fontSize: 16, letterSpacing: 2 },
                     }}
                 />
                 <Stack.Screen
@@ -113,8 +114,10 @@ function RootLayoutNav() {
                         presentation: 'formSheet',
                         sheetGrabberVisible: true,
                         sheetAllowedDetents: [0.85],
-                        title: 'Payer',
-                        headerShown: false,
+                        title: 'PAYER',
+                        headerTintColor: '#FFFFFF',
+                        headerStyle: { backgroundColor: '#013AFB' },
+                        headerTitleStyle: { color: '#FFFFFF', fontWeight: '900', fontSize: 16, letterSpacing: 2 },
                     }}
                 />
                 <Stack.Screen
@@ -123,8 +126,9 @@ function RootLayoutNav() {
                         presentation: 'formSheet',
                         sheetGrabberVisible: true,
                         sheetAllowedDetents: [0.85],
-                        title: 'Recharger',
-                        headerTintColor: '#00ff97',
+                        title: 'RECHARGER',
+                        headerTintColor: '#013AFB',
+                        headerTitleStyle: { color: '#013AFB', fontWeight: '900', fontSize: 16, letterSpacing: 2 },
                     }}
                 />
             </Stack>

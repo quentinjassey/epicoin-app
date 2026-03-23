@@ -42,40 +42,6 @@ export default function PayScreen() {
             flex: 1,
             backgroundColor: Colors.epitechBlue,
         }}>
-            {/* Header avec bouton retour */}
-            <View style={{
-                paddingTop: 64,
-                paddingHorizontal: 24,
-                flexDirection: 'row',
-                alignItems: 'center',
-            }}>
-                <TouchableOpacity
-                    onPress={() => router.back()}
-                    style={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                        padding: 12,
-                        borderRadius: 0,
-                        borderWidth: 2,
-                        borderColor: Colors.white,
-                    }}
-                >
-                    <Icon
-                        name="chevron.left"
-                        size={24}
-                        color={Colors.white}
-                    />
-                </TouchableOpacity>
-                <Text style={{
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: '900',
-                    marginLeft: 16,
-                    textTransform: 'uppercase',
-                    letterSpacing: 2,
-                }}>
-                    Payer
-                </Text>
-            </View>
 
             {/* QR Code Card */}
             <View style={{
@@ -97,21 +63,6 @@ export default function PayScreen() {
                     shadowOpacity: 1,
                     shadowRadius: 0,
                 }}>
-                    <View style={{
-                        backgroundColor: Colors.offWhite,
-                        padding: 16,
-                        borderRadius: 0,
-                        marginBottom: 16,
-                        borderWidth: 2,
-                        borderColor: Colors.black,
-                    }}>
-                        <Icon
-                            name="qrcode"
-                            size={32}
-                            color={Colors.epitechBlue}
-                        />
-                    </View>
-
                     <Text style={{
                         fontSize: 24,
                         fontWeight: '900',
@@ -183,7 +134,7 @@ export default function PayScreen() {
                 <TouchableOpacity
                     onPress={handleRefresh}
                     style={{
-                        marginTop: 24,
+                        marginTop: 16,
                         backgroundColor: 'rgba(255, 255, 255, 0.2)',
                         paddingHorizontal: 24,
                         paddingVertical: 12,
@@ -207,14 +158,15 @@ export default function PayScreen() {
                         textTransform: 'uppercase',
                         letterSpacing: 1,
                     }}>
-                        Générer un nouveau code
+                        Nouveau code
                     </Text>
                 </TouchableOpacity>
             </View>
 
             {/* Footer */}
             <View style={{
-                paddingBottom: 48,
+                paddingBottom: 40,
+                marginTop: 16,
                 alignItems: 'center',
             }}>
                 <View style={{
@@ -223,16 +175,16 @@ export default function PayScreen() {
                 }}>
                     <Icon
                         name="checkmark.shield.fill"
-                        size={16}
+                        size={14}
                         color="rgba(255, 255, 255, 0.5)"
                     />
                     <Text style={{
                         color: 'rgba(255, 255, 255, 0.6)',
-                        fontSize: 13,
-                        marginLeft: 8,
+                        fontSize: 12,
+                        marginLeft: 6,
                         fontWeight: '700',
                     }}>
-                        Paiement sécurisé EpiPay
+                        Paiement securise EpiPay
                     </Text>
                 </View>
             </View>
