@@ -145,7 +145,7 @@ export default function FraudAlertsScreen() {
         };
         if (score >= 40) return {
             label: 'Moyen',
-            color: Colors.systemYellow,
+            color: adaptiveColors.warning,
         };
         return {
             label: 'Faible',

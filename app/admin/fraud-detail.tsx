@@ -115,7 +115,7 @@ export default function FraudDetailScreen() {
         ? adaptiveColors.error
         : alert.risk_score >= 60
         ? adaptiveColors.warning
-        : Colors.systemYellow;
+        : adaptiveColors.warning;
 
     const mlScore = alert.fraud_features?.ml_score ?? 0;
     const heuristicScore = alert.fraud_features?.heuristic_score ?? alert.fraud_features?.heuristic_score_raw ?? 0;
@@ -544,7 +544,7 @@ export default function FraudDetailScreen() {
                             const severityColor =
                                 reason.severity === 'high' ? adaptiveColors.error :
                                 reason.severity === 'medium' ? adaptiveColors.warning :
-                                Colors.systemYellow;
+                                adaptiveColors.warning;
 
                             const severityIcon =
                                 reason.severity === 'high' ? 'exclamationmark.circle.fill' :

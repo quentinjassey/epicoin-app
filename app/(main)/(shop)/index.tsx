@@ -356,7 +356,7 @@ export default function ShopScreen() {
 
     const CATEGORIES = [
         { key: 'Boissons', icon: 'cup.and.saucer.fill', color: adaptiveColors.warning },
-        { key: 'Snacks', icon: 'takeoutbag.and.cup.and.straw.fill', color: Colors.systemYellow },
+        { key: 'Snacks', icon: 'takeoutbag.and.cup.and.straw.fill', color: adaptiveColors.warning },
         { key: 'Repas', icon: 'fork.knife', color: adaptiveColors.accent },
         { key: 'Fournitures', icon: 'pencil.and.ruler', color: adaptiveColors.primary },
         { key: 'Goodies', icon: 'tshirt.fill', color: adaptiveColors.success },

@@ -397,10 +397,10 @@ export default function MetricsScreen() {
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                                    <View style={{ width: 8, height: 8, borderRadius: 0, backgroundColor: Colors.systemYellow, borderWidth: 1, borderColor: Colors.black }} />
+                                    <View style={{ width: 8, height: 8, borderRadius: 0, backgroundColor: adaptiveColors.warning, borderWidth: 1, borderColor: Colors.black }} />
                                     <Text style={{ color: Colors.secondaryLabel, fontSize: 15, fontWeight: '700' }}>Risque faible</Text>
                                 </View>
-                                <Text style={{ fontWeight: '900', color: Colors.systemYellow, fontSize: 17, fontVariant: ['tabular-nums'] }}>
+                                <Text style={{ fontWeight: '900', color: adaptiveColors.warning, fontSize: 17, fontVariant: ['tabular-nums'] }}>
                                     {metrics.low_risk_count}
                                 </Text>
                             </View>
