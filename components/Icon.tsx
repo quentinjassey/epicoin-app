@@ -54,8 +54,8 @@ const ICON_MAP: Record<string, string> = {
 
     // Content
     'doc.text': 'description',
-    'clock': 'schedule',
-    'clock.fill': 'schedule',
+    'clock': 'access-time-filled',
+    'clock.fill': 'access-time-filled',
     'location.fill': 'location-on',
     'questionmark.circle': 'help-outline',
     'questionmark.circle.fill': 'help',

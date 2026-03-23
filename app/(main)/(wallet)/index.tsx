@@ -222,7 +222,7 @@ export default function WalletScreen() {
             }
         >
             {/* ── Header ── */}
-            <View style={{
+            <GlitchIn delay={0}><View style={{
                 flexDirection: 'row',
                 justifyContent: 'space-between',
                 alignItems: 'center',
@@ -254,10 +254,10 @@ export default function WalletScreen() {
                         {fullName.charAt(0)}
                     </Text>
                 </TouchableOpacity>
-            </View>
+            </View></GlitchIn>
 
             {/* ── Greeting ── */}
-            <View style={{ marginBottom: 24 }}>
+            <GlitchIn delay={80}><View style={{ marginBottom: 24 }}>
                 <Text style={{
                     color: Colors.mediumGray,
                     fontSize: 13,
@@ -277,10 +277,10 @@ export default function WalletScreen() {
                 }}>
                     {fullName}
                 </Text>
-            </View>
+            </View></GlitchIn>
 
             {/* ── Balance Card ── */}
-            <View style={{
+            <GlitchIn delay={160}><View style={{
                 backgroundColor: Colors.epitechBlue,
                 padding: 28,
                 borderWidth: 3,
@@ -322,10 +322,10 @@ export default function WalletScreen() {
                         EPC
                     </Text>
                 </View>
-            </View>
+            </View></GlitchIn>
 
             {/* ── Quick Actions ── */}
-            <View style={{ marginBottom: 32 }}>
+            <GlitchIn delay={240}><View style={{ marginBottom: 32 }}>
                 <Text style={{
                     fontSize: 13,
                     fontWeight: '900',
@@ -439,10 +439,10 @@ export default function WalletScreen() {
                         </Text>
                     </TouchableOpacity>
                 </View>
-            </View>
+            </View></GlitchIn>
 
             {/* ── Recent Transactions ── */}
-            <View>
+            <GlitchIn delay={320}><View>
                 <View style={{
                     flexDirection: 'row',
                     justifyContent: 'space-between',
@@ -594,7 +594,7 @@ export default function WalletScreen() {
                         </Text>
                     </View>
                 )}
-            </View>
+            </View></GlitchIn>
         </ScrollView>
     );
 }

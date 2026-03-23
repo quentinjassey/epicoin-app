@@ -1,13 +1,17 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { ViewStyle } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
     withTiming,
+    withSpring,
     withSequence,
     withDelay,
     Easing,
 } from 'react-native-reanimated';
+
+const GLITCH_COLORS = ['rgba(1,58,251,0.5)', 'rgba(0,255,151,0.5)', 'rgba(255,30,247,0.5)', 'rgba(255,90,58,0.5)'];
 
 type Props = {
     children: React.ReactNode;
@@ -18,52 +22,102 @@ type Props = {
 export default function GlitchIn({ children, delay = 0, style }: Props) {
     const opacity = useSharedValue(0);
     const translateX = useSharedValue(0);
-    const translateY = useSharedValue(8);
+    const translateY = useSharedValue(14);
     const scaleX = useSharedValue(1);
-    const clipRight = useSharedValue(0);
+    // RGB split layers
+    const splitLeft = useSharedValue(0);
+    const splitRight = useSharedValue(0);
+    const splitOpacity = useSharedValue(0);
+    const colorIndex = React.useRef(Math.floor(Math.random() * GLITCH_COLORS.length));
 
-    useEffect(() => {
-        // Glitch flicker
+    function playGlitch() {
+        colorIndex.current = Math.floor(Math.random() * GLITCH_COLORS.length);
+
+        // Reset all
+        opacity.value = 0;
+        translateX.value = 0;
+        translateY.value = 14;
+        scaleX.value = 1;
+        splitLeft.value = 0;
+        splitRight.value = 0;
+        splitOpacity.value = 0;
+
+        // Main element: fast flicker then spring in
         opacity.value = withDelay(
             delay,
             withSequence(
-                withTiming(0.4, { duration: 40 }),
-                withTiming(0, { duration: 20 }),
-                withTiming(0.7, { duration: 30 }),
-                withTiming(0.3, { duration: 20 }),
-                withTiming(1, { duration: 60, easing: Easing.out(Easing.quad) }),
+                withTiming(0.6, { duration: 30 }),
+                withTiming(0, { duration: 15 }),
+                withTiming(0.8, { duration: 25 }),
+                withTiming(0.2, { duration: 15 }),
+                withTiming(1, { duration: 40 }),
             )
         );
 
-        // Horizontal glitch offset
+        // Horizontal jitter then spring snap
         translateX.value = withDelay(
             delay,
             withSequence(
-                withTiming(-12, { duration: 40, easing: Easing.linear }),
-                withTiming(8, { duration: 30, easing: Easing.linear }),
-                withTiming(-4, { duration: 25, easing: Easing.linear }),
-                withTiming(0, { duration: 50, easing: Easing.out(Easing.quad) }),
+                withTiming(-16, { duration: 35, easing: Easing.linear }),
+                withTiming(10, { duration: 25, easing: Easing.linear }),
+                withTiming(-6, { duration: 20, easing: Easing.linear }),
+                withSpring(0, { stiffness: 1200, damping: 80, mass: 1 }),
             )
         );
 
-        // Slide up
+        // Slide up with spring
         translateY.value = withDelay(
             delay,
-            withTiming(0, { duration: 200, easing: Easing.out(Easing.quad) })
+            withSpring(0, { stiffness: 800, damping: 60, mass: 1.5 })
         );
 
-        // Width glitch
+        // Width distortion snap
         scaleX.value = withDelay(
             delay,
             withSequence(
-                withTiming(1.03, { duration: 40 }),
-                withTiming(0.98, { duration: 30 }),
-                withTiming(1, { duration: 60, easing: Easing.out(Easing.quad) }),
+                withTiming(1.06, { duration: 30 }),
+                withTiming(0.96, { duration: 25 }),
+                withSpring(1, { stiffness: 1500, damping: 100, mass: 1 }),
             )
         );
-    }, []);
 
-    const animatedStyle = useAnimatedStyle(() => ({
+        // RGB split: left and right offset then snap back
+        splitLeft.value = withDelay(
+            delay,
+            withSequence(
+                withTiming(-8, { duration: 40, easing: Easing.linear }),
+                withTiming(-4, { duration: 20 }),
+                withSpring(0, { stiffness: 1200, damping: 80, mass: 1 }),
+            )
+        );
+
+        splitRight.value = withDelay(
+            delay,
+            withSequence(
+                withTiming(8, { duration: 40, easing: Easing.linear }),
+                withTiming(4, { duration: 20 }),
+                withSpring(0, { stiffness: 1200, damping: 80, mass: 1 }),
+            )
+        );
+
+        // Split layers flash
+        splitOpacity.value = withDelay(
+            delay,
+            withSequence(
+                withTiming(0.4, { duration: 35 }),
+                withTiming(0.25, { duration: 25 }),
+                withTiming(0, { duration: 80, easing: Easing.out(Easing.quad) }),
+            )
+        );
+    }
+
+    useFocusEffect(
+        React.useCallback(() => {
+            playGlitch();
+        }, [])
+    );
+
+    const mainStyle = useAnimatedStyle(() => ({
         opacity: opacity.value,
         transform: [
             { translateX: translateX.value },
@@ -72,9 +126,55 @@ export default function GlitchIn({ children, delay = 0, style }: Props) {
         ],
     }));
 
+    const leftSplitStyle = useAnimatedStyle(() => ({
+        transform: [{ translateX: splitLeft.value }],
+        opacity: splitOpacity.value,
+    }));
+
+    const rightSplitStyle = useAnimatedStyle(() => ({
+        transform: [{ translateX: splitRight.value }],
+        opacity: splitOpacity.value,
+    }));
+
+    const glitchColor = GLITCH_COLORS[colorIndex.current];
+    const altColor = GLITCH_COLORS[(colorIndex.current + 2) % GLITCH_COLORS.length];
+
     return (
-        <Animated.View style={[style, animatedStyle]}>
-            {children}
+        <Animated.View style={[{ position: 'relative' }, style]}>
+            {/* Left RGB split ghost */}
+            <Animated.View
+                pointerEvents="none"
+                style={[
+                    {
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: glitchColor,
+                    },
+                    leftSplitStyle,
+                ]}
+            />
+            {/* Right RGB split ghost */}
+            <Animated.View
+                pointerEvents="none"
+                style={[
+                    {
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: altColor,
+                    },
+                    rightSplitStyle,
+                ]}
+            />
+            {/* Main content */}
+            <Animated.View style={mainStyle}>
+                {children}
+            </Animated.View>
         </Animated.View>
     );
 }

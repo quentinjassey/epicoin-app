@@ -4,6 +4,7 @@ import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../../lib/supabase';
 import { Colors } from '@/constants/NativeColors';
+import GlitchIn from '@/components/GlitchIn';
 
 type Profile = {
     id: string;
@@ -125,6 +126,7 @@ export default function ProfileScreen() {
             }}
         >
             {/* Header avec avatar */}
+            <GlitchIn delay={0}>
             <View style={{
                 backgroundColor: Colors.epitechBlue,
                 paddingTop: 100,
@@ -197,12 +199,14 @@ export default function ProfileScreen() {
                     </View>
                 </View>
             </View>
+            </GlitchIn>
 
             {/* Card solde */}
             <View style={{
                 backgroundColor: Colors.white,
                 paddingTop: 0,
             }}>
+            <GlitchIn delay={80}>
             <View style={{
                 marginHorizontal: 24,
                 marginTop: -48,
@@ -250,8 +254,10 @@ export default function ProfileScreen() {
                     </View>
                 </View>
             </View>
+            </GlitchIn>
 
             {/* Menu items */}
+            <GlitchIn delay={160}>
             <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>
                 <Text style={{
                     color: Colors.black,
@@ -328,9 +334,11 @@ export default function ProfileScreen() {
                     ))}
                 </View>
             </View>
+            </GlitchIn>
 
             {/* Admin access (si admin) */}
             {profile?.is_admin && (
+                <GlitchIn delay={240}>
                 <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>
                     <Text style={{
                         color: Colors.black,
@@ -398,9 +406,11 @@ export default function ProfileScreen() {
                         />
                     </TouchableOpacity>
                 </View>
+                </GlitchIn>
             )}
 
             {/* Déconnexion */}
+            <GlitchIn delay={320}>
             <View style={{ paddingHorizontal: 24, marginBottom: 48 }}>
                 <TouchableOpacity
                     style={{
@@ -436,6 +446,7 @@ export default function ProfileScreen() {
                     </Text>
                 </TouchableOpacity>
             </View>
+            </GlitchIn>
 
             {/* Version */}
             <View style={{ alignItems: 'center', paddingBottom: 32 }}>

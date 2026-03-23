@@ -20,6 +20,7 @@ import Slider from '@react-native-community/slider';
 import { supabase } from '../../../lib/supabase';
 import { collectTransactionContext, buildTransactionPayload } from '../../../lib/transactionContext';
 import { Colors } from '@/constants/NativeColors';
+import GlitchIn from '@/components/GlitchIn';
 
 type Product = {
     id: string;
@@ -526,6 +527,7 @@ export default function ShopScreen() {
                 }
             >
                 {/* Title */}
+                <GlitchIn delay={0}>
                 <View style={{
                     paddingHorizontal: 24,
                     marginBottom: 16,
@@ -540,8 +542,10 @@ export default function ShopScreen() {
                         Boutique
                     </Text>
                 </View>
+                </GlitchIn>
 
                 {/* Balance Header */}
+                <GlitchIn delay={80}>
                 <View style={{
                     backgroundColor: Colors.white,
                     padding: 16,
@@ -576,8 +580,10 @@ export default function ShopScreen() {
                         </Text>
                     </View>
                 </View>
+                </GlitchIn>
 
                 {/* Search Bar */}
+                <GlitchIn delay={120}>
                 <View style={{
                     paddingHorizontal: 16,
                     marginBottom: 12,
@@ -621,8 +627,10 @@ export default function ShopScreen() {
                         )}
                     </View>
                 </View>
+                </GlitchIn>
 
                 {/* Category Filters */}
+                <GlitchIn delay={160}>
                 <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
@@ -696,8 +704,10 @@ export default function ShopScreen() {
                         );
                     })}
                 </ScrollView>
+                </GlitchIn>
 
                 {/* Products grouped by category */}
+                <GlitchIn delay={240}>
                 {filteredProducts.length === 0 ? (
                     <View style={{
                         alignItems: 'center',
@@ -793,6 +803,7 @@ export default function ShopScreen() {
                         ))}
                     </View>
                 )}
+                </GlitchIn>
             </ScrollView>
 
             {/* Purchase Modal */}

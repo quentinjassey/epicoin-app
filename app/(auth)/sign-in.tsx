@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../lib/supabase';
 import { Colors } from '@/constants/NativeColors';
+import GlitchIn from '@/components/GlitchIn';
 
 export default function SignIn() {
     const [email, setEmail] = useState('');
@@ -48,6 +49,7 @@ export default function SignIn() {
                 }}
             >
                 {/* Logo */}
+                <GlitchIn delay={0}>
                 <View style={{ marginBottom: 40, alignItems: 'center' }}>
                     <Image
                         source={require('../../assets/images/epipay-logo.png')}
@@ -65,8 +67,10 @@ export default function SignIn() {
                         Portefeuille digital Epitech
                     </Text>
                 </View>
+                </GlitchIn>
 
                 <View style={{ width: '100%', maxWidth: 400 }}>
+                    <GlitchIn delay={100}>
                     <Text style={{
                         fontSize: 28,
                         fontWeight: '900',
@@ -164,8 +168,10 @@ export default function SignIn() {
                             </TouchableOpacity>
                         </View>
                     </View>
+                    </GlitchIn>
 
                     {/* Submit */}
+                    <GlitchIn delay={200}>
                     <TouchableOpacity
                         style={{
                             backgroundColor: loading ? Colors.lightGray : Colors.epitechBlue,
@@ -224,6 +230,7 @@ export default function SignIn() {
                             </TouchableOpacity>
                         </Link>
                     </View>
+                    </GlitchIn>
                 </View>
             </ScrollView>
         </KeyboardAvoidingView>

@@ -12,6 +12,7 @@ import {
     View
 } from "react-native";
 import { supabase } from "../../../lib/supabase";
+import GlitchIn from '@/components/GlitchIn';
 
 type Transaction = {
   id: string;
@@ -359,6 +360,7 @@ export default function HistoryScreen() {
       }
     >
       {/* Title */}
+      <GlitchIn delay={0}>
       <Text
         style={{
           fontSize: 34,
@@ -372,8 +374,10 @@ export default function HistoryScreen() {
       >
         Historique
       </Text>
+      </GlitchIn>
 
       {/* Transactions List */}
+      <GlitchIn delay={80}>
       {transactions.length === 0 ? (
         <View
           style={{
@@ -434,6 +438,7 @@ export default function HistoryScreen() {
           {transactions.map((item) => renderTransaction({ item }))}
         </View>
       )}
+      </GlitchIn>
     </ScrollView>
   );
 }

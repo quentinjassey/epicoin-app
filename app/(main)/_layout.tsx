@@ -17,8 +17,8 @@ function BrutalistTabBar({ state, descriptors, navigation }: any) {
             backgroundColor: Colors.white,
             borderTopWidth: 2,
             borderTopColor: Colors.black,
-            paddingBottom: 28,
-            paddingTop: 10,
+            paddingBottom: 24,
+            paddingTop: 8,
         }}>
             {state.routes.map((route: any, index: number) => {
                 const config = TAB_CONFIG[index];
@@ -50,23 +50,23 @@ function BrutalistTabBar({ state, descriptors, navigation }: any) {
                     >
                         <View style={{
                             backgroundColor: isFocused ? Colors.epitechBlue : 'transparent',
-                            padding: 6,
+                            padding: 7,
                             borderWidth: isFocused ? 2 : 0,
                             borderColor: Colors.black,
-                            marginBottom: 4,
+                            marginBottom: 5,
                         }}>
                             <Icon
                                 name={config.icon}
-                                size={22}
+                                size={26}
                                 color={isFocused ? Colors.white : Colors.mediumGray}
                             />
                         </View>
                         <Text style={{
-                            fontSize: 9,
+                            fontSize: 10,
                             fontWeight: '900',
                             color: isFocused ? Colors.black : Colors.mediumGray,
                             textTransform: 'uppercase',
-                            letterSpacing: 1,
+                            letterSpacing: 0.5,
                         }}>
                             {config.label}
                         </Text>

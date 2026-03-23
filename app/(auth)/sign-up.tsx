@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../lib/supabase';
 import { Colors } from '@/constants/NativeColors';
+import GlitchIn from '@/components/GlitchIn';
 
 const CAMPUSES = [
     { id: 'paris', name: 'Paris', icon: '🗼' },
@@ -120,6 +121,7 @@ export default function SignUp() {
                 }}
             >
                 {/* Logo */}
+                <GlitchIn delay={0}>
                 <View style={{ marginBottom: 32, alignItems: 'center' }}>
                     <Image
                         source={require('../../assets/images/epipay-logo.png')}
@@ -137,7 +139,9 @@ export default function SignUp() {
                         Creer un compte
                     </Text>
                 </View>
+                </GlitchIn>
 
+                <GlitchIn delay={100}>
                 <View style={{ width: '100%', maxWidth: 400, alignSelf: 'center' }}>
                     {/* Nom complet */}
                     <View style={{ marginBottom: 16 }}>
@@ -294,6 +298,7 @@ export default function SignUp() {
                         </Link>
                     </View>
                 </View>
+                </GlitchIn>
             </ScrollView>
 
             {/* Campus Modal */}
