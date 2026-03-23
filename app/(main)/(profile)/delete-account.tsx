@@ -105,7 +105,7 @@ export default function DeleteAccountScreen() {
             <View style={{ flex: 1 }}>
                 <View
                     style={{
-                        backgroundColor: Colors.epitechBlue,
+                        backgroundColor: Colors.accentOrange,
                         position: 'absolute',
                         top: 0,
                         left: 0,
@@ -124,7 +124,7 @@ export default function DeleteAccountScreen() {
                     {/* Header */}
                     <View
                         style={{
-                            backgroundColor: Colors.epitechBlue,
+                            backgroundColor: Colors.accentOrange,
                             paddingTop: 70,
                             paddingBottom: 32,
                             paddingHorizontal: 24,
@@ -347,7 +347,7 @@ export default function DeleteAccountScreen() {
                                     <Icon
                                         name="shield.checkered"
                                         size={18}
-                                        color={Colors.epitechBlue}
+                                        color={Colors.accentOrange}
                                     />
                                     <Text
                                         style={{
