@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../lib/supabase';
 import { Colors } from '@/constants/NativeColors';
+import { useAccessibility } from '@/lib/AccessibilityContext';
 
 type FraudAlert = {
     id: string;
@@ -16,6 +17,7 @@ type FraudAlert = {
 };
 
 export default function FraudDetailScreen() {
+    const { adaptiveColors } = useAccessibility();
     const { id } = useLocalSearchParams();
     const [alert, setAlert] = useState<FraudAlert | null>(null);
     const [loading, setLoading] = useState(true);
@@ -94,7 +96,7 @@ export default function FraudDetailScreen() {
                 alignItems: 'center',
                 backgroundColor: Colors.white,
             }}>
-                <ActivityIndicator size="large" color={Colors.epitechBlue} />
+                <ActivityIndicator size="large" color={adaptiveColors.primary} />
             </View>
         );
     }
@@ -129,7 +131,7 @@ export default function FraudDetailScreen() {
                 <RefreshControl
                     refreshing={refreshing}
                     onRefresh={() => { setRefreshing(true); fetchAlert(); }}
-                    tintColor={Colors.epitechBlue}
+                    tintColor={adaptiveColors.primary}
                 />
             }
         >
@@ -242,7 +244,7 @@ export default function FraudDetailScreen() {
                             <Text style={{ color: Colors.secondaryLabel, fontWeight: '700' }}>Heuristique (Règles)</Text>
                             <Text style={{
                                 fontWeight: '900',
-                                color: Colors.epitechBlue,
+                                color: adaptiveColors.primary,
                                 fontSize: 17,
                                 fontVariant: ['tabular-nums'],
                             }}>
@@ -260,7 +262,7 @@ export default function FraudDetailScreen() {
                             <View style={{
                                 width: `${heuristicScore}%`,
                                 height: '100%',
-                                backgroundColor: Colors.epitechBlue,
+                                backgroundColor: adaptiveColors.primary,
                             }} />
                         </View>
                     </View>
@@ -638,7 +640,7 @@ export default function FraudDetailScreen() {
                         <Icon
                             name="info.circle.fill"
                             size={20}
-                            color={Colors.epitechBlue}
+                            color={adaptiveColors.primary}
                             style={{ marginRight: 8 }}
                         />
                         <Text style={{

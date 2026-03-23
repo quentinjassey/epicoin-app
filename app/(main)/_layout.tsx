@@ -2,6 +2,7 @@ import { Tabs } from 'expo-router';
 import { Text, View, TouchableOpacity } from 'react-native';
 import Icon from '@/components/Icon';
 import { Colors } from '@/constants/NativeColors';
+import { useAccessibility } from '@/lib/AccessibilityContext';
 
 const TAB_CONFIG = [
     { name: '(wallet)', label: 'WALLET', icon: 'wallet.pass.fill' },
@@ -11,6 +12,7 @@ const TAB_CONFIG = [
 ];
 
 function BrutalistTabBar({ state, descriptors, navigation }: any) {
+    const { adaptiveColors } = useAccessibility();
     return (
         <View style={{
             flexDirection: 'row',
@@ -49,7 +51,7 @@ function BrutalistTabBar({ state, descriptors, navigation }: any) {
                         }}
                     >
                         <View style={{
-                            backgroundColor: isFocused ? Colors.epitechBlue : 'transparent',
+                            backgroundColor: isFocused ? adaptiveColors.primary : 'transparent',
                             padding: 7,
                             borderWidth: isFocused ? 2 : 0,
                             borderColor: Colors.black,

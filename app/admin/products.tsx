@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Modal, RefreshControl, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../lib/supabase';
 import { Colors } from '@/constants/NativeColors';
+import { useAccessibility } from '@/lib/AccessibilityContext';
 
 type Product = {
     id: string;
@@ -14,6 +15,7 @@ type Product = {
 };
 
 export default function AdminProducts() {
+    const { adaptiveColors } = useAccessibility();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -163,7 +165,7 @@ export default function AdminProducts() {
                 alignItems: 'center',
                 backgroundColor: Colors.white,
             }}>
-                <ActivityIndicator size="large" color={Colors.epitechBlue} />
+                <ActivityIndicator size="large" color={adaptiveColors.primary} />
             </View>
         );
     }
@@ -173,7 +175,7 @@ export default function AdminProducts() {
             <View style={{ padding: 16 }}>
                 <TouchableOpacity
                     style={{
-                        backgroundColor: Colors.epitechBlue,
+                        backgroundColor: adaptiveColors.primary,
                         borderRadius: 0,
                         padding: 16,
                         flexDirection: 'row',
@@ -203,7 +205,7 @@ export default function AdminProducts() {
                     <RefreshControl
                         refreshing={refreshing}
                         onRefresh={() => { setRefreshing(true); fetchProducts(); }}
-                        tintColor={Colors.epitechBlue}
+                        tintColor={adaptiveColors.primary}
                     />
                 }
                 renderItem={({ item }) => (
@@ -234,7 +236,7 @@ export default function AdminProducts() {
                                     borderColor: Colors.black,
                                 }}
                             >
-                                <Icon name="pencil" size={16} color={Colors.epitechBlue} />
+                                <Icon name="pencil" size={16} color={adaptiveColors.primary} />
                             </TouchableOpacity>
                         </View>
                         {item.description && (
@@ -246,7 +248,7 @@ export default function AdminProducts() {
                             <Text style={{
                                 fontSize: 20,
                                 fontWeight: '900',
-                                color: Colors.epitechBlue,
+                                color: adaptiveColors.primary,
                                 fontVariant: ['tabular-nums'],
                             }}>
                                 {item.price_epicoin.toFixed(2)} EPC
@@ -373,7 +375,7 @@ export default function AdminProducts() {
 
                         <TouchableOpacity
                             style={{
-                                backgroundColor: Colors.epitechBlue,
+                                backgroundColor: adaptiveColors.primary,
                                 borderRadius: 0,
                                 padding: 16,
                                 alignItems: 'center',

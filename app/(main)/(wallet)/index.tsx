@@ -199,7 +199,7 @@ export default function WalletScreen() {
                 alignItems: 'center',
                 backgroundColor: Colors.white,
             }}>
-                <ActivityIndicator size="large" color={Colors.epitechBlue} />
+                <ActivityIndicator size="large" color={adaptiveColors.primary} />
             </View>
         );
     }
@@ -219,7 +219,7 @@ export default function WalletScreen() {
                 <RefreshControl
                     refreshing={refreshing}
                     onRefresh={onRefresh}
-                    tintColor={Colors.epitechBlue}
+                    tintColor={adaptiveColors.primary}
                 />
             }
         >
@@ -240,7 +240,7 @@ export default function WalletScreen() {
                     style={{
                         width: 40,
                         height: 40,
-                        backgroundColor: Colors.epitechBlue,
+                        backgroundColor: adaptiveColors.primary,
                         alignItems: 'center',
                         justifyContent: 'center',
                         borderWidth: 2,
@@ -283,7 +283,7 @@ export default function WalletScreen() {
 
             {/* ── Balance Card ── */}
             <GlitchIn delay={160}><View style={{
-                backgroundColor: Colors.epitechBlue,
+                backgroundColor: adaptiveColors.primary,
                 padding: 28,
                 borderWidth: 3,
                 borderColor: Colors.black,
@@ -346,7 +346,7 @@ export default function WalletScreen() {
                             backgroundColor: Colors.offWhite,
                             padding: 20,
                             borderWidth: 2,
-                            borderColor: Colors.black,
+                            borderColor: adaptiveColors.success,
                             alignItems: 'center',
                             justifyContent: 'center',
                             shadowColor: Colors.black,
@@ -380,7 +380,7 @@ export default function WalletScreen() {
                             backgroundColor: Colors.offWhite,
                             padding: 20,
                             borderWidth: 2,
-                            borderColor: Colors.black,
+                            borderColor: adaptiveColors.warning,
                             alignItems: 'center',
                             justifyContent: 'center',
                             shadowColor: Colors.black,
@@ -393,7 +393,7 @@ export default function WalletScreen() {
                         <Icon
                             name="qrcode"
                             size={28}
-                            color={Colors.accentMagenta}
+                            color={adaptiveColors.warning}
                         />
                         <Text style={{
                             fontWeight: '800',
@@ -414,7 +414,7 @@ export default function WalletScreen() {
                             backgroundColor: Colors.offWhite,
                             padding: 20,
                             borderWidth: 2,
-                            borderColor: Colors.black,
+                            borderColor: adaptiveColors.info,
                             alignItems: 'center',
                             justifyContent: 'center',
                             shadowColor: Colors.black,
@@ -427,7 +427,7 @@ export default function WalletScreen() {
                         <Icon
                             name="paperplane.fill"
                             size={28}
-                            color={Colors.epitechBlue}
+                            color={adaptiveColors.info}
                         />
                         <Text style={{
                             fontWeight: '800',
@@ -462,7 +462,7 @@ export default function WalletScreen() {
                     </Text>
                     <TouchableOpacity onPress={() => router.push('/(history)' as any)}>
                         <Text style={{
-                            color: Colors.epitechBlue,
+                            color: adaptiveColors.primary,
                             fontWeight: '800',
                             fontSize: 13,
                             textTransform: 'uppercase',

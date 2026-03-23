@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, RefreshControl, Text, View } from 'react-native';
 import { supabase } from '../../lib/supabase';
 import { Colors } from '@/constants/NativeColors';
+import { useAccessibility } from '@/lib/AccessibilityContext';
 
 type Transaction = {
     id: string;
@@ -19,6 +20,7 @@ type Transaction = {
 };
 
 export default function AdminTransactions() {
+    const { adaptiveColors } = useAccessibility();
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -64,7 +66,7 @@ export default function AdminTransactions() {
         switch (type) {
             case 'transfer': return {
                 label: 'Transfert',
-                color: Colors.epitechBlue,
+                color: adaptiveColors.primary,
             };
             case 'top_up': return {
                 label: 'Rechargement',
@@ -170,7 +172,7 @@ export default function AdminTransactions() {
                     <Text style={{
                         fontSize: 24,
                         fontWeight: '900',
-                        color: Colors.epitechBlue,
+                        color: adaptiveColors.primary,
                         fontVariant: ['tabular-nums'],
                     }}>
                         {totalAmount.toFixed(0)} EPC
@@ -180,7 +182,7 @@ export default function AdminTransactions() {
 
             {loading ? (
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                    <ActivityIndicator size="large" color={Colors.epitechBlue} />
+                    <ActivityIndicator size="large" color={adaptiveColors.primary} />
                 </View>
             ) : (
                 <FlatList
@@ -191,7 +193,7 @@ export default function AdminTransactions() {
                         <RefreshControl
                             refreshing={refreshing}
                             onRefresh={onRefresh}
-                            tintColor={Colors.epitechBlue}
+                            tintColor={adaptiveColors.primary}
                         />
                     }
                     renderItem={({ item }) => {
@@ -258,7 +260,7 @@ export default function AdminTransactions() {
                                         <Text style={{ color: Colors.secondaryLabel, fontSize: 14, fontWeight: '700' }}>Montant</Text>
                                         <Text style={{
                                             fontWeight: '900',
-                                            color: Colors.epitechBlue,
+                                            color: adaptiveColors.primary,
                                             fontSize: 16,
                                             fontVariant: ['tabular-nums'],
                                         }}>

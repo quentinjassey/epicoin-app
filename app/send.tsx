@@ -1,4 +1,5 @@
 import { Colors } from '@/constants/NativeColors';
+import { useAccessibility } from '@/lib/AccessibilityContext';
 import Icon from '@/components/Icon';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useRouter } from 'expo-router';
@@ -22,6 +23,7 @@ type UserProfile = {
 };
 
 export default function SendScreen() {
+    const { adaptiveColors } = useAccessibility();
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
     const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
@@ -209,7 +211,7 @@ export default function SendScreen() {
                 shadowRadius: 0,
             }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                    <Icon name="dollarsign.circle.fill" size={20} color={Colors.epitechBlue} />
+                    <Icon name="dollarsign.circle.fill" size={20} color={adaptiveColors.primary} />
                     <Text style={{
                         fontSize: 13,
                         fontWeight: '800',
@@ -224,7 +226,7 @@ export default function SendScreen() {
                 <Text style={{
                     fontSize: 32,
                     fontWeight: '900',
-                    color: Colors.epitechBlue,
+                    color: adaptiveColors.primary,
                     fontVariant: ['tabular-nums'],
                 }}>
                     {balance.toFixed(2)} EPC
@@ -300,7 +302,7 @@ export default function SendScreen() {
                                         <View style={{
                                             width: 40,
                                             height: 40,
-                                            backgroundColor: Colors.epitechBlue,
+                                            backgroundColor: adaptiveColors.primary,
                                             borderRadius: 0,
                                             alignItems: 'center',
                                             justifyContent: 'center',
@@ -327,7 +329,7 @@ export default function SendScreen() {
                     </>
                 ) : (
                     <View style={{
-                        backgroundColor: Colors.epitechBlue,
+                        backgroundColor: adaptiveColors.primary,
                         borderRadius: 0,
                         padding: 16,
                         flexDirection: 'row',
@@ -416,7 +418,7 @@ export default function SendScreen() {
                         <Text style={{
                             fontSize: 24,
                             fontWeight: '900',
-                            color: Colors.epitechBlue,
+                            color: adaptiveColors.primary,
                             marginLeft: 8,
                         }}>
                             EPC
@@ -501,7 +503,7 @@ export default function SendScreen() {
             {/* Bouton Envoyer */}
             <TouchableOpacity
                 style={{
-                    backgroundColor: canSend && !processing ? Colors.epitechBlue : Colors.lightGray,
+                    backgroundColor: canSend && !processing ? adaptiveColors.primary : Colors.lightGray,
                     borderRadius: 0,
                     padding: 18,
                     alignItems: 'center',

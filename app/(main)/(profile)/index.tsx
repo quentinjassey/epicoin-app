@@ -4,6 +4,7 @@ import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../../lib/supabase';
 import { Colors } from '@/constants/NativeColors';
+import { useAccessibility } from '@/lib/AccessibilityContext';
 import GlitchIn from '@/components/GlitchIn';
 
 type Profile = {
@@ -17,6 +18,7 @@ type Profile = {
 };
 
 export default function ProfileScreen() {
+    const { adaptiveColors } = useAccessibility();
     const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -72,7 +74,7 @@ export default function ProfileScreen() {
                 alignItems: 'center',
                 backgroundColor: Colors.white,
             }}>
-                <ActivityIndicator size="large" color={Colors.epitechBlue} />
+                <ActivityIndicator size="large" color={adaptiveColors.primary} />
             </View>
         );
     }
@@ -82,7 +84,7 @@ export default function ProfileScreen() {
             icon: 'person.circle',
             label: 'INFORMATIONS PERSONNELLES',
             description: 'Nom, email, campus',
-            color: Colors.epitechBlue,
+            color: adaptiveColors.primary,
             bg: Colors.offWhite,
             route: '/(main)/(profile)/personal-info' as const,
         },
@@ -122,7 +124,7 @@ export default function ProfileScreen() {
             icon: 'square.and.arrow.up',
             label: 'EXPORTER MES DONNEES',
             description: 'Telecharger vos donnees (RGPD)',
-            color: Colors.epitechBlue,
+            color: adaptiveColors.primary,
             bg: Colors.offWhite,
             route: '/(main)/(profile)/data-export' as const,
         },
@@ -138,7 +140,7 @@ export default function ProfileScreen() {
 
     return (
         <View style={{ flex: 1 }}>
-        <View style={{ backgroundColor: Colors.epitechBlue, position: 'absolute', top: 0, left: 0, right: 0, height: 200 }} />
+        <View style={{ backgroundColor: adaptiveColors.primary, position: 'absolute', top: 0, left: 0, right: 0, height: 200 }} />
         <ScrollView
             contentInsetAdjustmentBehavior="automatic"
             style={{
@@ -152,7 +154,7 @@ export default function ProfileScreen() {
             {/* Header avec avatar */}
             <GlitchIn delay={0}>
             <View style={{
-                backgroundColor: Colors.epitechBlue,
+                backgroundColor: adaptiveColors.primary,
                 paddingTop: 100,
                 paddingBottom: 96,
                 paddingHorizontal: 24,
@@ -176,7 +178,7 @@ export default function ProfileScreen() {
                         marginBottom: 16,
                     }}>
                         <Text style={{
-                            color: Colors.epitechBlue,
+                            color: adaptiveColors.primary,
                             fontSize: 40,
                             fontWeight: '900',
                             letterSpacing: 2,
@@ -267,7 +269,7 @@ export default function ProfileScreen() {
                             {profile?.balance?.toFixed(2)}
                         </Text>
                         <Text style={{
-                            color: Colors.epitechBlue,
+                            color: adaptiveColors.primary,
                             fontWeight: '900',
                             fontSize: 20,
                             marginLeft: 8,

@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, RefreshControl, Text, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../lib/supabase';
 import { Colors } from '@/constants/NativeColors';
+import { useAccessibility } from '@/lib/AccessibilityContext';
 
 type FraudAlert = {
     id: string;
@@ -30,6 +31,7 @@ type FraudAlert = {
 };
 
 export default function FraudAlertsScreen() {
+    const { adaptiveColors } = useAccessibility();
     const [alerts, setAlerts] = useState<FraudAlert[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -304,7 +306,7 @@ export default function FraudAlertsScreen() {
                 alignItems: 'center',
                 backgroundColor: Colors.white,
             }}>
-                <ActivityIndicator size="large" color={Colors.epitechBlue} />
+                <ActivityIndicator size="large" color={adaptiveColors.primary} />
             </View>
         );
     }
@@ -321,7 +323,7 @@ export default function FraudAlertsScreen() {
                     <RefreshControl
                         refreshing={refreshing}
                         onRefresh={onRefresh}
-                        tintColor={Colors.epitechBlue}
+                        tintColor={adaptiveColors.primary}
                     />
                 }
                 ListEmptyComponent={

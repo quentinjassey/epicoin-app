@@ -13,6 +13,7 @@ import {
 import Slider from '@react-native-community/slider';
 import { supabase } from '../../lib/supabase';
 import { Colors } from '@/constants/NativeColors';
+import { useAccessibility } from '@/lib/AccessibilityContext';
 
 interface FraudConfig {
     ml_weight: number;
@@ -22,6 +23,7 @@ interface FraudConfig {
 }
 
 export default function FraudConfigScreen() {
+    const { adaptiveColors } = useAccessibility();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [config, setConfig] = useState<FraudConfig>({
@@ -141,7 +143,7 @@ export default function FraudConfigScreen() {
                 alignItems: 'center',
                 backgroundColor: Colors.white,
             }}>
-                <ActivityIndicator size="large" color={Colors.epitechBlue} />
+                <ActivityIndicator size="large" color={adaptiveColors.primary} />
             </View>
         );
     }
@@ -237,7 +239,7 @@ export default function FraudConfigScreen() {
                         <Text style={{ color: Colors.secondaryLabel, fontSize: 15, fontWeight: '700' }}>Heuristique (Règles)</Text>
                         <Text style={{
                             fontWeight: '900',
-                            color: Colors.epitechBlue,
+                            color: adaptiveColors.primary,
                             fontSize: 17,
                             fontVariant: ['tabular-nums'],
                         }}>
@@ -255,7 +257,7 @@ export default function FraudConfigScreen() {
                         <View style={{
                             height: '100%',
                             width: `${config.heuristic_weight * 100}%`,
-                            backgroundColor: Colors.epitechBlue,
+                            backgroundColor: adaptiveColors.primary,
                         }} />
                     </View>
                 </View>
@@ -418,7 +420,7 @@ export default function FraudConfigScreen() {
             <View style={{ gap: 12 }}>
                 <TouchableOpacity
                     style={{
-                        backgroundColor: Colors.epitechBlue,
+                        backgroundColor: adaptiveColors.primary,
                         borderRadius: 0,
                         padding: 16,
                         alignItems: 'center',

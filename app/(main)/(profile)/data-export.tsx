@@ -1,5 +1,6 @@
 import Icon from '@/components/Icon';
 import { Colors } from '@/constants/NativeColors';
+import { useAccessibility } from '@/lib/AccessibilityContext';
 import { useRouter } from 'expo-router';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
@@ -33,6 +34,7 @@ const DATA_CATEGORIES = [
 
 export default function DataExportScreen() {
     const router = useRouter();
+    const { adaptiveColors } = useAccessibility();
     const [exporting, setExporting] = useState(false);
     const [exported, setExported] = useState(false);
 
@@ -95,14 +97,14 @@ export default function DataExportScreen() {
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.white }}>
-            <View style={{ backgroundColor: Colors.epitechBlue, position: 'absolute', top: 0, left: 0, right: 0, height: 200 }} />
+            <View style={{ backgroundColor: adaptiveColors.primary, position: 'absolute', top: 0, left: 0, right: 0, height: 200 }} />
             <ScrollView
                 style={{ flex: 1 }}
                 contentContainerStyle={{ paddingBottom: 48, backgroundColor: Colors.white }}
             >
                 {/* Header */}
                 <View style={{
-                    backgroundColor: Colors.epitechBlue,
+                    backgroundColor: adaptiveColors.primary,
                     paddingTop: 70,
                     paddingBottom: 32,
                     paddingHorizontal: 24,
@@ -129,7 +131,7 @@ export default function DataExportScreen() {
                             shadowOpacity: 1,
                             shadowRadius: 0,
                         }}>
-                            <Icon name="checkmark.shield.fill" size={28} color={Colors.epitechBlue} />
+                            <Icon name="checkmark.shield.fill" size={28} color={adaptiveColors.primary} />
                         </View>
                         <View style={{ flex: 1 }}>
                             <Text style={{
@@ -225,7 +227,7 @@ export default function DataExportScreen() {
                                     <Icon
                                         name={category.icon}
                                         size={20}
-                                        color={Colors.epitechBlue}
+                                        color={adaptiveColors.primary}
                                     />
                                 </View>
                                 <View style={{ flex: 1 }}>
@@ -250,7 +252,7 @@ export default function DataExportScreen() {
                                 <Icon
                                     name="checkmark.circle.fill"
                                     size={20}
-                                    color={Colors.epitechBlue}
+                                    color={adaptiveColors.primary}
                                 />
                             </View>
                         ))}
@@ -291,7 +293,7 @@ export default function DataExportScreen() {
                 <View style={{ paddingHorizontal: 24, marginTop: 32 }}>
                     <TouchableOpacity
                         style={{
-                            backgroundColor: Colors.epitechBlue,
+                            backgroundColor: adaptiveColors.primary,
                             borderRadius: 0,
                             padding: 18,
                             alignItems: 'center',

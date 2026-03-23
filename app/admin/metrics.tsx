@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../lib/supabase';
 import { Colors } from '@/constants/NativeColors';
+import { useAccessibility } from '@/lib/AccessibilityContext';
 
 type FraudStats = {
     period_days: number;
@@ -40,6 +41,7 @@ type DetailedMetrics = {
 };
 
 export default function MetricsScreen() {
+    const { adaptiveColors } = useAccessibility();
     const [metrics, setMetrics] = useState<DetailedMetrics | null>(null);
     const [loading, setLoading] = useState(true);
     const [exporting, setExporting] = useState(false);
@@ -152,7 +154,7 @@ export default function MetricsScreen() {
                 alignItems: 'center',
                 backgroundColor: Colors.white,
             }}>
-                <ActivityIndicator size="large" color={Colors.epitechBlue} />
+                <ActivityIndicator size="large" color={adaptiveColors.primary} />
             </View>
         );
     }
@@ -182,7 +184,7 @@ export default function MetricsScreen() {
                             paddingVertical: 8,
                             paddingHorizontal: 12,
                             borderRadius: 0,
-                            backgroundColor: period === days ? Colors.epitechBlue : 'transparent',
+                            backgroundColor: period === days ? adaptiveColors.primary : 'transparent',
                             borderWidth: period === days ? 2 : 0,
                             borderColor: Colors.black,
                         }}
@@ -260,7 +262,7 @@ export default function MetricsScreen() {
                                 <Text style={{
                                     fontSize: 24,
                                     fontWeight: '900',
-                                    color: Colors.epitechBlue,
+                                    color: adaptiveColors.primary,
                                     fontVariant: ['tabular-nums'],
                                 }}>
                                     {metrics.total_volume.toFixed(0)} EPC
@@ -475,7 +477,7 @@ export default function MetricsScreen() {
 
             <TouchableOpacity
                 style={{
-                    backgroundColor: Colors.epitechBlue,
+                    backgroundColor: adaptiveColors.primary,
                     borderRadius: 0,
                     padding: 16,
                     alignItems: 'center',

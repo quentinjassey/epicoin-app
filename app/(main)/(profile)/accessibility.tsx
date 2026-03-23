@@ -9,7 +9,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { useAccessibility, ColorBlindMode } from '@/lib/AccessibilityContext';
+import { useAccessibility, ColorBlindMode, getAdaptiveColors } from '@/lib/AccessibilityContext';
 import { Colors } from '@/constants/NativeColors';
 
 const COLOR_BLIND_MODES: { key: ColorBlindMode; label: string; description: string }[] = [
@@ -20,41 +20,17 @@ const COLOR_BLIND_MODES: { key: ColorBlindMode; label: string; description: stri
     { key: 'achromatopsia', label: 'ACHROMATOPSIE', description: 'Vision en nuances de gris' },
 ];
 
-const SETTINGS = [
-    {
-        key: 'largeText',
-        icon: 'doc.text',
-        label: 'TEXTE AGRANDI',
-        description: 'Augmente la taille de tous les textes de l\'application',
-        color: Colors.epitechBlue,
-    },
-    {
-        key: 'highContrast',
-        icon: 'circle.lefthalf.filled',
-        label: 'CONTRASTE ELEVE',
-        description: 'Renforce les contrastes pour une meilleure lisibilite',
-        color: Colors.accentMagenta,
-    },
-    {
-        key: 'reduceMotion',
-        icon: 'sparkles',
-        label: 'REDUIRE LES ANIMATIONS',
-        description: 'Desactive les effets glitch et les transitions animees',
-        color: Colors.accentOrange,
-    },
-    {
-        key: 'boldText',
-        icon: 'bold',
-        label: 'TEXTE EN GRAS',
-        description: 'Rend tous les textes plus epais pour faciliter la lecture',
-        color: Colors.success,
-    },
-];
-
 export default function AccessibilityScreen() {
     const router = useRouter();
-    const { prefs, updatePrefs } = useAccessibility();
+    const { prefs, updatePrefs, adaptiveColors } = useAccessibility();
     const [saved, setSaved] = useState(false);
+
+    const SETTINGS = [
+        { key: 'largeText', icon: 'doc.text', label: 'TEXTE AGRANDI', description: 'Augmente la taille de tous les textes', color: adaptiveColors.primary },
+        { key: 'highContrast', icon: 'circle.lefthalf.filled', label: 'CONTRASTE ELEVE', description: 'Renforce les contrastes pour la lisibilite', color: adaptiveColors.accent },
+        { key: 'reduceMotion', icon: 'sparkles', label: 'REDUIRE LES ANIMATIONS', description: 'Desactive les effets glitch', color: adaptiveColors.warning },
+        { key: 'boldText', icon: 'bold', label: 'TEXTE EN GRAS', description: 'Textes plus epais pour la lecture', color: adaptiveColors.success },
+    ];
 
     function togglePref(key: string) {
         const newPrefs = { ...prefs, [key]: !prefs[key as keyof typeof prefs] };
@@ -90,14 +66,14 @@ export default function AccessibilityScreen() {
 
     return (
         <View style={{ flex: 1 }}>
-            <View style={{ backgroundColor: Colors.epitechBlue, position: 'absolute', top: 0, left: 0, right: 0, height: 200 }} />
+            <View style={{ backgroundColor: adaptiveColors.primary, position: 'absolute', top: 0, left: 0, right: 0, height: 200 }} />
             <ScrollView
                 style={{ flex: 1 }}
                 contentContainerStyle={{ paddingBottom: 48, backgroundColor: Colors.white }}
             >
                 {/* Header */}
                 <View style={{
-                    backgroundColor: Colors.epitechBlue,
+                    backgroundColor: adaptiveColors.primary,
                     paddingTop: 70,
                     paddingBottom: 32,
                     paddingHorizontal: 24,
@@ -125,7 +101,7 @@ export default function AccessibilityScreen() {
                             shadowOpacity: 1,
                             shadowRadius: 0,
                         }}>
-                            <Icon name="eye.fill" size={28} color={Colors.epitechBlue} />
+                            <Icon name="eye.fill" size={28} color={adaptiveColors.primary} />
                         </View>
                         <View style={{ flex: 1 }}>
                             <Text style={{
@@ -269,7 +245,7 @@ export default function AccessibilityScreen() {
                                         padding: 14,
                                         borderBottomWidth: index < COLOR_BLIND_MODES.length - 1 ? 2 : 0,
                                         borderBottomColor: Colors.black,
-                                        backgroundColor: isActive ? Colors.epitechBlue : Colors.white,
+                                        backgroundColor: isActive ? getAdaptiveColors(mode.key).primary : Colors.white,
                                     }}
                                 >
                                     <View style={{
@@ -282,7 +258,7 @@ export default function AccessibilityScreen() {
                                         justifyContent: 'center',
                                         marginRight: 12,
                                     }}>
-                                        {isActive && <Icon name="checkmark" size={16} color={Colors.epitechBlue} />}
+                                        {isActive && <Icon name="checkmark" size={16} color={adaptiveColors.primary} />}
                                     </View>
                                     <View style={{ flex: 1 }}>
                                         <Text style={{
@@ -302,6 +278,15 @@ export default function AccessibilityScreen() {
                                         }}>
                                             {mode.description}
                                         </Text>
+                                        {/* Color preview bands */}
+                                        <View style={{ flexDirection: 'row', marginTop: 8, height: 8, overflow: 'hidden', borderWidth: 1, borderColor: isActive ? Colors.white : Colors.black }}>
+                                            {(() => {
+                                                const c = getAdaptiveColors(mode.key);
+                                                return [c.primary, c.success, c.error, c.warning, c.info, c.accent].map((color, i) => (
+                                                    <View key={i} style={{ flex: 1, backgroundColor: color }} />
+                                                ));
+                                            })()}
+                                        </View>
                                     </View>
                                 </TouchableOpacity>
                             );

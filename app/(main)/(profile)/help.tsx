@@ -10,6 +10,7 @@ import {
 import Icon from '@/components/Icon';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/NativeColors';
+import { useAccessibility } from '@/lib/AccessibilityContext';
 
 type FAQItem = {
     question: string;
@@ -44,6 +45,7 @@ const FAQ_DATA: FAQItem[] = [
 ];
 
 function FAQItemCard({ item }: { item: FAQItem }) {
+    const { adaptiveColors } = useAccessibility();
     const [expanded, setExpanded] = useState(false);
     const [rotation] = useState(new Animated.Value(0));
 
@@ -102,7 +104,7 @@ function FAQItemCard({ item }: { item: FAQItem }) {
                     <Icon
                         name="chevron.right"
                         size={18}
-                        color={Colors.epitechBlue}
+                        color={adaptiveColors.primary}
                     />
                 </Animated.View>
             </TouchableOpacity>
@@ -135,10 +137,11 @@ function FAQItemCard({ item }: { item: FAQItem }) {
 
 export default function HelpScreen() {
     const router = useRouter();
+    const { adaptiveColors } = useAccessibility();
 
     return (
         <View style={{ flex: 1 }}>
-        <View style={{ backgroundColor: Colors.epitechBlue, position: 'absolute', top: 0, left: 0, right: 0, height: 200 }} />
+        <View style={{ backgroundColor: adaptiveColors.primary, position: 'absolute', top: 0, left: 0, right: 0, height: 200 }} />
         <ScrollView
             style={{ flex: 1 }}
             contentContainerStyle={{ paddingBottom: 60, backgroundColor: Colors.white }}
@@ -146,7 +149,7 @@ export default function HelpScreen() {
         >
             {/* ── Header ── */}
             <View style={{
-                backgroundColor: Colors.epitechBlue,
+                backgroundColor: adaptiveColors.primary,
                 paddingTop: 70,
                 paddingBottom: 32,
                 paddingHorizontal: 24,
@@ -176,7 +179,7 @@ export default function HelpScreen() {
                         <Icon
                             name="questionmark.circle.fill"
                             size={28}
-                            color={Colors.epitechBlue}
+                            color={adaptiveColors.primary}
                         />
                 </View>
                 <View>
@@ -196,7 +199,7 @@ export default function HelpScreen() {
                     style={{
                         fontSize: 13,
                         fontWeight: '900',
-                        color: Colors.epitechBlue,
+                        color: adaptiveColors.primary,
                         textTransform: 'uppercase',
                         letterSpacing: 2,
                         marginBottom: 14,
@@ -215,7 +218,7 @@ export default function HelpScreen() {
                     style={{
                         fontSize: 13,
                         fontWeight: '900',
-                        color: Colors.epitechBlue,
+                        color: adaptiveColors.primary,
                         textTransform: 'uppercase',
                         letterSpacing: 2,
                         marginBottom: 14,
@@ -247,7 +250,7 @@ export default function HelpScreen() {
                         style={{
                             width: 40,
                             height: 40,
-                            backgroundColor: Colors.epitechBlue,
+                            backgroundColor: adaptiveColors.primary,
                             borderWidth: 2,
                             borderColor: Colors.black,
                             borderRadius: 0,

@@ -4,8 +4,10 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { Colors } from '@/constants/NativeColors';
+import { useAccessibility } from '@/lib/AccessibilityContext';
 
 export default function PayScreen() {
+    const { adaptiveColors } = useAccessibility();
     const [token, setToken] = useState<string | null>(null);
     const [refreshKey, setRefreshKey] = useState(0);
 
@@ -29,7 +31,7 @@ export default function PayScreen() {
                 flex: 1,
                 justifyContent: 'center',
                 alignItems: 'center',
-                backgroundColor: Colors.epitechBlue,
+                backgroundColor: adaptiveColors.primary,
             }}>
                 <ActivityIndicator size="large" color={Colors.white} />
             </View>
@@ -39,7 +41,7 @@ export default function PayScreen() {
     return (
         <View style={{
             flex: 1,
-            backgroundColor: Colors.epitechBlue,
+            backgroundColor: adaptiveColors.primary,
         }}>
 
             {/* QR Code Card */}
@@ -96,7 +98,7 @@ export default function PayScreen() {
                         <QRCode
                             value={token}
                             size={200}
-                            color={Colors.epitechBlue}
+                            color={adaptiveColors.primary}
                             backgroundColor="white"
                         />
                     </View>

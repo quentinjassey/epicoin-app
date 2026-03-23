@@ -16,12 +16,14 @@ import {
 } from 'react-native';
 import { supabase } from '../../../lib/supabase';
 import { Colors } from '@/constants/NativeColors';
+import { useAccessibility } from '@/lib/AccessibilityContext';
 import * as SecureStore from 'expo-secure-store';
 
 const BIOMETRIC_KEY = 'epipay_biometric_enabled';
 
 export default function SecurityScreen() {
     const router = useRouter();
+    const { adaptiveColors } = useAccessibility();
     // ── Password state ──
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
@@ -158,7 +160,7 @@ export default function SecurityScreen() {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
             <View style={{ flex: 1 }}>
-            <View style={{ backgroundColor: Colors.epitechBlue, position: 'absolute', top: 0, left: 0, right: 0, height: 200 }} />
+            <View style={{ backgroundColor: adaptiveColors.primary, position: 'absolute', top: 0, left: 0, right: 0, height: 200 }} />
             <ScrollView
                 style={{ flex: 1 }}
                 contentContainerStyle={{ paddingBottom: 48, backgroundColor: Colors.white }}
@@ -166,7 +168,7 @@ export default function SecurityScreen() {
             >
                 {/* Header */}
                 <View style={{
-                    backgroundColor: Colors.epitechBlue,
+                    backgroundColor: adaptiveColors.primary,
                     paddingTop: 70,
                     paddingBottom: 32,
                     paddingHorizontal: 24,
@@ -196,7 +198,7 @@ export default function SecurityScreen() {
                             <Icon
                                 name="shield.checkered"
                                 size={28}
-                                color={Colors.epitechBlue}
+                                color={adaptiveColors.primary}
                             />
                         </View>
                         <View>
@@ -409,7 +411,7 @@ export default function SecurityScreen() {
                         {/* Submit button */}
                         <TouchableOpacity
                             style={{
-                                backgroundColor: Colors.epitechBlue,
+                                backgroundColor: adaptiveColors.primary,
                                 borderRadius: 0,
                                 padding: 16,
                                 alignItems: 'center',
@@ -467,7 +469,7 @@ export default function SecurityScreen() {
                         padding: 20,
                     }}>
                         {biometricLoading ? (
-                            <ActivityIndicator size="small" color={Colors.epitechBlue} />
+                            <ActivityIndicator size="small" color={adaptiveColors.primary} />
                         ) : biometricAvailable ? (
                             <>
                                 <View style={{
@@ -487,7 +489,7 @@ export default function SecurityScreen() {
                                             <Icon
                                                 name={biometricType === 'Face ID' ? 'faceid' : 'touchid'}
                                                 size={24}
-                                                color={Colors.epitechBlue}
+                                                color={adaptiveColors.primary}
                                             />
                                         </View>
                                         <View style={{ flex: 1 }}>
@@ -515,7 +517,7 @@ export default function SecurityScreen() {
                                         onValueChange={handleToggleBiometric}
                                         trackColor={{
                                             false: Colors.lightGray,
-                                            true: Colors.epitechBlue,
+                                            true: adaptiveColors.primary,
                                         }}
                                         thumbColor={Colors.white}
                                     />
@@ -628,7 +630,7 @@ export default function SecurityScreen() {
                                 <Icon
                                     name={tip.icon}
                                     size={16}
-                                    color={Colors.epitechBlue}
+                                    color={adaptiveColors.primary}
                                 />
                                 <Text style={{
                                     color: Colors.black,

@@ -3,14 +3,16 @@ import { router } from 'expo-router';
 import React from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { Colors } from '@/constants/NativeColors';
+import { useAccessibility } from '@/lib/AccessibilityContext';
 
 export default function AdminDashboard() {
+    const { adaptiveColors } = useAccessibility();
     const MENU_ITEMS = [
         {
             title: 'Gestion des produits',
             icon: 'cube.fill',
             route: '/admin/products',
-            color: Colors.epitechBlue,
+            color: adaptiveColors.primary,
             description: 'Ajouter, modifier ou supprimer les articles.'
         },
         {
@@ -52,14 +54,14 @@ export default function AdminDashboard() {
 
     return (
         <View style={{ flex: 1 }}>
-        <View style={{ backgroundColor: Colors.epitechBlue, position: 'absolute', top: 0, left: 0, right: 0, height: 200 }} />
+        <View style={{ backgroundColor: adaptiveColors.primary, position: 'absolute', top: 0, left: 0, right: 0, height: 200 }} />
         <ScrollView
             contentInsetAdjustmentBehavior="automatic"
             style={{ flex: 1, backgroundColor: Colors.white }}
             contentContainerStyle={{ padding: 24, backgroundColor: Colors.white }}
         >
             <View style={{
-                backgroundColor: Colors.epitechBlue,
+                backgroundColor: adaptiveColors.primary,
                 borderRadius: 0,
                 padding: 24,
                 marginBottom: 24,

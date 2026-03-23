@@ -1,7 +1,9 @@
 import { Stack } from 'expo-router/stack';
 import { Colors } from '@/constants/NativeColors';
+import { useAccessibility } from '@/lib/AccessibilityContext';
 
 export default function AdminStack() {
+  const { adaptiveColors } = useAccessibility();
   return (
     <Stack
       screenOptions={{
@@ -12,7 +14,7 @@ export default function AdminStack() {
         headerShadowVisible: true,
         headerBackTitle: 'Retour',
         headerStyle: { backgroundColor: Colors.white },
-        headerTintColor: Colors.epitechBlue,
+        headerTintColor: adaptiveColors.primary,
         headerTitleStyle: {
           fontWeight: '900',
           letterSpacing: 1,

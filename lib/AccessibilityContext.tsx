@@ -27,6 +27,8 @@ type ContextType = {
     fontScale: number;
     // Adjusted colors based on colorblind mode
     adaptiveColors: {
+        primary: string;
+        accent: string;
         success: string;
         error: string;
         warning: string;
@@ -35,18 +37,18 @@ type ContextType = {
 };
 
 // Color palettes adapted for each type of color blindness
-function getAdaptiveColors(mode: ColorBlindMode) {
+export function getAdaptiveColors(mode: ColorBlindMode) {
     switch (mode) {
         case 'protanopia': // No red
-            return { success: '#0072B2', error: '#E69F00', warning: '#F0E442', info: '#56B4E9' };
+            return { primary: '#0072B2', accent: '#56B4E9', success: '#0072B2', error: '#E69F00', warning: '#F0E442', info: '#56B4E9' };
         case 'deuteranopia': // No green
-            return { success: '#0072B2', error: '#D55E00', warning: '#F0E442', info: '#56B4E9' };
+            return { primary: '#0072B2', accent: '#56B4E9', success: '#0072B2', error: '#D55E00', warning: '#F0E442', info: '#56B4E9' };
         case 'tritanopia': // No blue
-            return { success: '#009E73', error: '#D55E00', warning: '#CC79A7', info: '#E69F00' };
+            return { primary: '#E69F00', accent: '#CC79A7', success: '#009E73', error: '#D55E00', warning: '#CC79A7', info: '#E69F00' };
         case 'achromatopsia': // No color
-            return { success: '#666666', error: '#333333', warning: '#999999', info: '#555555' };
+            return { primary: '#333333', accent: '#666666', success: '#666666', error: '#333333', warning: '#999999', info: '#555555' };
         default:
-            return { success: '#00C853', error: '#ff5a3a', warning: '#F59E0B', info: '#013AFB' };
+            return { primary: '#013AFB', accent: '#ff1ef7', success: '#00C853', error: '#ff5a3a', warning: '#F59E0B', info: '#013AFB' };
     }
 }
 

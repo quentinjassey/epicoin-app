@@ -1,5 +1,6 @@
 import Icon from '@/components/Icon';
 import { Colors } from '@/constants/NativeColors';
+import { useAccessibility } from '@/lib/AccessibilityContext';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
@@ -11,6 +12,7 @@ import {
 } from 'react-native';
 
 export default function ConsentScreen() {
+    const { adaptiveColors } = useAccessibility();
     const router = useRouter();
     const [accepted, setAccepted] = useState(false);
 
@@ -82,21 +84,21 @@ export default function ConsentScreen() {
 
                     <View style={{ gap: 12, marginBottom: 20 }}>
                         <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-                            <Icon name="location.fill" size={16} color={Colors.epitechBlue} style={{ marginRight: 10, marginTop: 2 }} />
+                            <Icon name="location.fill" size={16} color={adaptiveColors.primary} style={{ marginRight: 10, marginTop: 2 }} />
                             <Text style={{ flex: 1, color: Colors.black, fontSize: 13, fontWeight: '600', lineHeight: 20 }}>
                                 <Text style={{ fontWeight: '800' }}>Localisation</Text> — Coordonnees GPS ou geolocalisation IP lors des transactions pour detecter les activites suspectes.
                             </Text>
                         </View>
 
                         <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-                            <Icon name="lock.fill" size={16} color={Colors.epitechBlue} style={{ marginRight: 10, marginTop: 2 }} />
+                            <Icon name="lock.fill" size={16} color={adaptiveColors.primary} style={{ marginRight: 10, marginTop: 2 }} />
                             <Text style={{ flex: 1, color: Colors.black, fontSize: 13, fontWeight: '600', lineHeight: 20 }}>
                                 <Text style={{ fontWeight: '800' }}>Appareil</Text> — Modele et systeme d'exploitation pour identifier les connexions inhabituelles.
                             </Text>
                         </View>
 
                         <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-                            <Icon name="shield.checkered" size={16} color={Colors.epitechBlue} style={{ marginRight: 10, marginTop: 2 }} />
+                            <Icon name="shield.checkered" size={16} color={adaptiveColors.primary} style={{ marginRight: 10, marginTop: 2 }} />
                             <Text style={{ flex: 1, color: Colors.black, fontSize: 13, fontWeight: '600', lineHeight: 20 }}>
                                 <Text style={{ fontWeight: '800' }}>Transactions</Text> — Analyse des patterns pour la prevention de fraude en temps reel.
                             </Text>
@@ -156,7 +158,7 @@ export default function ConsentScreen() {
                         flexDirection: 'row',
                         alignItems: 'center',
                     }}>
-                        <Icon name="person.fill" size={16} color={Colors.epitechBlue} style={{ marginRight: 10 }} />
+                        <Icon name="person.fill" size={16} color={adaptiveColors.primary} style={{ marginRight: 10 }} />
                         <Text style={{ flex: 1, color: Colors.black, fontSize: 13, fontWeight: '700' }}>
                             Vous devez avoir au moins 16 ans pour utiliser EpiPay.
                         </Text>
@@ -168,14 +170,14 @@ export default function ConsentScreen() {
                     onPress={() => router.push('/(auth)/privacy-policy')}
                     style={{
                         borderWidth: 2,
-                        borderColor: Colors.epitechBlue,
+                        borderColor: adaptiveColors.primary,
                         padding: 14,
                         alignItems: 'center',
                         marginBottom: 24,
                     }}
                 >
                     <Text style={{
-                        color: Colors.epitechBlue,
+                        color: adaptiveColors.primary,
                         fontSize: 13,
                         fontWeight: '900',
                         textTransform: 'uppercase',
@@ -204,7 +206,7 @@ export default function ConsentScreen() {
                         height: 28,
                         borderWidth: 2,
                         borderColor: Colors.black,
-                        backgroundColor: accepted ? Colors.epitechBlue : Colors.white,
+                        backgroundColor: accepted ? adaptiveColors.primary : Colors.white,
                         alignItems: 'center',
                         justifyContent: 'center',
                         marginRight: 14,
@@ -227,7 +229,7 @@ export default function ConsentScreen() {
                 {/* Continue button */}
                 <TouchableOpacity
                     style={{
-                        backgroundColor: accepted ? Colors.epitechBlue : Colors.lightGray,
+                        backgroundColor: accepted ? adaptiveColors.primary : Colors.lightGray,
                         padding: 16,
                         alignItems: 'center',
                         borderWidth: 2,

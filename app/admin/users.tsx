@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, RefreshControl, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../lib/supabase';
 import { Colors } from '@/constants/NativeColors';
+import { useAccessibility } from '@/lib/AccessibilityContext';
 
 type User = {
     id: string;
@@ -15,6 +16,7 @@ type User = {
 };
 
 export default function AdminUsers() {
+    const { adaptiveColors } = useAccessibility();
     const [users, setUsers] = useState<User[]>([]);
     const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
@@ -109,7 +111,7 @@ export default function AdminUsers() {
                     <Text style={{
                         fontSize: 24,
                         fontWeight: '900',
-                        color: Colors.epitechBlue,
+                        color: adaptiveColors.primary,
                         fontVariant: ['tabular-nums'],
                     }}>
                         {totalBalance.toFixed(0)}
@@ -153,7 +155,7 @@ export default function AdminUsers() {
 
             {loading ? (
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                    <ActivityIndicator size="large" color={Colors.epitechBlue} />
+                    <ActivityIndicator size="large" color={adaptiveColors.primary} />
                 </View>
             ) : (
                 <FlatList
@@ -164,7 +166,7 @@ export default function AdminUsers() {
                         <RefreshControl
                             refreshing={refreshing}
                             onRefresh={onRefresh}
-                            tintColor={Colors.epitechBlue}
+                            tintColor={adaptiveColors.primary}
                         />
                     }
                     renderItem={({ item }) => (
@@ -194,7 +196,7 @@ export default function AdminUsers() {
                                 }}>
                                     <Text style={{
                                         fontWeight: '900',
-                                        color: Colors.epitechBlue,
+                                        color: adaptiveColors.primary,
                                         fontSize: 18,
                                     }}>
                                         {item.full_name?.charAt(0) || '?'}
@@ -252,7 +254,7 @@ export default function AdminUsers() {
                                 </View>
                                 <View style={{ alignItems: 'flex-end' }}>
                                     <Text style={{
-                                        color: Colors.epitechBlue,
+                                        color: adaptiveColors.primary,
                                         fontWeight: '900',
                                         fontSize: 17,
                                         fontVariant: ['tabular-nums'],

@@ -337,7 +337,7 @@ export default function HistoryScreen() {
           backgroundColor: Colors.white,
         }}
       >
-        <ActivityIndicator size="large" color={Colors.epitechBlue} />
+        <ActivityIndicator size="large" color={adaptiveColors.primary} />
       </View>
     );
   }
@@ -357,7 +357,7 @@ export default function HistoryScreen() {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          tintColor={Colors.epitechBlue}
+          tintColor={adaptiveColors.primary}
         />
       }
     >

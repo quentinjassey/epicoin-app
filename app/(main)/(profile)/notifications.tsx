@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { Colors } from '@/constants/NativeColors';
+import { useAccessibility } from '@/lib/AccessibilityContext';
 
 type NotificationPref = {
     key: string;
@@ -18,7 +19,7 @@ const NOTIFICATION_PREFS: NotificationPref[] = [
         icon: 'arrow.left.arrow.right',
         label: 'TRANSACTIONS',
         description: 'Alertes pour les transferts entrants et sortants',
-        color: Colors.epitechBlue,
+        color: adaptiveColors.primary,
     },
     {
         key: 'purchases',
@@ -52,6 +53,7 @@ const NOTIFICATION_PREFS: NotificationPref[] = [
 
 export default function NotificationsScreen() {
     const router = useRouter();
+    const { adaptiveColors } = useAccessibility();
     const [prefs, setPrefs] = useState<Record<string, boolean>>({
         transactions: true,
         purchases: true,
@@ -68,7 +70,7 @@ export default function NotificationsScreen() {
 
     return (
         <View style={{ flex: 1 }}>
-        <View style={{ backgroundColor: Colors.epitechBlue, position: 'absolute', top: 0, left: 0, right: 0, height: 200 }} />
+        <View style={{ backgroundColor: adaptiveColors.primary, position: 'absolute', top: 0, left: 0, right: 0, height: 200 }} />
         <ScrollView
             style={{ flex: 1 }}
             contentContainerStyle={{
@@ -78,7 +80,7 @@ export default function NotificationsScreen() {
         >
             {/* Header */}
             <View style={{
-                backgroundColor: Colors.epitechBlue,
+                backgroundColor: adaptiveColors.primary,
                 paddingTop: 70,
                 paddingBottom: 32,
                 paddingHorizontal: 24,
@@ -111,7 +113,7 @@ export default function NotificationsScreen() {
                         <Icon
                             name="bell.badge.fill"
                             size={32}
-                            color={Colors.epitechBlue}
+                            color={adaptiveColors.primary}
                         />
                     </View>
                     <Text style={{
@@ -207,7 +209,7 @@ export default function NotificationsScreen() {
                                 onValueChange={() => togglePref(item.key)}
                                 trackColor={{
                                     false: Colors.lightGray,
-                                    true: Colors.epitechBlue,
+                                    true: adaptiveColors.primary,
                                 }}
                                 thumbColor={Colors.white}
                             />

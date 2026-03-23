@@ -358,7 +358,7 @@ export default function ShopScreen() {
         { key: 'Boissons', icon: 'cup.and.saucer.fill', color: Colors.accentOrange },
         { key: 'Snacks', icon: 'takeoutbag.and.cup.and.straw.fill', color: Colors.systemYellow },
         { key: 'Repas', icon: 'fork.knife', color: Colors.accentMagenta },
-        { key: 'Fournitures', icon: 'pencil.and.ruler', color: Colors.epitechBlue },
+        { key: 'Fournitures', icon: 'pencil.and.ruler', color: adaptiveColors.primary },
         { key: 'Goodies', icon: 'tshirt.fill', color: Colors.success },
     ];
 
@@ -439,7 +439,7 @@ export default function ShopScreen() {
                         <Text style={{
                             fontSize: 20,
                             fontWeight: '900',
-                            color: canAfford ? Colors.epitechBlue : Colors.mediumGray,
+                            color: canAfford ? adaptiveColors.primary : Colors.mediumGray,
                             fontVariant: ['tabular-nums'],
                             textAlign: 'center',
                             marginBottom: 6,
@@ -502,7 +502,7 @@ export default function ShopScreen() {
                 alignItems: 'center',
                 backgroundColor: Colors.white,
             }}>
-                <ActivityIndicator size="large" color={Colors.epitechBlue} />
+                <ActivityIndicator size="large" color={adaptiveColors.primary} />
             </View>
         );
     }
@@ -523,7 +523,7 @@ export default function ShopScreen() {
                     <RefreshControl
                         refreshing={refreshing}
                         onRefresh={onRefresh}
-                        tintColor={Colors.epitechBlue}
+                        tintColor={adaptiveColors.primary}
                     />
                 }
             >
@@ -574,7 +574,7 @@ export default function ShopScreen() {
                         <Text style={{
                             fontSize: 24,
                             fontWeight: '900',
-                            color: Colors.epitechBlue,
+                            color: adaptiveColors.primary,
                             fontVariant: ['tabular-nums'],
                         }}>
                             {balance.toFixed(2)} EPC
@@ -889,7 +889,7 @@ export default function ShopScreen() {
                                     <Text style={{
                                         fontSize: 24,
                                         fontWeight: '900',
-                                        color: Colors.epitechBlue,
+                                        color: adaptiveColors.primary,
                                         fontVariant: ['tabular-nums'],
                                     }}>
                                         {selectedProduct.price_epicoin.toFixed(2)} EPC / unité
@@ -922,7 +922,7 @@ export default function ShopScreen() {
                                             Quantité
                                         </Text>
                                         <View style={{
-                                            backgroundColor: Colors.epitechBlue,
+                                            backgroundColor: adaptiveColors.primary,
                                             paddingHorizontal: 16,
                                             paddingVertical: 8,
                                             borderRadius: 0,
@@ -946,9 +946,9 @@ export default function ShopScreen() {
                                         step={1}
                                         value={quantity}
                                         onValueChange={setQuantity}
-                                        minimumTrackTintColor={Colors.epitechBlue}
+                                        minimumTrackTintColor={adaptiveColors.primary}
                                         maximumTrackTintColor={Colors.lightGray}
-                                        thumbTintColor={Colors.epitechBlue}
+                                        thumbTintColor={adaptiveColors.primary}
                                     />
                                 </View>
 
@@ -979,7 +979,7 @@ export default function ShopScreen() {
                                         <Text style={{
                                             fontSize: 28,
                                             fontWeight: '900',
-                                            color: Colors.epitechBlue,
+                                            color: adaptiveColors.primary,
                                             fontVariant: ['tabular-nums'],
                                         }}>
                                             {(selectedProduct.price_epicoin * quantity).toFixed(2)} EPC
@@ -1016,7 +1016,7 @@ export default function ShopScreen() {
                                             <Switch
                                                 value={authMethod === 'biometric'}
                                                 onValueChange={(value) => setAuthMethod(value ? 'biometric' : 'password')}
-                                                trackColor={{ false: Colors.lightGray, true: Colors.epitechBlue }}
+                                                trackColor={{ false: Colors.lightGray, true: adaptiveColors.primary }}
                                             />
                                         </View>
                                     )}
@@ -1058,7 +1058,7 @@ export default function ShopScreen() {
                                 {/* Confirm Button */}
                                 <TouchableOpacity
                                     style={{
-                                        backgroundColor: Colors.epitechBlue,
+                                        backgroundColor: adaptiveColors.primary,
                                         borderRadius: 0,
                                         borderWidth: 2,
                                         borderColor: Colors.black,

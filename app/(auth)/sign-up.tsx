@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../lib/supabase';
 import { Colors } from '@/constants/NativeColors';
+import { useAccessibility } from '@/lib/AccessibilityContext';
 import GlitchIn from '@/components/GlitchIn';
 
 const CAMPUSES = [
@@ -22,6 +23,7 @@ const CAMPUSES = [
 ];
 
 export default function SignUp() {
+    const { adaptiveColors } = useAccessibility();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -247,7 +249,7 @@ export default function SignUp() {
                     {/* Submit */}
                     <TouchableOpacity
                         style={{
-                            backgroundColor: loading ? Colors.lightGray : Colors.epitechBlue,
+                            backgroundColor: loading ? Colors.lightGray : adaptiveColors.primary,
                             padding: 16,
                             alignItems: 'center',
                             borderWidth: 2,
@@ -287,7 +289,7 @@ export default function SignUp() {
                         <Link href="/(auth)/sign-in" asChild>
                             <TouchableOpacity>
                                 <Text style={{
-                                    color: Colors.epitechBlue,
+                                    color: adaptiveColors.primary,
                                     fontWeight: '900',
                                     fontSize: 14,
                                     textTransform: 'uppercase',
@@ -343,10 +345,10 @@ export default function SignUp() {
                                 }}
                                 style={{
                                     backgroundColor: campus === c.name
-                                        ? Colors.epitechBlue
+                                        ? adaptiveColors.primary
                                         : Colors.white,
                                     borderWidth: 2,
-                                    borderColor: campus === c.name ? Colors.epitechBlue : Colors.black,
+                                    borderColor: campus === c.name ? adaptiveColors.primary : Colors.black,
                                     padding: 16,
                                     flexDirection: 'row',
                                     alignItems: 'center',

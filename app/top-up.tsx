@@ -1,4 +1,5 @@
 import { Colors } from "@/constants/NativeColors";
+import { useAccessibility } from '@/lib/AccessibilityContext';
 import { StripeProvider, useStripe } from "@stripe/stripe-react-native";
 import { router } from "expo-router";
 import Icon from "@/components/Icon";
@@ -34,6 +35,7 @@ const TOPUP_OPTIONS: TopUpOption[] = [
 ];
 
 function TopUpContent() {
+  const { adaptiveColors } = useAccessibility();
   const [selectedOption, setSelectedOption] = useState<TopUpOption | null>(
     null,
   );
@@ -238,7 +240,7 @@ function TopUpContent() {
               onPress={() => setSelectedOption(option)}
               style={{
                 backgroundColor: isSelected
-                  ? Colors.epitechBlue
+                  ? adaptiveColors.primary
                   : Colors.white,
                 borderRadius: 0,
                 padding: 20,
@@ -324,7 +326,7 @@ function TopUpContent() {
                       fontWeight: "900",
                       color: isSelected
                         ? Colors.epitechYellow
-                        : Colors.epitechBlue,
+                        : adaptiveColors.primary,
                       fontVariant: ["tabular-nums"],
                     }}
                   >
@@ -370,7 +372,7 @@ function TopUpContent() {
             <Icon
               name="info.circle.fill"
               size={20}
-              color={Colors.epitechBlue}
+              color={adaptiveColors.primary}
             />
             <Text
               style={{
@@ -452,7 +454,7 @@ function TopUpContent() {
                 style={{
                   fontSize: 20,
                   fontWeight: "900",
-                  color: Colors.epitechBlue,
+                  color: adaptiveColors.primary,
                   fontVariant: ["tabular-nums"],
                 }}
               >
@@ -466,7 +468,7 @@ function TopUpContent() {
       <TouchableOpacity
         style={{
           backgroundColor: selectedOption
-            ? Colors.epitechBlue
+            ? adaptiveColors.primary
             : Colors.lightGray,
           borderRadius: 0,
           padding: 16,

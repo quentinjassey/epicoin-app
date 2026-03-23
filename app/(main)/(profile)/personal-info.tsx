@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { supabase } from '../../../lib/supabase';
 import { Colors } from '@/constants/NativeColors';
+import { useAccessibility } from '@/lib/AccessibilityContext';
 
 const CAMPUSES = [
     'Paris',
@@ -30,6 +31,7 @@ const CAMPUSES = [
 
 export default function PersonalInfoScreen() {
     const router = useRouter();
+    const { adaptiveColors } = useAccessibility();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [email, setEmail] = useState('');
@@ -107,14 +109,14 @@ export default function PersonalInfoScreen() {
                 alignItems: 'center',
                 backgroundColor: Colors.white,
             }}>
-                <ActivityIndicator size="large" color={Colors.epitechBlue} />
+                <ActivityIndicator size="large" color={adaptiveColors.primary} />
             </View>
         );
     }
 
     return (
         <View style={{ flex: 1 }}>
-        <View style={{ backgroundColor: Colors.epitechBlue, position: 'absolute', top: 0, left: 0, right: 0, height: 200 }} />
+        <View style={{ backgroundColor: adaptiveColors.primary, position: 'absolute', top: 0, left: 0, right: 0, height: 200 }} />
         <ScrollView
             style={{ flex: 1 }}
             contentContainerStyle={{
@@ -124,7 +126,7 @@ export default function PersonalInfoScreen() {
         >
             {/* Header */}
             <View style={{
-                backgroundColor: Colors.epitechBlue,
+                backgroundColor: adaptiveColors.primary,
                 paddingTop: 70,
                 paddingBottom: 32,
                 paddingHorizontal: 24,
@@ -172,7 +174,7 @@ export default function PersonalInfoScreen() {
                         <Icon
                             name="person.circle"
                             size={28}
-                            color={Colors.epitechBlue}
+                            color={adaptiveColors.primary}
                         />
                     </View>
                     <View>
@@ -365,7 +367,7 @@ export default function PersonalInfoScreen() {
                                     <Text style={{
                                         fontSize: 15,
                                         fontWeight: campus === item ? '900' : '700',
-                                        color: campus === item ? Colors.epitechBlue : Colors.black,
+                                        color: campus === item ? adaptiveColors.primary : Colors.black,
                                         textTransform: 'uppercase',
                                         letterSpacing: 0.5,
                                     }}>
@@ -375,7 +377,7 @@ export default function PersonalInfoScreen() {
                                         <Icon
                                             name="checkmark"
                                             size={16}
-                                            color={Colors.epitechBlue}
+                                            color={adaptiveColors.primary}
                                         />
                                     )}
                                 </TouchableOpacity>
@@ -389,7 +391,7 @@ export default function PersonalInfoScreen() {
                     onPress={handleSave}
                     disabled={saving}
                     style={{
-                        backgroundColor: Colors.epitechBlue,
+                        backgroundColor: adaptiveColors.primary,
                         borderWidth: 3,
                         borderColor: Colors.black,
                         borderRadius: 0,
