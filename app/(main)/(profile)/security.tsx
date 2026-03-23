@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { supabase } from '../../../lib/supabase';
 import { Colors } from '@/constants/NativeColors';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 
 const BIOMETRIC_KEY = 'epipay_biometric_enabled';
 
@@ -55,7 +55,7 @@ export default function SecurityScreen() {
                 }
             }
 
-            const stored = await AsyncStorage.getItem(BIOMETRIC_KEY);
+            const stored = await SecureStore.getItemAsync(BIOMETRIC_KEY);
             setBiometricEnabled(stored === 'true');
         } catch (error) {
             console.error('Biometric check error:', error);
@@ -74,11 +74,11 @@ export default function SecurityScreen() {
 
             if (result.success) {
                 setBiometricEnabled(true);
-                await AsyncStorage.setItem(BIOMETRIC_KEY, 'true');
+                await SecureStore.setItemAsync(BIOMETRIC_KEY, 'true');
             }
         } else {
             setBiometricEnabled(false);
-            await AsyncStorage.setItem(BIOMETRIC_KEY, 'false');
+            await SecureStore.setItemAsync(BIOMETRIC_KEY, 'false');
         }
     }
 

@@ -217,7 +217,7 @@ export default function SignIn() {
                         }}>
                             Pas encore de compte ?{' '}
                         </Text>
-                        <Link href="/(auth)/sign-up" asChild>
+                        <Link href="/(auth)/consent" asChild>
                             <TouchableOpacity>
                                 <Text style={{
                                     color: Colors.epitechBlue,

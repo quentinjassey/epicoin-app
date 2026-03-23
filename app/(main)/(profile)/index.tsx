@@ -110,6 +110,22 @@ export default function ProfileScreen() {
             bg: Colors.offWhite,
             route: '/(main)/(profile)/help' as const,
         },
+        {
+            icon: 'square.and.arrow.up',
+            label: 'EXPORTER MES DONNEES',
+            description: 'Telecharger vos donnees (RGPD)',
+            color: Colors.epitechBlue,
+            bg: Colors.offWhite,
+            route: '/(main)/(profile)/data-export' as const,
+        },
+        {
+            icon: 'exclamationmark.triangle.fill',
+            label: 'SUPPRIMER MON COMPTE',
+            description: 'Suppression irreversible',
+            color: Colors.accentOrange,
+            bg: Colors.offWhite,
+            route: '/(main)/(profile)/delete-account' as const,
+        },
     ];
 
     return (
