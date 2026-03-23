@@ -1,4 +1,4 @@
-import { SymbolView } from 'expo-symbols';
+import Icon from '@/components/Icon';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
@@ -113,14 +113,13 @@ export default function PersonalInfoScreen() {
     }
 
     return (
+        <View style={{ flex: 1 }}>
+        <View style={{ backgroundColor: Colors.epitechBlue, position: 'absolute', top: 0, left: 0, right: 0, height: 200 }} />
         <ScrollView
-            contentInsetAdjustmentBehavior="automatic"
-            style={{
-                flex: 1,
-                backgroundColor: Colors.white,
-            }}
+            style={{ flex: 1 }}
             contentContainerStyle={{
                 paddingBottom: 48,
+                backgroundColor: Colors.white,
             }}
         >
             {/* Header */}
@@ -140,10 +139,10 @@ export default function PersonalInfoScreen() {
                         marginBottom: 24,
                     }}
                 >
-                    <SymbolView
+                    <Icon
                         name="chevron.left"
                         size={20}
-                        tintColor={Colors.white}
+                        color={Colors.white}
                     />
                     <Text style={{
                         color: Colors.white,
@@ -170,10 +169,10 @@ export default function PersonalInfoScreen() {
                         shadowRadius: 0,
                         marginRight: 16,
                     }}>
-                        <SymbolView
+                        <Icon
                             name="person.circle"
                             size={28}
-                            tintColor={Colors.epitechBlue}
+                            color={Colors.epitechBlue}
                         />
                     </View>
                     <View>
@@ -262,10 +261,10 @@ export default function PersonalInfoScreen() {
                             alignItems: 'center',
                             padding: 16,
                         }}>
-                            <SymbolView
+                            <Icon
                                 name="lock.fill"
                                 size={16}
-                                tintColor={Colors.mediumGray}
+                                color={Colors.mediumGray}
                             />
                             <Text style={{
                                 fontSize: 16,
@@ -326,10 +325,10 @@ export default function PersonalInfoScreen() {
                         }}>
                             {campus || 'Sélectionner un campus'}
                         </Text>
-                        <SymbolView
+                        <Icon
                             name={showCampusPicker ? 'chevron.up' : 'chevron.down'}
                             size={14}
-                            tintColor={Colors.black}
+                            color={Colors.black}
                         />
                     </TouchableOpacity>
 
@@ -373,10 +372,10 @@ export default function PersonalInfoScreen() {
                                         {item}
                                     </Text>
                                     {campus === item && (
-                                        <SymbolView
+                                        <Icon
                                             name="checkmark"
                                             size={16}
-                                            tintColor={Colors.epitechBlue}
+                                            color={Colors.epitechBlue}
                                         />
                                     )}
                                 </TouchableOpacity>
@@ -409,10 +408,10 @@ export default function PersonalInfoScreen() {
                         <ActivityIndicator size="small" color={Colors.white} />
                     ) : (
                         <>
-                            <SymbolView
+                            <Icon
                                 name="checkmark.circle.fill"
                                 size={22}
-                                tintColor={Colors.white}
+                                color={Colors.white}
                             />
                             <Text style={{
                                 color: Colors.white,
@@ -429,5 +428,6 @@ export default function PersonalInfoScreen() {
                 </TouchableOpacity>
             </View>
         </ScrollView>
+        </View>
     );
 }

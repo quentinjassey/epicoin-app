@@ -1,4 +1,4 @@
-import { SymbolView } from 'expo-symbols';
+import Icon from '@/components/Icon';
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
@@ -166,7 +166,7 @@ export default function FraudConfigScreen() {
                 shadowRadius: 0,
             }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                    <SymbolView name="slider.horizontal.3" size={24} tintColor={Colors.white} />
+                    <Icon name="slider.horizontal.3" size={24} color={Colors.white} />
                     <Text style={{
                         color: Colors.white,
                         fontWeight: '900',

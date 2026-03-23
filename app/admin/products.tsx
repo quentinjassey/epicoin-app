@@ -1,4 +1,4 @@
-import { SymbolView } from 'expo-symbols';
+import Icon from '@/components/Icon';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Modal, RefreshControl, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../lib/supabase';
@@ -188,7 +188,7 @@ export default function AdminProducts() {
                     }}
                     onPress={openAddModal}
                 >
-                    <SymbolView name="plus.circle.fill" size={20} tintColor={Colors.white} />
+                    <Icon name="plus.circle.fill" size={20} color={Colors.white} />
                     <Text style={{ color: Colors.white, fontWeight: '900', marginLeft: 8, fontSize: 16, textTransform: 'uppercase', letterSpacing: 1 }}>
                         Ajouter un produit
                     </Text>
@@ -234,7 +234,7 @@ export default function AdminProducts() {
                                     borderColor: Colors.black,
                                 }}
                             >
-                                <SymbolView name="pencil" size={16} tintColor={Colors.epitechBlue} />
+                                <Icon name="pencil" size={16} color={Colors.epitechBlue} />
                             </TouchableOpacity>
                         </View>
                         {item.description && (
@@ -280,7 +280,7 @@ export default function AdminProducts() {
                             {editingProduct ? 'Modifier le produit' : 'Nouveau produit'}
                         </Text>
                         <TouchableOpacity onPress={() => setModalVisible(false)}>
-                            <SymbolView name="xmark.circle.fill" size={28} tintColor={Colors.black} />
+                            <Icon name="xmark.circle.fill" size={28} color={Colors.black} />
                         </TouchableOpacity>
                     </View>
 

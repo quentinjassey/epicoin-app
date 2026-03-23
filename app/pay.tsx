@@ -1,4 +1,4 @@
-import { SymbolView } from 'expo-symbols';
+import Icon from '@/components/Icon';
 import * as Crypto from 'expo-crypto';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -59,10 +59,10 @@ export default function PayScreen() {
                         borderColor: Colors.white,
                     }}
                 >
-                    <SymbolView
+                    <Icon
                         name="chevron.left"
                         size={24}
-                        tintColor={Colors.white}
+                        color={Colors.white}
                     />
                 </TouchableOpacity>
                 <Text style={{
@@ -105,10 +105,10 @@ export default function PayScreen() {
                         borderWidth: 2,
                         borderColor: Colors.black,
                     }}>
-                        <SymbolView
+                        <Icon
                             name="qrcode"
                             size={32}
-                            tintColor={Colors.epitechBlue}
+                            color={Colors.epitechBlue}
                         />
                     </View>
 
@@ -162,10 +162,10 @@ export default function PayScreen() {
                         borderWidth: 2,
                         borderColor: Colors.black,
                     }}>
-                        <SymbolView
+                        <Icon
                             name="key.fill"
                             size={14}
-                            tintColor={Colors.tertiaryLabel}
+                            color={Colors.tertiaryLabel}
                         />
                         <Text selectable style={{
                             color: Colors.tertiaryLabel,
@@ -194,10 +194,10 @@ export default function PayScreen() {
                         borderColor: Colors.white,
                     }}
                 >
-                    <SymbolView
+                    <Icon
                         name="arrow.clockwise"
                         size={20}
-                        tintColor={Colors.white}
+                        color={Colors.white}
                     />
                     <Text style={{
                         color: Colors.white,
@@ -221,10 +221,10 @@ export default function PayScreen() {
                     flexDirection: 'row',
                     alignItems: 'center',
                 }}>
-                    <SymbolView
+                    <Icon
                         name="checkmark.shield.fill"
                         size={16}
-                        tintColor="rgba(255, 255, 255, 0.5)"
+                        color="rgba(255, 255, 255, 0.5)"
                     />
                     <Text style={{
                         color: 'rgba(255, 255, 255, 0.6)',

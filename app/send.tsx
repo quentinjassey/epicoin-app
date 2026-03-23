@@ -1,5 +1,5 @@
 import { Colors } from '@/constants/NativeColors';
-import { SymbolView } from 'expo-symbols';
+import Icon from '@/components/Icon';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -209,7 +209,7 @@ export default function SendScreen() {
                 shadowRadius: 0,
             }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                    <SymbolView name="dollarsign.circle.fill" size={20} tintColor={Colors.epitechBlue} />
+                    <Icon name="dollarsign.circle.fill" size={20} color={Colors.epitechBlue} />
                     <Text style={{
                         fontSize: 13,
                         fontWeight: '800',
@@ -257,7 +257,7 @@ export default function SendScreen() {
                             borderWidth: 2,
                             borderColor: Colors.black,
                         }}>
-                            <SymbolView name="magnifyingglass" size={18} tintColor={Colors.tertiaryLabel} style={{ marginRight: 8 }} />
+                            <Icon name="magnifyingglass" size={18} color={Colors.tertiaryLabel} style={{ marginRight: 8 }} />
                             <TextInput
                                 style={{ flex: 1, fontSize: 17, color: Colors.black }}
                                 placeholder="Nom ou email..."
@@ -363,7 +363,7 @@ export default function SendScreen() {
                             </Text>
                         </View>
                         <TouchableOpacity onPress={() => setSelectedUser(null)}>
-                            <SymbolView name="xmark.circle.fill" size={28} tintColor="rgba(255, 255, 255, 0.75)" />
+                            <Icon name="xmark.circle.fill" size={28} color="rgba(255, 255, 255, 0.75)" />
                         </TouchableOpacity>
                     </View>
                 )}
@@ -433,7 +433,7 @@ export default function SendScreen() {
                             borderWidth: 2,
                             borderColor: Colors.accentOrange,
                         }}>
-                            <SymbolView name="exclamationmark.triangle.fill" size={16} tintColor={Colors.accentOrange} />
+                            <Icon name="exclamationmark.triangle.fill" size={16} color={Colors.accentOrange} />
                             <Text style={{
                                 fontSize: 13,
                                 color: Colors.accentOrange,
@@ -521,7 +521,7 @@ export default function SendScreen() {
                     <ActivityIndicator color={Colors.white} />
                 ) : (
                     <>
-                        <SymbolView name="paperplane.fill" size={20} tintColor={canSend ? Colors.white : Colors.tertiaryLabel} />
+                        <Icon name="paperplane.fill" size={20} color={canSend ? Colors.white : Colors.tertiaryLabel} />
                         <Text style={{
                             color: canSend ? Colors.white : Colors.tertiaryLabel,
                             fontSize: 17,
@@ -543,7 +543,7 @@ export default function SendScreen() {
                     justifyContent: 'center',
                     marginTop: 16,
                 }}>
-                    <SymbolView name="faceid" size={16} tintColor={Colors.tertiaryLabel} />
+                    <Icon name="faceid" size={16} color={Colors.tertiaryLabel} />
                     <Text style={{
                         color: Colors.tertiaryLabel,
                         fontSize: 13,

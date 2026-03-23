@@ -1,6 +1,7 @@
-import { SymbolView } from 'expo-symbols';
+import Icon from '@/components/Icon';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { ScrollView, Switch, Text, View } from 'react-native';
+import { ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { Colors } from '@/constants/NativeColors';
 
 type NotificationPref = {
@@ -50,6 +51,7 @@ const NOTIFICATION_PREFS: NotificationPref[] = [
 ];
 
 export default function NotificationsScreen() {
+    const router = useRouter();
     const [prefs, setPrefs] = useState<Record<string, boolean>>({
         transactions: true,
         purchases: true,
@@ -65,25 +67,31 @@ export default function NotificationsScreen() {
     const enabledCount = Object.values(prefs).filter(Boolean).length;
 
     return (
+        <View style={{ flex: 1 }}>
+        <View style={{ backgroundColor: Colors.epitechBlue, position: 'absolute', top: 0, left: 0, right: 0, height: 200 }} />
         <ScrollView
-            contentInsetAdjustmentBehavior="automatic"
-            style={{
-                flex: 1,
-                backgroundColor: Colors.white,
-            }}
+            style={{ flex: 1 }}
             contentContainerStyle={{
                 paddingBottom: 48,
+                backgroundColor: Colors.white,
             }}
         >
             {/* Header */}
             <View style={{
                 backgroundColor: Colors.epitechBlue,
-                paddingTop: 100,
+                paddingTop: 70,
                 paddingBottom: 32,
                 paddingHorizontal: 24,
                 borderBottomWidth: 3,
                 borderBottomColor: Colors.black,
             }}>
+                <TouchableOpacity
+                    onPress={() => router.back()}
+                    style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}
+                >
+                    <Icon name="chevron.left" size={20} color={Colors.white} />
+                    <Text style={{ color: Colors.white, fontWeight: '800', fontSize: 15, marginLeft: 4, textTransform: 'uppercase', letterSpacing: 1 }}>Retour</Text>
+                </TouchableOpacity>
                 <View style={{ alignItems: 'center' }}>
                     <View style={{
                         width: 72,
@@ -100,10 +108,10 @@ export default function NotificationsScreen() {
                         shadowRadius: 0,
                         marginBottom: 16,
                     }}>
-                        <SymbolView
+                        <Icon
                             name="bell.badge.fill"
                             size={32}
-                            tintColor={Colors.epitechBlue}
+                            color={Colors.epitechBlue}
                         />
                     </View>
                     <Text style={{
@@ -169,10 +177,10 @@ export default function NotificationsScreen() {
                                 borderWidth: 2,
                                 borderColor: Colors.black,
                             }}>
-                                <SymbolView
-                                    name={item.icon as any}
+                                <Icon
+                                    name={item.icon}
                                     size={22}
-                                    tintColor={item.color}
+                                    color={item.color}
                                 />
                             </View>
                             <View style={{ flex: 1 }}>
@@ -220,10 +228,10 @@ export default function NotificationsScreen() {
                 flexDirection: 'row',
                 alignItems: 'center',
             }}>
-                <SymbolView
+                <Icon
                     name="info.circle.fill"
                     size={18}
-                    tintColor={Colors.mediumGray}
+                    color={Colors.mediumGray}
                 />
                 <Text style={{
                     color: Colors.mediumGray,
@@ -236,5 +244,6 @@ export default function NotificationsScreen() {
                 </Text>
             </View>
         </ScrollView>
+        </View>
     );
 }

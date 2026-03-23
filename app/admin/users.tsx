@@ -1,4 +1,4 @@
-import { SymbolView } from 'expo-symbols';
+import Icon from '@/components/Icon';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, RefreshControl, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../lib/supabase';
@@ -129,7 +129,7 @@ export default function AdminUsers() {
                     borderWidth: 2,
                     borderColor: Colors.black,
                 }}>
-                    <SymbolView name="magnifyingglass" size={18} tintColor={Colors.secondaryLabel} />
+                    <Icon name="magnifyingglass" size={18} color={Colors.secondaryLabel} />
                     <TextInput
                         style={{
                             flex: 1,
@@ -145,7 +145,7 @@ export default function AdminUsers() {
                     />
                     {searchQuery.length > 0 && (
                         <TouchableOpacity onPress={() => setSearchQuery('')}>
-                            <SymbolView name="xmark.circle.fill" size={18} tintColor={Colors.secondaryLabel} />
+                            <Icon name="xmark.circle.fill" size={18} color={Colors.secondaryLabel} />
                         </TouchableOpacity>
                     )}
                 </View>
@@ -276,7 +276,7 @@ export default function AdminUsers() {
                             justifyContent: 'center',
                             paddingVertical: 80,
                         }}>
-                            <SymbolView name="person.3.fill" size={48} tintColor={Colors.tertiaryLabel} />
+                            <Icon name="person.3.fill" size={48} color={Colors.tertiaryLabel} />
                             <Text style={{
                                 color: Colors.black,
                                 fontSize: 17,

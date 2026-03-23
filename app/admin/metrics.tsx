@@ -1,4 +1,4 @@
-import { SymbolView } from 'expo-symbols';
+import Icon from '@/components/Icon';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import React, { useEffect, useState } from 'react';
@@ -433,7 +433,7 @@ export default function MetricsScreen() {
                     }}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                                <SymbolView name="clock" size={16} tintColor={Colors.systemOrange} />
+                                <Icon name="clock" size={16} color={Colors.systemOrange} />
                                 <Text style={{ color: Colors.secondaryLabel, fontSize: 15, fontWeight: '700' }}>En attente</Text>
                             </View>
                             <Text style={{ fontWeight: '900', color: Colors.systemOrange, fontSize: 17, fontVariant: ['tabular-nums'] }}>
@@ -442,7 +442,7 @@ export default function MetricsScreen() {
                         </View>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                                <SymbolView name="checkmark.circle" size={16} tintColor={Colors.success} />
+                                <Icon name="checkmark.circle" size={16} color={Colors.success} />
                                 <Text style={{ color: Colors.secondaryLabel, fontSize: 15, fontWeight: '700' }}>Approuvées</Text>
                             </View>
                             <Text style={{ fontWeight: '900', color: Colors.success, fontSize: 17, fontVariant: ['tabular-nums'] }}>
@@ -451,7 +451,7 @@ export default function MetricsScreen() {
                         </View>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                                <SymbolView name="xmark.circle" size={16} tintColor={Colors.accentOrange} />
+                                <Icon name="xmark.circle" size={16} color={Colors.accentOrange} />
                                 <Text style={{ color: Colors.secondaryLabel, fontSize: 15, fontWeight: '700' }}>Rejetées</Text>
                             </View>
                             <Text style={{ fontWeight: '900', color: Colors.accentOrange, fontSize: 17, fontVariant: ['tabular-nums'] }}>
@@ -496,7 +496,7 @@ export default function MetricsScreen() {
                     <ActivityIndicator color={Colors.white} />
                 ) : (
                     <>
-                        <SymbolView name="square.and.arrow.up" size={20} tintColor={Colors.white} />
+                        <Icon name="square.and.arrow.up" size={20} color={Colors.white} />
                         <Text style={{ color: Colors.white, fontSize: 17, fontWeight: '900', marginLeft: 8, textTransform: 'uppercase', letterSpacing: 1 }}>
                             Exporter les logs (30j)
                         </Text>

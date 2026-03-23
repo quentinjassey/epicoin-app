@@ -4,6 +4,7 @@ import { Session } from '@supabase/supabase-js';
 import { useFonts } from 'expo-font';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 
@@ -91,7 +92,8 @@ function RootLayoutNav() {
 
     return (
         <ThemeProvider value={EpitechTheme}>
-            <Stack>
+            <StatusBar style="dark" translucent backgroundColor="transparent" />
+            <Stack screenOptions={{ contentStyle: { backgroundColor: '#FFFFFF' } }}>
                 <Stack.Screen name="(main)" options={{ headerShown: false }} />
                 <Stack.Screen name="(auth)" options={{ headerShown: false }} />
                 <Stack.Screen name="admin" options={{ headerShown: false }} />

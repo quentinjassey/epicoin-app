@@ -1,47 +1,92 @@
-import { NativeTabs, Icon, Label } from 'expo-router/unstable-native-tabs';
-import { Theme } from '@/components/Theme';
-import { Platform } from 'react-native';
+import { Tabs } from 'expo-router';
+import { Text, View, TouchableOpacity } from 'react-native';
+import Icon from '@/components/Icon';
+import { Colors } from '@/constants/NativeColors';
+
+const TAB_CONFIG = [
+    { name: '(wallet)', label: 'WALLET', icon: 'wallet.pass.fill' },
+    { name: '(history)', label: 'RECENTS', icon: 'clock' },
+    { name: '(shop)', label: 'BOUTIQUE', icon: 'bag.fill' },
+    { name: '(profile)', label: 'PROFIL', icon: 'person.fill' },
+];
+
+function BrutalistTabBar({ state, descriptors, navigation }: any) {
+    return (
+        <View style={{
+            flexDirection: 'row',
+            backgroundColor: Colors.white,
+            borderTopWidth: 2,
+            borderTopColor: Colors.black,
+            paddingBottom: 28,
+            paddingTop: 10,
+        }}>
+            {state.routes.map((route: any, index: number) => {
+                const config = TAB_CONFIG[index];
+                if (!config) return null;
+
+                const isFocused = state.index === index;
+
+                const onPress = () => {
+                    const event = navigation.emit({
+                        type: 'tabPress',
+                        target: route.key,
+                        canPreventDefault: true,
+                    });
+                    if (!isFocused && !event.defaultPrevented) {
+                        navigation.navigate(route.name, route.params);
+                    }
+                };
+
+                return (
+                    <TouchableOpacity
+                        key={route.key}
+                        onPress={onPress}
+                        style={{
+                            flex: 1,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            paddingVertical: 4,
+                        }}
+                    >
+                        <View style={{
+                            backgroundColor: isFocused ? Colors.epitechBlue : 'transparent',
+                            padding: 6,
+                            borderWidth: isFocused ? 2 : 0,
+                            borderColor: Colors.black,
+                            marginBottom: 4,
+                        }}>
+                            <Icon
+                                name={config.icon}
+                                size={22}
+                                color={isFocused ? Colors.white : Colors.mediumGray}
+                            />
+                        </View>
+                        <Text style={{
+                            fontSize: 9,
+                            fontWeight: '900',
+                            color: isFocused ? Colors.black : Colors.mediumGray,
+                            textTransform: 'uppercase',
+                            letterSpacing: 1,
+                        }}>
+                            {config.label}
+                        </Text>
+                    </TouchableOpacity>
+                );
+            })}
+        </View>
+    );
+}
 
 export default function MainTabsLayout() {
-  return (
-    <Theme>
-      <NativeTabs
-        sidebarAdaptable
-        minimizeBehavior="onScrollDown"
-        tintColor="#013AFB"
-      >
-        <NativeTabs.Trigger name="(wallet)">
-          <Icon
-            sf="wallet.pass.fill"
-            drawable={Platform.OS === 'android' ? 'ic_menu_wallet' : undefined}
-          />
-          <Label>Wallet</Label>
-        </NativeTabs.Trigger>
-
-        <NativeTabs.Trigger name="(history)" role="recents">
-          <Icon
-            sf="clock.fill"
-            drawable={Platform.OS === 'android' ? 'ic_menu_recent_history' : undefined}
-          />
-          <Label>Historique</Label>
-        </NativeTabs.Trigger>
-
-        <NativeTabs.Trigger name="(shop)">
-          <Icon
-            sf="bag.fill"
-            drawable={Platform.OS === 'android' ? 'ic_menu_gallery' : undefined}
-          />
-          <Label>Boutique</Label>
-        </NativeTabs.Trigger>
-
-        <NativeTabs.Trigger name="(profile)">
-          <Icon
-            sf="person.fill"
-            drawable={Platform.OS === 'android' ? 'ic_menu_myplaces' : undefined}
-          />
-          <Label>Profil</Label>
-        </NativeTabs.Trigger>
-      </NativeTabs>
-    </Theme>
-  );
+    return (
+        <Tabs
+            tabBar={(props) => <BrutalistTabBar {...props} />}
+            screenOptions={{ headerShown: false }}
+        >
+            <Tabs.Screen name="(wallet)" />
+            <Tabs.Screen name="(history)" />
+            <Tabs.Screen name="(shop)" />
+            <Tabs.Screen name="(profile)" />
+        </Tabs>
+    );
 }

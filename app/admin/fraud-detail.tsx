@@ -1,4 +1,4 @@
-import { SymbolView } from 'expo-symbols';
+import Icon from '@/components/Icon';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
@@ -147,10 +147,10 @@ export default function FraudDetailScreen() {
                 shadowOpacity: 1,
                 shadowRadius: 0,
             }}>
-                <SymbolView
+                <Icon
                     name="exclamationmark.triangle.fill"
                     size={48}
-                    tintColor={riskColor}
+                    color={riskColor}
                     style={{ marginBottom: 16 }}
                 />
                 <Text style={{ fontSize: 15, color: Colors.secondaryLabel, marginBottom: 8, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1 }}>
@@ -403,10 +403,10 @@ export default function FraudDetailScreen() {
                             borderTopColor: Colors.black
                         }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                                <SymbolView
+                                <Icon
                                     name={alert.fraud_features.ml_active ? "checkmark.circle.fill" : "xmark.circle.fill"}
                                     size={16}
-                                    tintColor={alert.fraud_features.ml_active ? Colors.success : Colors.systemOrange}
+                                    color={alert.fraud_features.ml_active ? Colors.success : Colors.systemOrange}
                                 />
                                 <Text style={{ color: Colors.secondaryLabel, fontSize: 14, fontWeight: '700' }}>
                                     Modèle ML : {alert.fraud_features.ml_active ? 'Actif' : 'Inactif (règles uniquement)'}
@@ -520,10 +520,10 @@ export default function FraudDetailScreen() {
                     shadowRadius: 0,
                 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-                        <SymbolView
+                        <Icon
                             name="exclamationmark.triangle.fill"
                             size={20}
-                            tintColor={Colors.systemOrange}
+                            color={Colors.systemOrange}
                             style={{ marginRight: 8 }}
                         />
                         <Text style={{
@@ -560,10 +560,10 @@ export default function FraudDetailScreen() {
                                     borderColor: Colors.black,
                                 }}>
                                     <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 8 }}>
-                                        <SymbolView
+                                        <Icon
                                             name={severityIcon}
                                             size={18}
-                                            tintColor={severityColor}
+                                            color={severityColor}
                                             style={{ marginRight: 8, marginTop: 2 }}
                                         />
                                         <View style={{ flex: 1 }}>
@@ -635,10 +635,10 @@ export default function FraudDetailScreen() {
                     shadowRadius: 0,
                 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-                        <SymbolView
+                        <Icon
                             name="info.circle.fill"
                             size={20}
-                            tintColor={Colors.epitechBlue}
+                            color={Colors.epitechBlue}
                             style={{ marginRight: 8 }}
                         />
                         <Text style={{
@@ -683,7 +683,7 @@ export default function FraudDetailScreen() {
                             <ActivityIndicator color={Colors.white} />
                         ) : (
                             <>
-                                <SymbolView name="checkmark.circle.fill" size={20} tintColor={Colors.white} />
+                                <Icon name="checkmark.circle.fill" size={20} color={Colors.white} />
                                 <Text style={{ color: Colors.white, fontSize: 17, fontWeight: '900', marginLeft: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                                     Approuver
                                 </Text>
@@ -714,7 +714,7 @@ export default function FraudDetailScreen() {
                             <ActivityIndicator color={Colors.white} />
                         ) : (
                             <>
-                                <SymbolView name="xmark.circle.fill" size={20} tintColor={Colors.white} />
+                                <Icon name="xmark.circle.fill" size={20} color={Colors.white} />
                                 <Text style={{ color: Colors.white, fontSize: 17, fontWeight: '900', marginLeft: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                                     Rejeter
                                 </Text>

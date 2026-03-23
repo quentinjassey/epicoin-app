@@ -1,4 +1,5 @@
-import { SymbolView } from 'expo-symbols';
+import Icon from '@/components/Icon';
+import { useRouter } from 'expo-router';
 import * as LocalAuthentication from 'expo-local-authentication';
 import React, { useEffect, useState } from 'react';
 import {
@@ -20,6 +21,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const BIOMETRIC_KEY = 'epipay_biometric_enabled';
 
 export default function SecurityScreen() {
+    const router = useRouter();
     // ── Password state ──
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
@@ -155,21 +157,29 @@ export default function SecurityScreen() {
             style={{ flex: 1, backgroundColor: Colors.white }}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
+            <View style={{ flex: 1 }}>
+            <View style={{ backgroundColor: Colors.epitechBlue, position: 'absolute', top: 0, left: 0, right: 0, height: 200 }} />
             <ScrollView
-                contentInsetAdjustmentBehavior="automatic"
-                style={{ flex: 1, backgroundColor: Colors.white }}
-                contentContainerStyle={{ paddingBottom: 48 }}
+                style={{ flex: 1 }}
+                contentContainerStyle={{ paddingBottom: 48, backgroundColor: Colors.white }}
                 keyboardShouldPersistTaps="handled"
             >
                 {/* Header */}
                 <View style={{
                     backgroundColor: Colors.epitechBlue,
-                    paddingTop: 100,
+                    paddingTop: 70,
                     paddingBottom: 32,
                     paddingHorizontal: 24,
                     borderBottomWidth: 3,
                     borderBottomColor: Colors.black,
                 }}>
+                    <TouchableOpacity
+                        onPress={() => router.back()}
+                        style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}
+                    >
+                        <Icon name="chevron.left" size={20} color={Colors.white} />
+                        <Text style={{ color: Colors.white, fontWeight: '800', fontSize: 15, marginLeft: 4, textTransform: 'uppercase', letterSpacing: 1 }}>Retour</Text>
+                    </TouchableOpacity>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <View style={{
                             backgroundColor: Colors.white,
@@ -183,10 +193,10 @@ export default function SecurityScreen() {
                             shadowOpacity: 1,
                             shadowRadius: 0,
                         }}>
-                            <SymbolView
+                            <Icon
                                 name="shield.checkered"
                                 size={28}
-                                tintColor={Colors.epitechBlue}
+                                color={Colors.epitechBlue}
                             />
                         </View>
                         <View>
@@ -350,10 +360,10 @@ export default function SecurityScreen() {
                                 flexDirection: 'row',
                                 alignItems: 'center',
                             }}>
-                                <SymbolView
+                                <Icon
                                     name="exclamationmark.triangle.fill"
                                     size={18}
-                                    tintColor={Colors.accentOrange}
+                                    color={Colors.accentOrange}
                                 />
                                 <Text style={{
                                     color: Colors.accentOrange,
@@ -379,10 +389,10 @@ export default function SecurityScreen() {
                                 flexDirection: 'row',
                                 alignItems: 'center',
                             }}>
-                                <SymbolView
+                                <Icon
                                     name="checkmark.circle.fill"
                                     size={18}
-                                    tintColor={Colors.success}
+                                    color={Colors.success}
                                 />
                                 <Text style={{
                                     color: Colors.success,
@@ -474,10 +484,10 @@ export default function SecurityScreen() {
                                             borderColor: Colors.black,
                                             marginRight: 14,
                                         }}>
-                                            <SymbolView
+                                            <Icon
                                                 name={biometricType === 'Face ID' ? 'faceid' : 'touchid'}
                                                 size={24}
-                                                tintColor={Colors.epitechBlue}
+                                                color={Colors.epitechBlue}
                                             />
                                         </View>
                                         <View style={{ flex: 1 }}>
@@ -537,10 +547,10 @@ export default function SecurityScreen() {
                                     borderColor: Colors.lightGray,
                                     marginRight: 14,
                                 }}>
-                                    <SymbolView
+                                    <Icon
                                         name="faceid"
                                         size={24}
-                                        tintColor={Colors.mediumGray}
+                                        color={Colors.mediumGray}
                                     />
                                 </View>
                                 <View style={{ flex: 1 }}>
@@ -615,10 +625,10 @@ export default function SecurityScreen() {
                                     borderBottomColor: Colors.black,
                                 }}
                             >
-                                <SymbolView
-                                    name={tip.icon as any}
+                                <Icon
+                                    name={tip.icon}
                                     size={16}
-                                    tintColor={Colors.epitechBlue}
+                                    color={Colors.epitechBlue}
                                 />
                                 <Text style={{
                                     color: Colors.black,
@@ -634,6 +644,7 @@ export default function SecurityScreen() {
                     </View>
                 </View>
             </ScrollView>
+            </View>
         </KeyboardAvoidingView>
     );
 }

@@ -1,4 +1,4 @@
-import { SymbolView } from 'expo-symbols';
+import Icon from '@/components/Icon';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { router } from 'expo-router';
@@ -253,7 +253,7 @@ export default function FraudAlertsScreen() {
                             <ActivityIndicator color={Colors.white} size="small" />
                         ) : (
                             <>
-                                <SymbolView name="checkmark.circle.fill" size={18} tintColor={Colors.white} />
+                                <Icon name="checkmark.circle.fill" size={18} color={Colors.white} />
                                 <Text style={{ color: Colors.white, fontWeight: '900', marginLeft: 8, fontSize: 15, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                                     Approuver
                                 </Text>
@@ -284,7 +284,7 @@ export default function FraudAlertsScreen() {
                             <ActivityIndicator color={Colors.white} size="small" />
                         ) : (
                             <>
-                                <SymbolView name="xmark.circle.fill" size={18} tintColor={Colors.white} />
+                                <Icon name="xmark.circle.fill" size={18} color={Colors.white} />
                                 <Text style={{ color: Colors.white, fontWeight: '900', marginLeft: 8, fontSize: 15, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                                     Rejeter
                                 </Text>
@@ -338,7 +338,7 @@ export default function FraudAlertsScreen() {
                             borderColor: Colors.black,
                             marginBottom: 16,
                         }}>
-                            <SymbolView name="checkmark.shield.fill" size={48} tintColor={Colors.success} />
+                            <Icon name="checkmark.shield.fill" size={48} color={Colors.success} />
                         </View>
                         <Text style={{
                             color: Colors.black,

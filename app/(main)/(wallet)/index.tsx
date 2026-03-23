@@ -1,9 +1,10 @@
-import { SymbolView } from 'expo-symbols';
+import Icon from '@/components/Icon';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { router, useFocusEffect } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, Image, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import GlitchIn from '@/components/GlitchIn';
 import { supabase } from '../../../lib/supabase';
 import { Colors } from '@/constants/NativeColors';
 
@@ -353,10 +354,10 @@ export default function WalletScreen() {
                         }}
                         onPress={() => router.push('/top-up')}
                     >
-                        <SymbolView
+                        <Icon
                             name="plus.circle.fill"
                             size={28}
-                            tintColor={Colors.success}
+                            color={Colors.success}
                         />
                         <Text style={{
                             fontWeight: '800',
@@ -387,10 +388,10 @@ export default function WalletScreen() {
                         }}
                         onPress={() => router.push('/pay')}
                     >
-                        <SymbolView
+                        <Icon
                             name="qrcode"
                             size={28}
-                            tintColor={Colors.accentMagenta}
+                            color={Colors.accentMagenta}
                         />
                         <Text style={{
                             fontWeight: '800',
@@ -421,10 +422,10 @@ export default function WalletScreen() {
                         }}
                         onPress={() => router.push('/send')}
                     >
-                        <SymbolView
+                        <Icon
                             name="paperplane.fill"
                             size={28}
-                            tintColor={Colors.epitechBlue}
+                            color={Colors.epitechBlue}
                         />
                         <Text style={{
                             fontWeight: '800',
@@ -500,10 +501,10 @@ export default function WalletScreen() {
                                             justifyContent: 'center',
                                             marginRight: 12,
                                         }}>
-                                            <SymbolView
-                                                name={display.icon as any}
+                                            <Icon
+                                                name={display.icon}
                                                 size={18}
-                                                tintColor={display.color}
+                                                color={display.color}
                                             />
                                         </View>
                                         <View style={{ flex: 1 }}>
@@ -575,10 +576,10 @@ export default function WalletScreen() {
                             justifyContent: 'center',
                             marginBottom: 16,
                         }}>
-                            <SymbolView
+                            <Icon
                                 name="doc.text"
                                 size={24}
-                                tintColor={Colors.mediumGray}
+                                color={Colors.mediumGray}
                             />
                         </View>
                         <Text style={{

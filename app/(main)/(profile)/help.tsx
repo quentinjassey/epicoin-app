@@ -7,7 +7,8 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { SymbolView } from 'expo-symbols';
+import Icon from '@/components/Icon';
+import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/NativeColors';
 
 type FAQItem = {
@@ -98,10 +99,10 @@ function FAQItemCard({ item }: { item: FAQItem }) {
                     {item.question}
                 </Text>
                 <Animated.View style={{ transform: [{ rotate: rotateInterpolation }] }}>
-                    <SymbolView
+                    <Icon
                         name="chevron.right"
                         size={18}
-                        tintColor={Colors.epitechBlue}
+                        color={Colors.epitechBlue}
                     />
                 </Animated.View>
             </TouchableOpacity>
@@ -133,65 +134,64 @@ function FAQItemCard({ item }: { item: FAQItem }) {
 }
 
 export default function HelpScreen() {
+    const router = useRouter();
+
     return (
+        <View style={{ flex: 1 }}>
+        <View style={{ backgroundColor: Colors.epitechBlue, position: 'absolute', top: 0, left: 0, right: 0, height: 200 }} />
         <ScrollView
-            style={{ flex: 1, backgroundColor: Colors.white }}
-            contentContainerStyle={{ padding: 20, paddingBottom: 60 }}
+            style={{ flex: 1 }}
+            contentContainerStyle={{ paddingBottom: 60, backgroundColor: Colors.white }}
             showsVerticalScrollIndicator={false}
         >
             {/* ── Header ── */}
-            <View style={{ alignItems: 'center', marginBottom: 28 }}>
-                <View
-                    style={{
-                        width: 64,
-                        height: 64,
-                        backgroundColor: Colors.epitechBlue,
+            <View style={{
+                backgroundColor: Colors.epitechBlue,
+                paddingTop: 70,
+                paddingBottom: 32,
+                paddingHorizontal: 24,
+                borderBottomWidth: 3,
+                borderBottomColor: Colors.black,
+                marginBottom: 28,
+            }}>
+                <TouchableOpacity
+                    onPress={() => router.back()}
+                    style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}
+                >
+                    <Icon name="chevron.left" size={20} color={Colors.white} />
+                    <Text style={{ color: Colors.white, fontWeight: '800', fontSize: 15, marginLeft: 4, textTransform: 'uppercase', letterSpacing: 1 }}>Retour</Text>
+                </TouchableOpacity>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <View style={{
+                        backgroundColor: Colors.white,
+                        padding: 12,
                         borderWidth: 2,
                         borderColor: Colors.black,
-                        borderRadius: 0,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        marginBottom: 14,
+                        marginRight: 16,
                         shadowColor: Colors.black,
                         shadowOffset: { width: 3, height: 3 },
                         shadowOpacity: 1,
                         shadowRadius: 0,
-                        elevation: 3,
-                    }}
-                >
-                    <SymbolView
-                        name="questionmark.circle.fill"
-                        size={32}
-                        tintColor={Colors.white}
-                    />
+                    }}>
+                        <Icon
+                            name="questionmark.circle.fill"
+                            size={28}
+                            color={Colors.epitechBlue}
+                        />
                 </View>
-                <Text
-                    style={{
-                        fontSize: 24,
-                        fontWeight: '900',
-                        color: Colors.black,
-                        textTransform: 'uppercase',
-                        letterSpacing: 2,
-                    }}
-                >
-                    AIDE & SUPPORT
-                </Text>
-                <Text
-                    style={{
-                        fontSize: 13,
-                        fontWeight: '700',
-                        color: Colors.mediumGray,
-                        textTransform: 'uppercase',
-                        letterSpacing: 1.5,
-                        marginTop: 4,
-                    }}
-                >
-                    QUESTIONS FREQUENTES
-                </Text>
+                <View>
+                    <Text style={{ fontSize: 22, fontWeight: '900', color: Colors.white, textTransform: 'uppercase', letterSpacing: 1 }}>
+                        Aide & Support
+                    </Text>
+                    <Text style={{ fontSize: 13, fontWeight: '700', color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: 1, marginTop: 4 }}>
+                        FAQ et contact
+                    </Text>
+                </View>
+                </View>
             </View>
 
             {/* ── FAQ Section ── */}
-            <View style={{ marginBottom: 32 }}>
+            <View style={{ marginBottom: 32, paddingHorizontal: 20 }}>
                 <Text
                     style={{
                         fontSize: 13,
@@ -256,10 +256,10 @@ export default function HelpScreen() {
                             marginRight: 14,
                         }}
                     >
-                        <SymbolView
+                        <Icon
                             name="envelope.fill"
                             size={20}
-                            tintColor={Colors.white}
+                            color={Colors.white}
                         />
                     </View>
                     <View style={{ flex: 1 }}>
@@ -285,10 +285,10 @@ export default function HelpScreen() {
                             support@epipay.epitech.digital
                         </Text>
                     </View>
-                    <SymbolView
+                    <Icon
                         name="arrow.up.right"
                         size={16}
-                        tintColor={Colors.mediumGray}
+                        color={Colors.mediumGray}
                     />
                 </TouchableOpacity>
             </View>
@@ -308,5 +308,6 @@ export default function HelpScreen() {
                 </Text>
             </View>
         </ScrollView>
+        </View>
     );
 }

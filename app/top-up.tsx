@@ -1,7 +1,7 @@
 import { Colors } from "@/constants/NativeColors";
 import { StripeProvider, useStripe } from "@stripe/stripe-react-native";
 import { router } from "expo-router";
-import { SymbolView } from "expo-symbols";
+import Icon from "@/components/Icon";
 import React, { useState } from "react";
 import {
     ActivityIndicator,
@@ -333,10 +333,10 @@ function TopUpContent() {
                 </View>
 
                 {isSelected && (
-                  <SymbolView
+                  <Icon
                     name="checkmark.circle.fill"
                     size={32}
-                    tintColor={Colors.white}
+                    color={Colors.white}
                   />
                 )}
               </View>
@@ -367,10 +367,10 @@ function TopUpContent() {
               marginBottom: 12,
             }}
           >
-            <SymbolView
+            <Icon
               name="info.circle.fill"
               size={20}
-              tintColor={Colors.epitechBlue}
+              color={Colors.epitechBlue}
             />
             <Text
               style={{
@@ -487,7 +487,7 @@ function TopUpContent() {
           <ActivityIndicator color={Colors.white} />
         ) : (
           <>
-            <SymbolView name="creditcard.fill" size={20} tintColor={selectedOption ? Colors.white : Colors.tertiaryLabel} />
+            <Icon name="creditcard.fill" size={20} color={selectedOption ? Colors.white : Colors.tertiaryLabel} />
             <Text
               style={{
                 color: selectedOption ? Colors.white : Colors.tertiaryLabel,
@@ -512,10 +512,10 @@ function TopUpContent() {
           marginTop: 24,
         }}
       >
-        <SymbolView
+        <Icon
           name="lock.shield.fill"
           size={16}
-          tintColor={Colors.tertiaryLabel}
+          color={Colors.tertiaryLabel}
         />
         <Text
           style={{

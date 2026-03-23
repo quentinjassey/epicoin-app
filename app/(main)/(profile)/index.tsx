@@ -1,4 +1,4 @@
-import { SymbolView } from 'expo-symbols';
+import Icon from '@/components/Icon';
 import { router, useFocusEffect } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
@@ -112,14 +112,16 @@ export default function ProfileScreen() {
     ];
 
     return (
+        <View style={{ flex: 1 }}>
+        <View style={{ backgroundColor: Colors.epitechBlue, position: 'absolute', top: 0, left: 0, right: 0, height: 200 }} />
         <ScrollView
             contentInsetAdjustmentBehavior="automatic"
             style={{
                 flex: 1,
-                backgroundColor: Colors.white,
             }}
             contentContainerStyle={{
                 paddingBottom: 32,
+                backgroundColor: Colors.white,
             }}
         >
             {/* Header avec avatar */}
@@ -197,6 +199,10 @@ export default function ProfileScreen() {
             </View>
 
             {/* Card solde */}
+            <View style={{
+                backgroundColor: Colors.white,
+                paddingTop: 0,
+            }}>
             <View style={{
                 marginHorizontal: 24,
                 marginTop: -48,
@@ -288,10 +294,10 @@ export default function ProfileScreen() {
                                 borderWidth: 2,
                                 borderColor: Colors.black,
                             }}>
-                                <SymbolView
-                                    name={item.icon as any}
+                                <Icon
+                                    name={item.icon}
                                     size={22}
-                                    tintColor={item.color}
+                                    color={item.color}
                                 />
                             </View>
                             <View style={{ flex: 1 }}>
@@ -313,10 +319,10 @@ export default function ProfileScreen() {
                                     {item.description}
                                 </Text>
                             </View>
-                            <SymbolView
+                            <Icon
                                 name="chevron.right"
                                 size={14}
-                                tintColor={Colors.black}
+                                color={Colors.black}
                             />
                         </TouchableOpacity>
                     ))}
@@ -360,10 +366,10 @@ export default function ProfileScreen() {
                             borderWidth: 2,
                             borderColor: Colors.black,
                         }}>
-                            <SymbolView
+                            <Icon
                                 name="gearshape.fill"
                                 size={22}
-                                tintColor={Colors.accentOrange}
+                                color={Colors.accentOrange}
                             />
                         </View>
                         <View style={{ flex: 1 }}>
@@ -385,10 +391,10 @@ export default function ProfileScreen() {
                                 Gérer l'écosystème EpiCoin
                             </Text>
                         </View>
-                        <SymbolView
+                        <Icon
                             name="chevron.right"
                             size={14}
-                            tintColor={Colors.black}
+                            color={Colors.black}
                         />
                     </TouchableOpacity>
                 </View>
@@ -413,10 +419,10 @@ export default function ProfileScreen() {
                     }}
                     onPress={handleSignOut}
                 >
-                    <SymbolView
+                    <Icon
                         name="rectangle.portrait.and.arrow.right"
                         size={22}
-                        tintColor={Colors.accentOrange}
+                        color={Colors.accentOrange}
                     />
                     <Text style={{
                         color: Colors.accentOrange,
@@ -443,6 +449,8 @@ export default function ProfileScreen() {
                     EPIPAY V1.0.0
                 </Text>
             </View>
+            </View>
         </ScrollView>
+        </View>
     );
 }

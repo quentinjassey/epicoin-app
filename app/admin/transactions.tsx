@@ -1,4 +1,4 @@
-import { SymbolView } from 'expo-symbols';
+import Icon from '@/components/Icon';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import React, { useEffect, useState } from 'react';
@@ -342,7 +342,7 @@ export default function AdminTransactions() {
                             justifyContent: 'center',
                             paddingVertical: 80,
                         }}>
-                            <SymbolView name="doc.text" size={48} tintColor={Colors.tertiaryLabel} />
+                            <Icon name="doc.text" size={48} color={Colors.tertiaryLabel} />
                             <Text style={{
                                 color: Colors.black,
                                 fontSize: 17,

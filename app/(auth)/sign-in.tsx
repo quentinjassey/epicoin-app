@@ -1,4 +1,4 @@
-import { SymbolView } from 'expo-symbols';
+import Icon from '@/components/Icon';
 import { Link, router } from 'expo-router';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -98,7 +98,7 @@ export default function SignIn() {
                             borderColor: Colors.black,
                             paddingHorizontal: 16,
                         }}>
-                            <SymbolView name="envelope.fill" size={20} tintColor={Colors.mediumGray} />
+                            <Icon name="envelope.fill" size={20} color={Colors.mediumGray} />
                             <TextInput
                                 style={{
                                     flex: 1,
@@ -137,7 +137,7 @@ export default function SignIn() {
                             borderColor: Colors.black,
                             paddingHorizontal: 16,
                         }}>
-                            <SymbolView name="lock.fill" size={20} tintColor={Colors.mediumGray} />
+                            <Icon name="lock.fill" size={20} color={Colors.mediumGray} />
                             <TextInput
                                 style={{
                                     flex: 1,
@@ -156,10 +156,10 @@ export default function SignIn() {
                                 textContentType="oneTimeCode"
                             />
                             <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                                <SymbolView
+                                <Icon
                                     name={showPassword ? 'eye.slash.fill' : 'eye.fill'}
                                     size={20}
-                                    tintColor={Colors.mediumGray}
+                                    color={Colors.mediumGray}
                                 />
                             </TouchableOpacity>
                         </View>

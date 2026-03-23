@@ -1,4 +1,4 @@
-import { SymbolView } from 'expo-symbols';
+import Icon from '@/components/Icon';
 import { Link, router } from 'expo-router';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -143,7 +143,7 @@ export default function SignUp() {
                     <View style={{ marginBottom: 16 }}>
                         <Text style={inputLabelStyle}>Nom complet</Text>
                         <View style={inputContainerStyle}>
-                            <SymbolView name="person.fill" size={20} tintColor={Colors.mediumGray} />
+                            <Icon name="person.fill" size={20} color={Colors.mediumGray} />
                             <TextInput
                                 style={inputStyle}
                                 placeholder="Jean Dupont"
@@ -158,7 +158,7 @@ export default function SignUp() {
                     <View style={{ marginBottom: 16 }}>
                         <Text style={inputLabelStyle}>Email</Text>
                         <View style={inputContainerStyle}>
-                            <SymbolView name="envelope.fill" size={20} tintColor={Colors.mediumGray} />
+                            <Icon name="envelope.fill" size={20} color={Colors.mediumGray} />
                             <TextInput
                                 style={inputStyle}
                                 placeholder="prenom.nom@epitech.digital"
@@ -181,7 +181,7 @@ export default function SignUp() {
                                 paddingVertical: 16,
                             }}
                         >
-                            <SymbolView name="location.fill" size={20} tintColor={Colors.mediumGray} />
+                            <Icon name="location.fill" size={20} color={Colors.mediumGray} />
                             <Text style={{
                                 flex: 1,
                                 marginLeft: 16,
@@ -191,7 +191,7 @@ export default function SignUp() {
                             }}>
                                 {selectedCampus ? `${selectedCampus.icon} ${selectedCampus.name}` : 'Selectionner un campus'}
                             </Text>
-                            <SymbolView name="chevron.down" size={16} tintColor={Colors.mediumGray} />
+                            <Icon name="chevron.down" size={16} color={Colors.mediumGray} />
                         </TouchableOpacity>
                     </View>
 
@@ -199,7 +199,7 @@ export default function SignUp() {
                     <View style={{ marginBottom: 16 }}>
                         <Text style={inputLabelStyle}>Mot de passe</Text>
                         <View style={inputContainerStyle}>
-                            <SymbolView name="lock.fill" size={20} tintColor={Colors.mediumGray} />
+                            <Icon name="lock.fill" size={20} color={Colors.mediumGray} />
                             <TextInput
                                 style={inputStyle}
                                 placeholder="Min. 6 caracteres"
@@ -212,10 +212,10 @@ export default function SignUp() {
                                 textContentType="oneTimeCode"
                             />
                             <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                                <SymbolView
+                                <Icon
                                     name={showPassword ? 'eye.slash.fill' : 'eye.fill'}
                                     size={20}
-                                    tintColor={Colors.mediumGray}
+                                    color={Colors.mediumGray}
                                 />
                             </TouchableOpacity>
                         </View>
@@ -225,7 +225,7 @@ export default function SignUp() {
                     <View style={{ marginBottom: 24 }}>
                         <Text style={inputLabelStyle}>Confirmer le mot de passe</Text>
                         <View style={inputContainerStyle}>
-                            <SymbolView name="lock.fill" size={20} tintColor={Colors.mediumGray} />
+                            <Icon name="lock.fill" size={20} color={Colors.mediumGray} />
                             <TextInput
                                 style={inputStyle}
                                 placeholder="Confirmer"
@@ -324,7 +324,7 @@ export default function SignUp() {
                             Choisir votre campus
                         </Text>
                         <TouchableOpacity onPress={() => setShowCampusModal(false)}>
-                            <SymbolView name="xmark.circle.fill" size={28} tintColor={Colors.mediumGray} />
+                            <Icon name="xmark.circle.fill" size={28} color={Colors.mediumGray} />
                         </TouchableOpacity>
                     </View>
 
@@ -359,7 +359,7 @@ export default function SignUp() {
                                     {c.name}
                                 </Text>
                                 {campus === c.name && (
-                                    <SymbolView name="checkmark.circle.fill" size={24} tintColor={Colors.white} />
+                                    <Icon name="checkmark.circle.fill" size={24} color={Colors.white} />
                                 )}
                             </TouchableOpacity>
                         ))}

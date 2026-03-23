@@ -2,7 +2,7 @@ import { Colors } from "@/constants/NativeColors";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useFocusEffect } from "expo-router";
-import { SymbolView } from "expo-symbols";
+import Icon from "@/components/Icon";
 import React, { useCallback, useState } from "react";
 import {
     ActivityIndicator,
@@ -240,10 +240,10 @@ export default function HistoryScreen() {
               borderColor: Colors.black,
             }}
           >
-            <SymbolView
-              name={icon.name as any}
+            <Icon
+              name={icon.name}
               size={24}
-              tintColor={icon.color}
+              color={icon.color}
             />
           </View>
 
@@ -396,10 +396,10 @@ export default function HistoryScreen() {
               shadowRadius: 0,
             }}
           >
-            <SymbolView
+            <Icon
               name="doc.text"
               size={48}
-              tintColor={Colors.mediumGray}
+              color={Colors.mediumGray}
             />
           </View>
           <Text

@@ -1,4 +1,4 @@
-import { SymbolView } from 'expo-symbols';
+import Icon from '@/components/Icon';
 import { router } from 'expo-router';
 import React from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
@@ -51,10 +51,12 @@ export default function AdminDashboard() {
     ];
 
     return (
+        <View style={{ flex: 1 }}>
+        <View style={{ backgroundColor: Colors.epitechBlue, position: 'absolute', top: 0, left: 0, right: 0, height: 200 }} />
         <ScrollView
             contentInsetAdjustmentBehavior="automatic"
             style={{ flex: 1, backgroundColor: Colors.white }}
-            contentContainerStyle={{ padding: 24 }}
+            contentContainerStyle={{ padding: 24, backgroundColor: Colors.white }}
         >
             <View style={{
                 backgroundColor: Colors.epitechBlue,
@@ -70,7 +72,7 @@ export default function AdminDashboard() {
             }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <SymbolView name="checkmark.shield.fill" size={24} tintColor={Colors.white} />
+                        <Icon name="checkmark.shield.fill" size={24} color={Colors.white} />
                         <Text style={{
                             color: Colors.white,
                             fontWeight: '900',
@@ -92,7 +94,7 @@ export default function AdminDashboard() {
                             borderColor: Colors.white,
                         }}
                     >
-                        <SymbolView name="xmark" size={18} tintColor={Colors.white} />
+                        <Icon name="xmark" size={18} color={Colors.white} />
                     </TouchableOpacity>
                 </View>
                 <Text style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: 15, fontWeight: '700' }}>
@@ -138,7 +140,7 @@ export default function AdminDashboard() {
                             borderWidth: 2,
                             borderColor: Colors.black,
                         }}>
-                            <SymbolView name={item.icon as any} size={24} tintColor={item.color} />
+                            <Icon name={item.icon} size={24} color={item.color} />
                         </View>
                         <View style={{ flex: 1 }}>
                             <Text style={{
@@ -157,10 +159,11 @@ export default function AdminDashboard() {
                                 {item.description}
                             </Text>
                         </View>
-                        <SymbolView name="chevron.right" size={14} tintColor={Colors.black} />
+                        <Icon name="chevron.right" size={14} color={Colors.black} />
                     </TouchableOpacity>
                 ))}
             </View>
         </ScrollView>
+        </View>
     );
 }

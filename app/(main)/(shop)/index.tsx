@@ -1,4 +1,4 @@
-import { SymbolView } from 'expo-symbols';
+import Icon from '@/components/Icon';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useState } from 'react';
@@ -398,10 +398,10 @@ export default function ShopScreen() {
                     alignSelf: 'center',
                     marginBottom: 12,
                 }}>
-                    <SymbolView
-                        name={getCategoryIcon(item.category) as any}
+                    <Icon
+                        name={getCategoryIcon(item.category)}
                         size={40}
-                        tintColor={getCategoryColor(item.category)}
+                        color={getCategoryColor(item.category)}
                     />
                 </View>
 
@@ -481,10 +481,10 @@ export default function ShopScreen() {
                         borderBottomWidth: 2,
                         borderColor: Colors.black,
                     }}>
-                        <SymbolView
+                        <Icon
                             name="lock.fill"
                             size={14}
-                            tintColor={Colors.white}
+                            color={Colors.white}
                         />
                     </View>
                 )}
@@ -592,10 +592,10 @@ export default function ShopScreen() {
                         paddingHorizontal: 12,
                         paddingVertical: 10,
                     }}>
-                        <SymbolView
+                        <Icon
                             name="magnifyingglass"
                             size={18}
-                            tintColor={Colors.mediumGray}
+                            color={Colors.mediumGray}
                             style={{ marginRight: 8 }}
                         />
                         <TextInput
@@ -612,10 +612,10 @@ export default function ShopScreen() {
                         />
                         {searchQuery.length > 0 && (
                             <TouchableOpacity onPress={() => setSearchQuery('')}>
-                                <SymbolView
+                                <Icon
                                     name="xmark.circle.fill"
                                     size={18}
-                                    tintColor={Colors.mediumGray}
+                                    color={Colors.mediumGray}
                                 />
                             </TouchableOpacity>
                         )}
@@ -671,10 +671,10 @@ export default function ShopScreen() {
                                     gap: 6,
                                 }}
                             >
-                                <SymbolView
-                                    name={cat.icon as any}
+                                <Icon
+                                    name={cat.icon}
                                     size={14}
-                                    tintColor={isActive ? Colors.white : cat.color}
+                                    color={isActive ? Colors.white : cat.color}
                                 />
                                 <Text style={{
                                     color: isActive ? Colors.white : Colors.black,
@@ -713,10 +713,10 @@ export default function ShopScreen() {
                             marginBottom: 16,
                             ...brutalistShadow,
                         }}>
-                            <SymbolView
+                            <Icon
                                 name="bag.fill"
                                 size={48}
-                                tintColor={Colors.mediumGray}
+                                color={Colors.mediumGray}
                             />
                         </View>
                         <Text style={{
@@ -747,10 +747,10 @@ export default function ShopScreen() {
                                         borderWidth: 2,
                                         borderColor: Colors.black,
                                     }}>
-                                        <SymbolView
-                                            name={getCategoryIcon(category) as any}
+                                        <Icon
+                                            name={getCategoryIcon(category)}
                                             size={16}
-                                            tintColor={Colors.white}
+                                            color={Colors.white}
                                         />
                                     </View>
                                     <Text style={{
@@ -835,10 +835,10 @@ export default function ShopScreen() {
                                 padding: 4,
                             }}
                         >
-                            <SymbolView
+                            <Icon
                                 name="xmark"
                                 size={20}
-                                tintColor={Colors.black}
+                                color={Colors.black}
                             />
                         </TouchableOpacity>
                     </View>
@@ -1064,10 +1064,10 @@ export default function ShopScreen() {
                                         <ActivityIndicator color={Colors.white} />
                                     ) : (
                                         <>
-                                            <SymbolView
-                                                name={(authMethod === 'biometric' ? getBiometricIcon() : 'lock.fill') as any}
+                                            <Icon
+                                                name={authMethod === 'biometric' ? getBiometricIcon() : 'lock.fill'}
                                                 size={20}
-                                                tintColor={Colors.white}
+                                                color={Colors.white}
                                             />
                                             <Text style={{
                                                 color: Colors.white,
