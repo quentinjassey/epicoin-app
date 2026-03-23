@@ -4,56 +4,15 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
     Image,
-    Linking,
     ScrollView,
     Text,
     TouchableOpacity,
     View,
 } from 'react-native';
 
-const CONSENT_ITEMS = [
-    {
-        id: 'location',
-        icon: 'location.fill',
-        label: "J'accepte la collecte de ma localisation pour la detection de fraude",
-    },
-    {
-        id: 'device',
-        icon: 'lock.fill',
-        label: "J'accepte la collecte d'informations sur mon appareil pour securiser mon compte",
-    },
-    {
-        id: 'transactions',
-        icon: 'shield.checkered',
-        label: "J'accepte l'analyse de mes transactions pour la prevention de fraude",
-    },
-    {
-        id: 'privacy',
-        icon: 'doc.text',
-        label: "J'ai lu et j'accepte la politique de confidentialite",
-        hasLink: true,
-    },
-    {
-        id: 'age',
-        icon: 'person.fill',
-        label: "Je confirme avoir au moins 16 ans",
-    },
-];
-
 export default function ConsentScreen() {
     const router = useRouter();
-    const [checked, setChecked] = useState<Record<string, boolean>>({});
-
-    const allChecked = CONSENT_ITEMS.every((item) => checked[item.id]);
-
-    function toggleItem(id: string) {
-        setChecked((prev) => ({ ...prev, [id]: !prev[id] }));
-    }
-
-    function openPrivacyPolicy() {
-        // TODO: replace with actual privacy policy URL
-        Linking.openURL('https://epipay.app/privacy');
-    }
+    const [accepted, setAccepted] = useState(false);
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.white }}>
@@ -75,161 +34,220 @@ export default function ConsentScreen() {
                 </View>
 
                 {/* Title */}
-                <Text
-                    style={{
+                <Text style={{
+                    color: Colors.black,
+                    fontSize: 24,
+                    fontWeight: '900',
+                    textTransform: 'uppercase',
+                    letterSpacing: 2,
+                    textAlign: 'center',
+                    marginBottom: 16,
+                }}>
+                    Protection de vos donnees
+                </Text>
+
+                {/* Content card */}
+                <View style={{
+                    backgroundColor: Colors.white,
+                    borderWidth: 2,
+                    borderColor: Colors.black,
+                    shadowColor: Colors.black,
+                    shadowOffset: { width: 4, height: 4 },
+                    shadowOpacity: 1,
+                    shadowRadius: 0,
+                    padding: 20,
+                    marginBottom: 24,
+                }}>
+                    <Text style={{
                         color: Colors.black,
-                        fontSize: 24,
+                        fontSize: 14,
+                        fontWeight: '600',
+                        lineHeight: 22,
+                        marginBottom: 20,
+                    }}>
+                        EpiPay collecte certaines donnees uniquement pour securiser vos transactions et prevenir la fraude. Nous ne revendons JAMAIS vos donnees.
+                    </Text>
+
+                    {/* What we collect */}
+                    <Text style={{
+                        color: Colors.black,
+                        fontSize: 12,
                         fontWeight: '900',
                         textTransform: 'uppercase',
                         letterSpacing: 2,
-                        textAlign: 'center',
-                        marginBottom: 16,
-                    }}
-                >
-                    PROTECTION DE VOS DONNEES
-                </Text>
+                        marginBottom: 12,
+                    }}>
+                        Ce que nous collectons
+                    </Text>
 
-                {/* Subtitle */}
-                <Text
-                    style={{
-                        color: Colors.mediumGray,
-                        fontSize: 14,
-                        fontWeight: '700',
-                        textAlign: 'center',
-                        lineHeight: 22,
-                        marginBottom: 32,
-                        paddingHorizontal: 8,
-                    }}
-                >
-                    EpiPay collecte certaines donnees uniquement pour securiser
-                    vos transactions et prevenir la fraude. Nous ne revendons
-                    JAMAIS vos donnees.
-                </Text>
+                    <View style={{ gap: 12, marginBottom: 20 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                            <Icon name="location.fill" size={16} color={Colors.epitechBlue} style={{ marginRight: 10, marginTop: 2 }} />
+                            <Text style={{ flex: 1, color: Colors.black, fontSize: 13, fontWeight: '600', lineHeight: 20 }}>
+                                <Text style={{ fontWeight: '800' }}>Localisation</Text> — Coordonnees GPS ou geolocalisation IP lors des transactions pour detecter les activites suspectes.
+                            </Text>
+                        </View>
 
-                {/* Consent items */}
-                <View
-                    style={{
-                        backgroundColor: Colors.white,
-                        borderWidth: 3,
+                        <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                            <Icon name="lock.fill" size={16} color={Colors.epitechBlue} style={{ marginRight: 10, marginTop: 2 }} />
+                            <Text style={{ flex: 1, color: Colors.black, fontSize: 13, fontWeight: '600', lineHeight: 20 }}>
+                                <Text style={{ fontWeight: '800' }}>Appareil</Text> — Modele et systeme d'exploitation pour identifier les connexions inhabituelles.
+                            </Text>
+                        </View>
+
+                        <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                            <Icon name="shield.checkered" size={16} color={Colors.epitechBlue} style={{ marginRight: 10, marginTop: 2 }} />
+                            <Text style={{ flex: 1, color: Colors.black, fontSize: 13, fontWeight: '600', lineHeight: 20 }}>
+                                <Text style={{ fontWeight: '800' }}>Transactions</Text> — Analyse des patterns pour la prevention de fraude en temps reel.
+                            </Text>
+                        </View>
+                    </View>
+
+                    {/* Why */}
+                    <Text style={{
+                        color: Colors.black,
+                        fontSize: 12,
+                        fontWeight: '900',
+                        textTransform: 'uppercase',
+                        letterSpacing: 2,
+                        marginBottom: 12,
+                    }}>
+                        Pourquoi
+                    </Text>
+
+                    <Text style={{
+                        color: Colors.black,
+                        fontSize: 13,
+                        fontWeight: '600',
+                        lineHeight: 20,
+                        marginBottom: 20,
+                    }}>
+                        Ces donnees servent exclusivement a proteger votre compte. Aucune donnee n'est vendue, partagee a des fins publicitaires ou utilisee en dehors de la securisation de vos transactions.
+                    </Text>
+
+                    {/* Your rights */}
+                    <Text style={{
+                        color: Colors.black,
+                        fontSize: 12,
+                        fontWeight: '900',
+                        textTransform: 'uppercase',
+                        letterSpacing: 2,
+                        marginBottom: 12,
+                    }}>
+                        Vos droits
+                    </Text>
+
+                    <Text style={{
+                        color: Colors.black,
+                        fontSize: 13,
+                        fontWeight: '600',
+                        lineHeight: 20,
+                        marginBottom: 20,
+                    }}>
+                        Vous pouvez a tout moment exporter vos donnees, supprimer votre compte ou contacter notre DPO a dpo@epipay.epitech.digital. Vos donnees sont hebergees a Frankfurt (Allemagne, UE).
+                    </Text>
+
+                    {/* Age */}
+                    <View style={{
+                        backgroundColor: Colors.offWhite,
+                        borderWidth: 2,
                         borderColor: Colors.black,
-                        shadowColor: Colors.black,
-                        shadowOffset: { width: 4, height: 4 },
-                        shadowOpacity: 1,
-                        shadowRadius: 0,
-                        marginBottom: 32,
+                        padding: 12,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                    }}>
+                        <Icon name="person.fill" size={16} color={Colors.epitechBlue} style={{ marginRight: 10 }} />
+                        <Text style={{ flex: 1, color: Colors.black, fontSize: 13, fontWeight: '700' }}>
+                            Vous devez avoir au moins 16 ans pour utiliser EpiPay.
+                        </Text>
+                    </View>
+                </View>
+
+                {/* Privacy policy link */}
+                <TouchableOpacity
+                    onPress={() => router.push('/(auth)/privacy-policy')}
+                    style={{
+                        borderWidth: 2,
+                        borderColor: Colors.epitechBlue,
+                        padding: 14,
+                        alignItems: 'center',
+                        marginBottom: 24,
                     }}
                 >
-                    {CONSENT_ITEMS.map((item, index) => (
-                        <TouchableOpacity
-                            key={item.id}
-                            onPress={() => toggleItem(item.id)}
-                            activeOpacity={0.7}
-                            style={{
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                padding: 16,
-                                borderBottomWidth:
-                                    index < CONSENT_ITEMS.length - 1 ? 2 : 0,
-                                borderBottomColor: Colors.lightGray,
-                            }}
-                        >
-                            {/* Checkbox */}
-                            <View
-                                style={{
-                                    width: 28,
-                                    height: 28,
-                                    borderWidth: 2,
-                                    borderColor: Colors.black,
-                                    borderRadius: 0,
-                                    backgroundColor: checked[item.id]
-                                        ? Colors.epitechBlue
-                                        : Colors.white,
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    marginRight: 14,
-                                }}
-                            >
-                                {checked[item.id] && (
-                                    <Icon
-                                        name="checkmark"
-                                        size={18}
-                                        color={Colors.white}
-                                    />
-                                )}
-                            </View>
+                    <Text style={{
+                        color: Colors.epitechBlue,
+                        fontSize: 13,
+                        fontWeight: '900',
+                        textTransform: 'uppercase',
+                        letterSpacing: 1,
+                    }}>
+                        Lire la politique de confidentialite
+                    </Text>
+                </TouchableOpacity>
 
-                            {/* Icon */}
-                            <Icon
-                                name={item.icon}
-                                size={20}
-                                color={Colors.epitechBlue}
-                                style={{ marginRight: 12 }}
-                            />
-
-                            {/* Label */}
-                            <View style={{ flex: 1 }}>
-                                <Text
-                                    style={{
-                                        color: Colors.black,
-                                        fontSize: 13,
-                                        fontWeight: '700',
-                                        lineHeight: 20,
-                                    }}
-                                >
-                                    {item.label}
-                                </Text>
-                                {item.hasLink && (
-                                    <TouchableOpacity
-                                        onPress={openPrivacyPolicy}
-                                    >
-                                        <Text
-                                            style={{
-                                                color: Colors.epitechBlue,
-                                                fontSize: 12,
-                                                fontWeight: '800',
-                                                textDecorationLine: 'underline',
-                                                marginTop: 4,
-                                                textTransform: 'uppercase',
-                                                letterSpacing: 0.5,
-                                            }}
-                                        >
-                                            Lire la politique de confidentialite
-                                        </Text>
-                                    </TouchableOpacity>
-                                )}
-                            </View>
-                        </TouchableOpacity>
-                    ))}
-                </View>
+                {/* Single checkbox */}
+                <TouchableOpacity
+                    onPress={() => setAccepted(!accepted)}
+                    activeOpacity={0.7}
+                    style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        marginBottom: 24,
+                        padding: 16,
+                        borderWidth: 2,
+                        borderColor: Colors.black,
+                        backgroundColor: accepted ? Colors.offWhite : Colors.white,
+                    }}
+                >
+                    <View style={{
+                        width: 28,
+                        height: 28,
+                        borderWidth: 2,
+                        borderColor: Colors.black,
+                        backgroundColor: accepted ? Colors.epitechBlue : Colors.white,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginRight: 14,
+                    }}>
+                        {accepted && (
+                            <Icon name="checkmark" size={18} color={Colors.white} />
+                        )}
+                    </View>
+                    <Text style={{
+                        flex: 1,
+                        color: Colors.black,
+                        fontSize: 13,
+                        fontWeight: '700',
+                        lineHeight: 20,
+                    }}>
+                        J'ai lu et j'accepte les conditions ci-dessus, la politique de confidentialite, et je confirme avoir au moins 16 ans.
+                    </Text>
+                </TouchableOpacity>
 
                 {/* Continue button */}
                 <TouchableOpacity
                     style={{
-                        backgroundColor: allChecked
-                            ? Colors.epitechBlue
-                            : Colors.lightGray,
+                        backgroundColor: accepted ? Colors.epitechBlue : Colors.lightGray,
                         padding: 16,
                         alignItems: 'center',
                         borderWidth: 2,
                         borderColor: Colors.black,
-                        shadowColor: allChecked ? Colors.black : 'transparent',
+                        shadowColor: accepted ? Colors.black : 'transparent',
                         shadowOffset: { width: 4, height: 4 },
-                        shadowOpacity: allChecked ? 1 : 0,
+                        shadowOpacity: accepted ? 1 : 0,
                         shadowRadius: 0,
                     }}
                     onPress={() => router.push('/(auth)/sign-up')}
-                    disabled={!allChecked}
+                    disabled={!accepted}
                 >
-                    <Text
-                        style={{
-                            color: allChecked ? Colors.white : Colors.mediumGray,
-                            fontSize: 15,
-                            fontWeight: '900',
-                            textTransform: 'uppercase',
-                            letterSpacing: 2,
-                        }}
-                    >
-                        CONTINUER
+                    <Text style={{
+                        color: accepted ? Colors.white : Colors.mediumGray,
+                        fontSize: 15,
+                        fontWeight: '900',
+                        textTransform: 'uppercase',
+                        letterSpacing: 2,
+                    }}>
+                        Continuer
                     </Text>
                 </TouchableOpacity>
             </ScrollView>
