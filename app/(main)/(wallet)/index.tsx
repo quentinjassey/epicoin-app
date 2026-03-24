@@ -380,7 +380,7 @@ export default function WalletScreen() {
                             backgroundColor: Colors.offWhite,
                             padding: 20,
                             borderWidth: 2,
-                            borderColor: adaptiveColors.warning,
+                            borderColor: adaptiveColors.accent,
                             alignItems: 'center',
                             justifyContent: 'center',
                             shadowColor: Colors.black,
@@ -393,7 +393,7 @@ export default function WalletScreen() {
                         <Icon
                             name="qrcode"
                             size={28}
-                            color={adaptiveColors.warning}
+                            color={adaptiveColors.accent}
                         />
                         <Text style={{
                             fontWeight: '800',

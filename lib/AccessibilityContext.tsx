@@ -36,17 +36,21 @@ type ContextType = {
     };
 };
 
-// Color palettes adapted for each type of color blindness
+// Color palettes based on Wong/Okabe-Ito colorblind-safe palette
+// Source: Nature Methods, Bang Wong (2011)
+// Hex: Orange #E69F00, Sky Blue #56B4E9, Bluish Green #009E73,
+//       Yellow #F0E442, Blue #0072B2, Vermillion #D55E00,
+//       Reddish Purple #CC79A7, Black #000000
 export function getAdaptiveColors(mode: ColorBlindMode) {
     switch (mode) {
-        case 'protanopia': // No red
-            return { primary: '#0072B2', accent: '#56B4E9', success: '#0072B2', error: '#E69F00', warning: '#F0E442', info: '#56B4E9' };
-        case 'deuteranopia': // No green
-            return { primary: '#0072B2', accent: '#56B4E9', success: '#0072B2', error: '#D55E00', warning: '#F0E442', info: '#56B4E9' };
-        case 'tritanopia': // No blue
-            return { primary: '#E69F00', accent: '#CC79A7', success: '#009E73', error: '#D55E00', warning: '#CC79A7', info: '#E69F00' };
-        case 'achromatopsia': // No color
-            return { primary: '#333333', accent: '#666666', success: '#666666', error: '#333333', warning: '#999999', info: '#555555' };
+        case 'protanopia': // No red — avoid red/green, use blue/orange/yellow
+            return { primary: '#0072B2', accent: '#CC79A7', success: '#009E73', error: '#E69F00', warning: '#F0E442', info: '#56B4E9' };
+        case 'deuteranopia': // No green — avoid green/red, use blue/orange/purple
+            return { primary: '#0072B2', accent: '#CC79A7', success: '#56B4E9', error: '#D55E00', warning: '#F0E442', info: '#0072B2' };
+        case 'tritanopia': // No blue — avoid blue/yellow, use green/red/purple
+            return { primary: '#D55E00', accent: '#CC79A7', success: '#009E73', error: '#E69F00', warning: '#CC79A7', info: '#D55E00' };
+        case 'achromatopsia': // No color — max contrast grayscale
+            return { primary: '#222222', accent: '#777777', success: '#555555', error: '#000000', warning: '#999999', info: '#444444' };
         default:
             return { primary: '#013AFB', accent: '#ff1ef7', success: '#00C853', error: '#ff5a3a', warning: '#F59E0B', info: '#013AFB' };
     }
@@ -65,7 +69,14 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
     useEffect(() => {
         SecureStore.getItemAsync(ACCESSIBILITY_KEY).then((stored) => {
             if (stored) {
-                try { setPrefs({ ...DEFAULT_PREFS, ...JSON.parse(stored) }); } catch {}
+                try {
+                    const parsed = JSON.parse(stored);
+                    setPrefs({
+                        ...DEFAULT_PREFS,
+                        ...parsed,
+                        colorBlindMode: parsed.colorBlindMode || 'none',
+                    });
+                } catch {}
             }
         });
     }, []);
