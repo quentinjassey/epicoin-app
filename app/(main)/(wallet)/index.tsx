@@ -200,31 +200,18 @@ export default function WalletScreen() {
     }
 
     return (
-        <ScrollView
-            contentInsetAdjustmentBehavior="automatic"
-            style={{
-                flex: 1,
-                backgroundColor: Colors.white,
-            }}
-            contentContainerStyle={{
-                padding: 20,
-                paddingBottom: 20,
-            }}
-            refreshControl={
-                <RefreshControl
-                    refreshing={refreshing}
-                    onRefresh={onRefresh}
-                    tintColor={adaptiveColors.primary}
-                />
-            }
-        >
-            {/* ── Header ── */}
-            <GlitchIn delay={0}><View style={{
+        <View style={{ flex: 1, backgroundColor: Colors.white }}>
+            {/* ── Sticky Header ── */}
+            <View style={{
                 flexDirection: 'row',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 paddingTop: 8,
-                marginBottom: 16,
+                paddingBottom: 10,
+                paddingHorizontal: 20,
+                backgroundColor: Colors.white,
+                borderBottomWidth: 1,
+                borderBottomColor: Colors.lightGray,
             }}>
                 <Image
                     source={require('../../../assets/images/epipay-logo.png')}
@@ -278,7 +265,23 @@ export default function WalletScreen() {
                     </Text>
                 </TouchableOpacity>
                 </View>
-            </View></GlitchIn>
+            </View>
+
+            <ScrollView
+                contentInsetAdjustmentBehavior="automatic"
+                style={{ flex: 1 }}
+                contentContainerStyle={{
+                    padding: 20,
+                    paddingBottom: 20,
+                }}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        tintColor={adaptiveColors.primary}
+                    />
+                }
+            >
 
             {/* ── Greeting ── */}
             <GlitchIn delay={80}><View style={{ marginBottom: 16 }}>
@@ -620,5 +623,6 @@ export default function WalletScreen() {
                 )}
             </View></GlitchIn>
         </ScrollView>
+        </View>
     );
 }
