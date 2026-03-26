@@ -1,12 +1,82 @@
 import Icon from '@/components/Icon';
 import { router } from 'expo-router';
-import React from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
+import { supabase } from '../../lib/supabase';
 import { Colors } from '@/constants/NativeColors';
 import { useAccessibility } from '@/lib/AccessibilityContext';
 
 export default function AdminDashboard() {
     const { adaptiveColors } = useAccessibility();
+    const [exporting, setExporting] = useState(false);
+
+    async function exportFullLogs() {
+        setExporting(true);
+        try {
+            const [txResult, alertsResult, usersResult, productsResult] = await Promise.all([
+                supabase.from('transactions').select('*').order('created_at', { ascending: false }),
+                supabase.from('fraud_alerts').select('*').order('created_at', { ascending: false }),
+                supabase.from('profiles').select('id, email, full_name, campus, balance, is_admin, created_at'),
+                supabase.from('products').select('*'),
+            ]);
+
+            const transactions = txResult.data || [];
+            const alerts = alertsResult.data || [];
+            const users = usersResult.data || [];
+            const products = productsResult.data || [];
+
+            // Calculer les stats
+            const totalVolume = transactions.reduce((s: number, t: any) => s + parseFloat(t.amount || '0'), 0);
+            const activeUsers = new Set(transactions.map((t: any) => t.sender_id).filter(Boolean)).size;
+            const fraudAlerts = alerts.filter((a: any) => a.status === 'pending').length;
+            const blockedTx = transactions.filter((t: any) => t.status === 'failed' && t.fraud_score > 50);
+
+            const exportData = {
+                export_info: {
+                    date: new Date().toISOString(),
+                    app: 'EpiPay',
+                    version: '1.0.0',
+                    format: 'JSON',
+                },
+                summary: {
+                    total_users: users.length,
+                    active_users: activeUsers,
+                    total_transactions: transactions.length,
+                    total_volume_epc: totalVolume,
+                    total_products: products.length,
+                    fraud_alerts_total: alerts.length,
+                    fraud_alerts_pending: fraudAlerts,
+                    blocked_transactions: blockedTx.length,
+                    blocked_volume_epc: blockedTx.reduce((s: number, t: any) => s + parseFloat(t.amount || '0'), 0),
+                    total_balance_circulation: users.reduce((s: number, u: any) => s + parseFloat(u.balance || '0'), 0),
+                },
+                users,
+                products,
+                transactions,
+                fraud_alerts: alerts,
+            };
+
+            const fileName = `epipay_full_export_${new Date().toISOString().split('T')[0]}.json`;
+            const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
+            await FileSystem.writeAsStringAsync(fileUri, JSON.stringify(exportData, null, 2));
+
+            if (await Sharing.isAvailableAsync()) {
+                await Sharing.shareAsync(fileUri, {
+                    mimeType: 'application/json',
+                    dialogTitle: 'Export complet EpiPay',
+                    UTI: 'public.json',
+                });
+            } else {
+                Alert.alert('Export', `Fichier enregistre: ${fileName}`);
+            }
+        } catch (error: any) {
+            Alert.alert('Erreur', error.message);
+        } finally {
+            setExporting(false);
+        }
+    }
     const MENU_ITEMS = [
         {
             title: 'Gestion des produits',
@@ -164,6 +234,77 @@ export default function AdminDashboard() {
                         <Icon name="chevron.right" size={14} color={Colors.black} />
                     </TouchableOpacity>
                 ))}
+            </View>
+
+            {/* Export complet */}
+            <Text style={{
+                color: Colors.black,
+                fontSize: 13,
+                fontWeight: '900',
+                textTransform: 'uppercase',
+                marginTop: 24,
+                marginBottom: 12,
+                letterSpacing: 2,
+            }}>
+                Export
+            </Text>
+
+            <TouchableOpacity
+                style={{
+                    backgroundColor: adaptiveColors.primary,
+                    padding: 18,
+                    borderWidth: 2,
+                    borderColor: Colors.black,
+                    shadowColor: Colors.black,
+                    shadowOffset: { width: 3, height: 3 },
+                    shadowOpacity: 1,
+                    shadowRadius: 0,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: 12,
+                }}
+                onPress={exportFullLogs}
+                disabled={exporting}
+            >
+                {exporting ? (
+                    <ActivityIndicator color={Colors.white} />
+                ) : (
+                    <>
+                        <Icon name="square.and.arrow.up" size={22} color={Colors.white} />
+                        <Text style={{
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: '900',
+                            marginLeft: 10,
+                            textTransform: 'uppercase',
+                            letterSpacing: 1,
+                        }}>
+                            Export complet (JSON)
+                        </Text>
+                    </>
+                )}
+            </TouchableOpacity>
+
+            <View style={{
+                backgroundColor: Colors.offWhite,
+                borderWidth: 2,
+                borderColor: Colors.black,
+                padding: 14,
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginBottom: 24,
+            }}>
+                <Icon name="info.circle.fill" size={16} color={Colors.mediumGray} />
+                <Text style={{
+                    color: Colors.mediumGray,
+                    fontSize: 12,
+                    fontWeight: '700',
+                    marginLeft: 10,
+                    flex: 1,
+                }}>
+                    Exporte utilisateurs, transactions, produits, alertes de fraude et KPIs au format JSON.
+                </Text>
             </View>
         </ScrollView>
         </View>
