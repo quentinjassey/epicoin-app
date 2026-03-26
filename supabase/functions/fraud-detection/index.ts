@@ -104,6 +104,7 @@ interface EnrichedTransactionPayload {
 interface FraudAnalysis {
   riskScore: number;
   decision: "approve" | "review" | "block";
+  justification: string; // Justification en langage naturel
   reasons: Array<{
     factor: string;
     description: string;
@@ -732,9 +733,23 @@ async function analyzeFraudEnriched(
   // Trier et garder top 5 raisons
   const topReasons = reasons.sort((a, b) => b.weight - a.weight).slice(0, 5);
 
+  // ==================== JUSTIFICATION EN LANGAGE NATUREL ====================
+  const justification = buildJustification(
+    decision,
+    riskScore,
+    heuristicScoreRaw,
+    features.ml_score,
+    features.ml_active,
+    topReasons,
+    transaction,
+    features,
+    config,
+  );
+
   // IMPORTANT: Sauvegarder les reasons dans features pour traçabilité complète
   features.reasons = topReasons;
-  features.heuristic_score = heuristicScoreRaw; // Score heuristique final (pas raw)
+  features.justification = justification;
+  features.heuristic_score = heuristicScoreRaw;
   features.decision = decision;
   features.decision_thresholds = {
     approve: config.threshold_approve,
@@ -744,9 +759,114 @@ async function analyzeFraudEnriched(
   return {
     riskScore,
     decision,
+    justification,
     reasons: topReasons,
     features,
   };
+}
+
+// ==================== JUSTIFICATION HEURISTIQUE + ML ====================
+function buildJustification(
+  decision: string,
+  finalScore: number,
+  heuristicScore: number,
+  mlScore: number | undefined,
+  mlActive: boolean,
+  reasons: FraudAnalysis["reasons"],
+  transaction: EnrichedTransactionPayload,
+  features: Record<string, any>,
+  config: { ml_weight: number; heuristic_weight: number; threshold_approve: number; threshold_review: number },
+): string {
+  const parts: string[] = [];
+
+  // 1. Résumé de la décision
+  if (decision === "approve") {
+    parts.push(
+      `Transaction de ${transaction.amount} EPC APPROUVEE (score de risque: ${finalScore}/100).`
+    );
+  } else if (decision === "review") {
+    parts.push(
+      `Transaction de ${transaction.amount} EPC EN REVUE MANUELLE (score de risque: ${finalScore}/100, seuil de revue: ${config.threshold_approve}).`
+    );
+  } else {
+    parts.push(
+      `Transaction de ${transaction.amount} EPC BLOQUEE (score de risque: ${finalScore}/100, seuil de blocage: ${config.threshold_review}).`
+    );
+  }
+
+  // 2. Détail des règles heuristiques déclenchées
+  if (reasons.length === 0) {
+    parts.push("Aucune regle heuristique declenchee. Le profil de cette transaction est conforme aux patterns habituels.");
+  } else {
+    parts.push(`${reasons.length} regle(s) heuristique(s) declenchee(s) (score heuristique: ${heuristicScore}/100):`);
+
+    for (const reason of reasons) {
+      const severityLabel = reason.severity === "high" ? "CRITIQUE" : reason.severity === "medium" ? "MODERE" : "FAIBLE";
+      parts.push(`  - [${severityLabel}] ${reason.description} (facteur: ${reason.factor}, poids: ${(reason.weight * 100).toFixed(0)}%)`);
+    }
+  }
+
+  // 3. Justification ML
+  if (mlActive && mlScore !== undefined) {
+    parts.push("");
+    parts.push(`Analyse ML (modele: epicoin-fraud-detection-enriched):`);
+    parts.push(`  - Score ML brut: ${mlScore}/100`);
+    parts.push(`  - Ponderation: ML=${(config.ml_weight * 100).toFixed(0)}%, Heuristique=${(config.heuristic_weight * 100).toFixed(0)}%`);
+
+    if (mlScore < 10) {
+      parts.push("  - Le modele ML considere cette transaction comme NORMALE. Les patterns comportementaux (montant, frequence, localisation, appareil) sont coherents avec l'historique de l'utilisateur.");
+    } else if (mlScore < 40) {
+      parts.push("  - Le modele ML detecte de LEGERES anomalies. Certaines features s'ecartent legerement des patterns habituels mais restent dans une plage acceptable.");
+    } else if (mlScore < 70) {
+      parts.push("  - Le modele ML detecte des ANOMALIES SIGNIFICATIVES. Plusieurs features comportementales s'ecartent des patterns appris, necessitant une verification humaine.");
+    } else {
+      parts.push("  - Le modele ML detecte une FORTE PROBABILITE DE FRAUDE. Les features comportementales divergent fortement des patterns normaux de cet utilisateur.");
+    }
+
+    // Détail des features ML les plus impactantes
+    const mlFeatureDetails: string[] = [];
+    if (features.amount_deviation > features.user_std_amount * 2) {
+      mlFeatureDetails.push(`montant inhabituel (deviation: ${features.amount_deviation?.toFixed(2)}, moyenne: ${features.user_avg_amount?.toFixed(2)})`);
+    }
+    if (features.transaction_count_24h > 5) {
+      mlFeatureDetails.push(`frequence elevee (${features.transaction_count_24h} tx/24h)`);
+    }
+    if (features.location_changed) {
+      mlFeatureDetails.push("changement de localisation recent");
+    }
+    if (features.device_changed) {
+      mlFeatureDetails.push("changement d'appareil recent");
+    }
+    if (features.user_age_days < 7) {
+      mlFeatureDetails.push(`compte recent (${features.user_age_days} jours)`);
+    }
+
+    if (mlFeatureDetails.length > 0) {
+      parts.push(`  - Features impactantes: ${mlFeatureDetails.join(", ")}`);
+    }
+  } else {
+    parts.push("");
+    parts.push("Analyse ML non disponible. Decision basee uniquement sur les regles heuristiques.");
+    if (features.ml_error) {
+      parts.push(`  - Raison: ${features.ml_error}`);
+    }
+  }
+
+  // 4. Contexte utilisateur
+  parts.push("");
+  parts.push("Contexte utilisateur:");
+  parts.push(`  - Solde actuel: ${features.user_balance} EPC`);
+  parts.push(`  - Anciennete du compte: ${features.user_age_days} jours`);
+  parts.push(`  - Transactions (30j): ${features.transaction_count_30d}`);
+  parts.push(`  - Montant moyen: ${features.user_avg_amount?.toFixed(2) || "N/A"} EPC`);
+  if (features.country) {
+    parts.push(`  - Localisation: ${features.country}${transaction.city ? " (" + transaction.city + ")" : ""}`);
+  }
+  if (transaction.device_info?.device_model) {
+    parts.push(`  - Appareil: ${transaction.device_info.device_model} (${transaction.device_info.os_name} ${transaction.device_info.os_version})`);
+  }
+
+  return parts.join("\n");
 }
 
 // Helper: Mapper anciens types vers nouveaux types normalisés

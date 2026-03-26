@@ -213,7 +213,7 @@ export default function WalletScreen() {
             }}
             contentContainerStyle={{
                 padding: 20,
-                paddingBottom: 40,
+                paddingBottom: 20,
             }}
             refreshControl={
                 <RefreshControl
@@ -229,7 +229,7 @@ export default function WalletScreen() {
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 paddingTop: 8,
-                marginBottom: 28,
+                marginBottom: 16,
             }}>
                 <Image
                     source={require('../../../assets/images/epipay-logo.png')}
@@ -259,7 +259,7 @@ export default function WalletScreen() {
             </View></GlitchIn>
 
             {/* ── Greeting ── */}
-            <GlitchIn delay={80}><View style={{ marginBottom: 24 }}>
+            <GlitchIn delay={80}><View style={{ marginBottom: 16 }}>
                 <Text style={{
                     color: Colors.mediumGray,
                     fontSize: 13,
@@ -287,7 +287,7 @@ export default function WalletScreen() {
                 padding: 28,
                 borderWidth: 3,
                 borderColor: Colors.black,
-                marginBottom: 32,
+                marginBottom: 20,
                 shadowColor: Colors.black,
                 shadowOffset: { width: 6, height: 6 },
                 shadowOpacity: 1,
@@ -327,7 +327,7 @@ export default function WalletScreen() {
             </View></GlitchIn>
 
             {/* ── Quick Actions ── */}
-            <GlitchIn delay={240}><View style={{ marginBottom: 32 }}>
+            <GlitchIn delay={240}><View style={{ marginBottom: 20 }}>
                 <Text style={{
                     fontSize: 13,
                     fontWeight: '900',
