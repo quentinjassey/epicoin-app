@@ -49,7 +49,7 @@ export default function AccessibilityScreen() {
                     text: 'Reinitialiser',
                     style: 'destructive',
                     onPress: () => {
-                        updatePrefs({ largeText: false, highContrast: false, reduceMotion: false, boldText: false });
+                        updatePrefs({ largeText: false, highContrast: false, reduceMotion: false, boldText: false, colorBlindMode: 'none' });
                         setSaved(true);
                         setTimeout(() => setSaved(false), 2000);
                     },
