@@ -468,6 +468,36 @@ export default function NotificationCenterScreen() {
                                 }}>
                                     ID: {selectedNotif.id}
                                 </Text>
+
+                                {/* Delete button */}
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        deleteNotification(selectedNotif.id);
+                                        setSelectedNotif(null);
+                                    }}
+                                    style={{
+                                        marginTop: 24,
+                                        backgroundColor: Colors.white,
+                                        borderWidth: 2,
+                                        borderColor: adaptiveColors.error,
+                                        padding: 14,
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}
+                                >
+                                    <Icon name="xmark.circle.fill" size={18} color={adaptiveColors.error} />
+                                    <Text style={{
+                                        color: adaptiveColors.error,
+                                        fontWeight: '900',
+                                        fontSize: 13,
+                                        marginLeft: 8,
+                                        textTransform: 'uppercase',
+                                        letterSpacing: 1,
+                                    }}>
+                                        Supprimer cette notification
+                                    </Text>
+                                </TouchableOpacity>
                             </ScrollView>
                         </View>
                     );
