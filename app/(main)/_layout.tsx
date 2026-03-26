@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router';
 import { Text, View, TouchableOpacity } from 'react-native';
 import Icon from '@/components/Icon';
+import NotifBanner from '@/components/NotifBanner';
 import { Colors } from '@/constants/NativeColors';
 import { useAccessibility } from '@/lib/AccessibilityContext';
 import { useNotifications } from '@/lib/NotificationContext';
@@ -103,7 +104,10 @@ function BrutalistTabBar({ state, descriptors, navigation }: any) {
 }
 
 export default function MainTabsLayout() {
+    const { banner, dismissBanner } = useNotifications();
+
     return (
+        <View style={{ flex: 1 }}>
         <Tabs
             tabBar={(props) => <BrutalistTabBar {...props} />}
             screenOptions={{ headerShown: false }}
@@ -113,5 +117,13 @@ export default function MainTabsLayout() {
             <Tabs.Screen name="(shop)" />
             <Tabs.Screen name="(profile)" />
         </Tabs>
+        <NotifBanner
+            visible={banner.visible}
+            title={banner.title}
+            body={banner.body}
+            type={banner.type}
+            onDismiss={dismissBanner}
+        />
+        </View>
     );
 }

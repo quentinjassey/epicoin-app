@@ -1,8 +1,10 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { View } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
 import { supabase } from './supabase';
+import InAppNotification from '@/components/InAppNotification';
 
 // Configure notification behavior
 Notifications.setNotificationHandler({
@@ -23,10 +25,19 @@ export type AppNotification = {
     created_at: string;
 };
 
+type BannerState = {
+    visible: boolean;
+    title: string;
+    body: string;
+    type: string;
+};
+
 type NotificationContextType = {
     notifications: AppNotification[];
     unreadCount: number;
     loading: boolean;
+    banner: BannerState;
+    dismissBanner: () => void;
     refresh: () => Promise<void>;
     markAsRead: (id: string) => Promise<void>;
     markAllAsRead: () => Promise<void>;
@@ -37,6 +48,8 @@ const NotificationContext = createContext<NotificationContextType>({
     notifications: [],
     unreadCount: 0,
     loading: true,
+    banner: { visible: false, title: '', body: '', type: '' },
+    dismissBanner: () => {},
     refresh: async () => {},
     markAsRead: async () => {},
     markAllAsRead: async () => {},
@@ -48,16 +61,23 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     const [unreadCount, setUnreadCount] = useState(0);
     const [loading, setLoading] = useState(true);
     const [userId, setUserId] = useState<string | null>(null);
+    const [banner, setBanner] = useState<{ visible: boolean; title: string; body: string; type: string }>({
+        visible: false, title: '', body: '', type: '',
+    });
 
     // Get user and register push token on mount
     useEffect(() => {
         async function setup() {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
+            try {
+                const { data: { user }, error } = await supabase.auth.getUser();
+                if (error || !user) {
+                    setLoading(false);
+                    return;
+                }
                 setUserId(user.id);
                 await registerPushToken(user.id);
                 await fetchNotifications(user.id);
-            } else {
+            } catch {
                 setLoading(false);
             }
         }
@@ -65,14 +85,19 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
         // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (session?.user) {
-                setUserId(session.user.id);
-                await registerPushToken(session.user.id);
-                await fetchNotifications(session.user.id);
-            } else {
-                setUserId(null);
-                setNotifications([]);
-                setUnreadCount(0);
+            try {
+                if (session?.user) {
+                    setUserId(session.user.id);
+                    await registerPushToken(session.user.id);
+                    await fetchNotifications(session.user.id);
+                } else {
+                    setUserId(null);
+                    setNotifications([]);
+                    setUnreadCount(0);
+                    setLoading(false);
+                }
+            } catch {
+                setLoading(false);
             }
         });
 
@@ -98,15 +123,24 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
                     setNotifications(prev => [newNotif, ...prev]);
                     setUnreadCount(prev => prev + 1);
 
-                    // Show local push notification
+                    // Show in-app banner
+                    setBanner({
+                        visible: true,
+                        title: newNotif.title,
+                        body: newNotif.body,
+                        type: newNotif.type,
+                    });
+
+                    // Also trigger local notification for iOS banner
                     Notifications.scheduleNotificationAsync({
                         content: {
                             title: newNotif.title,
                             body: newNotif.body,
                             data: newNotif.data,
+                            sound: true,
                         },
-                        trigger: null, // immediate
-                    });
+                        trigger: null,
+                    }).catch(() => {});
                 }
             )
             .subscribe();
@@ -114,6 +148,55 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         return () => {
             supabase.removeChannel(channel);
         };
+    }, [userId]);
+
+    // Polling fallback — check for new notifications every 10s
+    useEffect(() => {
+        if (!userId) return;
+
+        let lastCount = notifications.length;
+
+        const interval = setInterval(async () => {
+            try {
+                const { data } = await supabase
+                    .from('notifications')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .order('created_at', { ascending: false })
+                    .limit(50);
+
+                if (data && data.length > lastCount) {
+                    // New notifications arrived
+                    const newOnes = data.slice(0, data.length - lastCount);
+                    setNotifications(data);
+                    setUnreadCount(data.filter(n => !n.read).length);
+
+                    // Show banner for the latest new notification
+                    if (newOnes.length > 0) {
+                        const latest = newOnes[0];
+                        setBanner({
+                            visible: true,
+                            title: latest.title,
+                            body: latest.body,
+                            type: latest.type,
+                        });
+
+                        Notifications.scheduleNotificationAsync({
+                            content: {
+                                title: latest.title,
+                                body: latest.body,
+                                data: latest.data,
+                                sound: true,
+                            },
+                            trigger: null,
+                        }).catch(() => {});
+                    }
+                }
+                lastCount = data?.length || lastCount;
+            } catch {}
+        }, 10000);
+
+        return () => clearInterval(interval);
     }, [userId]);
 
     async function registerPushToken(uid: string) {
@@ -192,11 +275,17 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         }
     }, [notifications]);
 
+    const dismissBanner = useCallback(() => {
+        setBanner(prev => ({ ...prev, visible: false }));
+    }, []);
+
     return (
         <NotificationContext.Provider value={{
             notifications,
             unreadCount,
             loading,
+            banner,
+            dismissBanner,
             refresh,
             markAsRead,
             markAllAsRead,
