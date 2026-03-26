@@ -180,7 +180,7 @@ export default function WalletScreen() {
             case 'pending_review':
                 return { label: 'EN ATTENTE', color: adaptiveColors.warning };
             case 'failed':
-                return { label: 'ECHOUE', color: adaptiveColors.error };
+                return { label: 'ECHEC', color: adaptiveColors.error };
             default:
                 return { label: status.toUpperCase(), color: Colors.mediumGray };
         }

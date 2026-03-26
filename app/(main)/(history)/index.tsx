@@ -196,7 +196,7 @@ export default function HistoryScreen() {
         };
       case "failed":
         return {
-          label: "ECHOUE",
+          label: "ECHEC",
           borderColor: adaptiveColors.error,
           color: adaptiveColors.error,
         };
@@ -579,7 +579,7 @@ export default function HistoryScreen() {
                       <Text style={{ color: Colors.mediumGray, fontWeight: '700', fontSize: 13, textTransform: 'uppercase' }}>Statut</Text>
                       <View style={{ backgroundColor: icon.color, paddingHorizontal: 10, paddingVertical: 3 }}>
                         <Text style={{ color: Colors.white, fontWeight: '900', fontSize: 11, textTransform: 'uppercase', letterSpacing: 1 }}>
-                          {selectedTx.status === 'completed' ? 'COMPLETE' : selectedTx.status === 'pending_review' ? 'EN ATTENTE' : selectedTx.status === 'failed' ? 'ECHOUE' : selectedTx.status.toUpperCase()}
+                          {selectedTx.status === 'completed' ? 'COMPLETE' : selectedTx.status === 'pending_review' ? 'EN ATTENTE' : selectedTx.status === 'failed' ? 'ECHEC' : selectedTx.status.toUpperCase()}
                         </Text>
                       </View>
                     </View>
