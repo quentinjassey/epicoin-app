@@ -5,9 +5,10 @@ import { useNotifications, AppNotification } from '@/lib/NotificationContext';
 import { useRouter } from 'expo-router';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import React from 'react';
+import React, { useState } from 'react';
 import {
     ActivityIndicator,
+    Modal,
     RefreshControl,
     ScrollView,
     Text,
@@ -33,6 +34,7 @@ export default function NotificationCenterScreen() {
     const { adaptiveColors } = useAccessibility();
     const { notifications, unreadCount, loading, refresh, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
     const [refreshing, setRefreshing] = React.useState(false);
+    const [selectedNotif, setSelectedNotif] = useState<AppNotification | null>(null);
 
     async function onRefresh() {
         setRefreshing(true);
@@ -166,7 +168,10 @@ export default function NotificationCenterScreen() {
                                 return (
                                     <TouchableOpacity
                                         key={notif.id}
-                                        onPress={() => markAsRead(notif.id)}
+                                        onPress={() => {
+                                            markAsRead(notif.id);
+                                            setSelectedNotif(notif);
+                                        }}
                                         style={{
                                             backgroundColor: notif.read ? Colors.white : Colors.offWhite,
                                             borderWidth: 2,
@@ -245,6 +250,229 @@ export default function NotificationCenterScreen() {
                     )}
                 </View>
             </ScrollView>
+
+            {/* Detail Modal */}
+            <Modal
+                visible={!!selectedNotif}
+                animationType="slide"
+                presentationStyle="formSheet"
+                onRequestClose={() => setSelectedNotif(null)}
+            >
+                {selectedNotif && (() => {
+                    const { icon, color } = getNotifIcon(selectedNotif.type);
+                    const iconColor = getColor(color);
+                    const data = selectedNotif.data || {};
+
+                    function getTypeLabel(type: string): string {
+                        switch (type) {
+                            case 'transfer_received': return 'TRANSFERT RECU';
+                            case 'transfer_sent': return 'TRANSFERT ENVOYE';
+                            case 'purchase': return 'ACHAT';
+                            case 'topup': return 'RECHARGEMENT';
+                            case 'fraud_alert': return 'ALERTE SECURITE';
+                            case 'fraud_resolved': return 'ALERTE RESOLUE';
+                            case 'welcome': return 'BIENVENUE';
+                            default: return 'NOTIFICATION';
+                        }
+                    }
+
+                    return (
+                        <View style={{ flex: 1, backgroundColor: Colors.white }}>
+                            {/* Modal Header */}
+                            <View style={{
+                                backgroundColor: iconColor,
+                                paddingTop: 24,
+                                paddingBottom: 28,
+                                paddingHorizontal: 24,
+                                borderBottomWidth: 3,
+                                borderBottomColor: Colors.black,
+                            }}>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                                    <Text style={{
+                                        color: Colors.white,
+                                        fontSize: 11,
+                                        fontWeight: '900',
+                                        textTransform: 'uppercase',
+                                        letterSpacing: 2,
+                                    }}>
+                                        {getTypeLabel(selectedNotif.type)}
+                                    </Text>
+                                    <TouchableOpacity
+                                        onPress={() => setSelectedNotif(null)}
+                                        style={{
+                                            borderWidth: 2,
+                                            borderColor: Colors.white,
+                                            padding: 4,
+                                        }}
+                                    >
+                                        <Icon name="xmark" size={18} color={Colors.white} />
+                                    </TouchableOpacity>
+                                </View>
+
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <View style={{
+                                        backgroundColor: Colors.white,
+                                        padding: 14,
+                                        borderWidth: 2,
+                                        borderColor: Colors.black,
+                                        marginRight: 16,
+                                        shadowColor: Colors.black,
+                                        shadowOffset: { width: 3, height: 3 },
+                                        shadowOpacity: 1,
+                                        shadowRadius: 0,
+                                    }}>
+                                        <Icon name={icon} size={28} color={iconColor} />
+                                    </View>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={{
+                                            color: Colors.white,
+                                            fontSize: 22,
+                                            fontWeight: '900',
+                                            textTransform: 'uppercase',
+                                            letterSpacing: 0.5,
+                                        }}>
+                                            {selectedNotif.title}
+                                        </Text>
+                                    </View>
+                                </View>
+                            </View>
+
+                            <ScrollView contentContainerStyle={{ padding: 24 }}>
+                                {/* Message */}
+                                <View style={{
+                                    backgroundColor: Colors.offWhite,
+                                    borderWidth: 2,
+                                    borderColor: Colors.black,
+                                    padding: 20,
+                                    marginBottom: 20,
+                                    shadowColor: Colors.black,
+                                    shadowOffset: { width: 3, height: 3 },
+                                    shadowOpacity: 1,
+                                    shadowRadius: 0,
+                                }}>
+                                    <Text style={{
+                                        color: Colors.black,
+                                        fontSize: 16,
+                                        fontWeight: '600',
+                                        lineHeight: 24,
+                                    }}>
+                                        {selectedNotif.body}
+                                    </Text>
+                                </View>
+
+                                {/* Details */}
+                                <View style={{
+                                    borderWidth: 2,
+                                    borderColor: Colors.black,
+                                    backgroundColor: Colors.white,
+                                    marginBottom: 20,
+                                }}>
+                                    <View style={{
+                                        backgroundColor: Colors.black,
+                                        paddingHorizontal: 14,
+                                        paddingVertical: 8,
+                                    }}>
+                                        <Text style={{
+                                            color: Colors.white,
+                                            fontSize: 11,
+                                            fontWeight: '900',
+                                            textTransform: 'uppercase',
+                                            letterSpacing: 2,
+                                        }}>
+                                            Details
+                                        </Text>
+                                    </View>
+
+                                    <View style={{ padding: 14 }}>
+                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+                                            <Text style={{ color: Colors.mediumGray, fontWeight: '700', fontSize: 13, textTransform: 'uppercase' }}>Date</Text>
+                                            <Text style={{ color: Colors.black, fontWeight: '800', fontSize: 13 }}>
+                                                {format(new Date(selectedNotif.created_at), "d MMMM yyyy 'a' HH:mm", { locale: fr })}
+                                            </Text>
+                                        </View>
+
+                                        <View style={{ height: 1, backgroundColor: Colors.lightGray, marginBottom: 10 }} />
+
+                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+                                            <Text style={{ color: Colors.mediumGray, fontWeight: '700', fontSize: 13, textTransform: 'uppercase' }}>Type</Text>
+                                            <Text style={{ color: Colors.black, fontWeight: '800', fontSize: 13 }}>
+                                                {getTypeLabel(selectedNotif.type)}
+                                            </Text>
+                                        </View>
+
+                                        {data.amount && (
+                                            <>
+                                                <View style={{ height: 1, backgroundColor: Colors.lightGray, marginBottom: 10 }} />
+                                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+                                                    <Text style={{ color: Colors.mediumGray, fontWeight: '700', fontSize: 13, textTransform: 'uppercase' }}>Montant</Text>
+                                                    <Text style={{ color: iconColor, fontWeight: '900', fontSize: 18 }}>
+                                                        {data.amount} EPC
+                                                    </Text>
+                                                </View>
+                                            </>
+                                        )}
+
+                                        {data.sender_name && (
+                                            <>
+                                                <View style={{ height: 1, backgroundColor: Colors.lightGray, marginBottom: 10 }} />
+                                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+                                                    <Text style={{ color: Colors.mediumGray, fontWeight: '700', fontSize: 13, textTransform: 'uppercase' }}>De</Text>
+                                                    <Text style={{ color: Colors.black, fontWeight: '800', fontSize: 13 }}>{data.sender_name}</Text>
+                                                </View>
+                                            </>
+                                        )}
+
+                                        {data.receiver_name && (
+                                            <>
+                                                <View style={{ height: 1, backgroundColor: Colors.lightGray, marginBottom: 10 }} />
+                                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+                                                    <Text style={{ color: Colors.mediumGray, fontWeight: '700', fontSize: 13, textTransform: 'uppercase' }}>A</Text>
+                                                    <Text style={{ color: Colors.black, fontWeight: '800', fontSize: 13 }}>{data.receiver_name}</Text>
+                                                </View>
+                                            </>
+                                        )}
+
+                                        {data.product_name && (
+                                            <>
+                                                <View style={{ height: 1, backgroundColor: Colors.lightGray, marginBottom: 10 }} />
+                                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+                                                    <Text style={{ color: Colors.mediumGray, fontWeight: '700', fontSize: 13, textTransform: 'uppercase' }}>Produit</Text>
+                                                    <Text style={{ color: Colors.black, fontWeight: '800', fontSize: 13 }}>{data.product_name}</Text>
+                                                </View>
+                                            </>
+                                        )}
+
+                                        <View style={{ height: 1, backgroundColor: Colors.lightGray, marginBottom: 10 }} />
+                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                            <Text style={{ color: Colors.mediumGray, fontWeight: '700', fontSize: 13, textTransform: 'uppercase' }}>Statut</Text>
+                                            <View style={{
+                                                backgroundColor: iconColor,
+                                                paddingHorizontal: 10,
+                                                paddingVertical: 3,
+                                            }}>
+                                                <Text style={{ color: Colors.white, fontWeight: '900', fontSize: 11, textTransform: 'uppercase', letterSpacing: 1 }}>
+                                                    {selectedNotif.read ? 'LUE' : 'NON LUE'}
+                                                </Text>
+                                            </View>
+                                        </View>
+                                    </View>
+                                </View>
+
+                                {/* ID */}
+                                <Text style={{
+                                    color: Colors.quaternaryLabel,
+                                    fontSize: 10,
+                                    fontWeight: '600',
+                                    textAlign: 'center',
+                                    fontFamily: 'SpaceMono',
+                                }}>
+                                    ID: {selectedNotif.id}
+                                </Text>
+                            </ScrollView>
+                        </View>
+                    );
+                })()}
+            </Modal>
         </View>
     );
 }
