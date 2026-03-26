@@ -239,7 +239,7 @@ export default function HistoryScreen() {
               backgroundColor: icon.bg,
               padding: 12,
               borderRadius: 0,
-              marginRight: 16,
+              marginRight: 12,
               borderWidth: 2,
               borderColor: Colors.black,
             }}
@@ -252,77 +252,81 @@ export default function HistoryScreen() {
           </View>
 
           <View style={{ flex: 1 }}>
-            <Text
-              style={{
-                fontWeight: "800",
-                color: Colors.black,
-                fontSize: 15,
-                textTransform: "uppercase",
-                letterSpacing: 0.5,
-              }}
-              numberOfLines={1}
-            >
-              {label}
-            </Text>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <Text
+                style={{
+                  fontWeight: "800",
+                  color: Colors.black,
+                  fontSize: 14,
+                  textTransform: "uppercase",
+                  letterSpacing: 0.5,
+                  flex: 1,
+                  marginRight: 8,
+                }}
+                numberOfLines={1}
+              >
+                {label}
+              </Text>
+              <Text
+                style={{
+                  fontWeight: "900",
+                  fontSize: 16,
+                  color: amount.color,
+                  fontVariant: ["tabular-nums"],
+                }}
+              >
+                {amount.prefix}{item.amount.toFixed(2)}
+              </Text>
+            </View>
             <View
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                marginTop: 4,
+                justifyContent: "space-between",
+                marginTop: 6,
               }}
             >
-              <Text
-                style={{
-                  color: Colors.mediumGray,
-                  fontSize: 12,
-                  fontWeight: "700",
-                  letterSpacing: 0.3,
-                }}
-              >
-                {format(new Date(item.created_at), "d MMM 'à' HH:mm", {
-                  locale: fr,
-                })}
-              </Text>
-              {item.status !== "completed" && (
-                <View
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Text
                   style={{
-                    backgroundColor: "transparent",
-                    paddingHorizontal: 8,
-                    paddingVertical: 2,
-                    borderRadius: 0,
-                    marginLeft: 8,
-                    borderWidth: 2,
-                    borderColor: status.borderColor,
+                    color: Colors.mediumGray,
+                    fontSize: 12,
+                    fontWeight: "700",
+                    letterSpacing: 0.3,
                   }}
                 >
-                  <Text
+                  {format(new Date(item.created_at), "d MMM 'a' HH:mm", {
+                    locale: fr,
+                  })}
+                </Text>
+                {item.status !== "completed" && (
+                  <View
                     style={{
-                      color: status.color,
-                      fontSize: 10,
-                      fontWeight: "900",
-                      textTransform: "uppercase",
-                      letterSpacing: 1,
+                      paddingHorizontal: 6,
+                      paddingVertical: 2,
+                      borderRadius: 0,
+                      marginLeft: 8,
+                      borderWidth: 1.5,
+                      borderColor: status.borderColor,
                     }}
                   >
-                    {status.label}
-                  </Text>
-                </View>
-              )}
+                    <Text
+                      style={{
+                        color: status.color,
+                        fontSize: 9,
+                        fontWeight: "900",
+                        textTransform: "uppercase",
+                        letterSpacing: 0.5,
+                      }}
+                    >
+                      {status.label}
+                    </Text>
+                  </View>
+                )}
+              </View>
+              <Text style={{ color: Colors.mediumGray, fontSize: 11, fontWeight: "700" }}>EPC</Text>
             </View>
           </View>
-
-          <Text
-            style={{
-              fontWeight: "900",
-              fontSize: 16,
-              color: amount.color,
-              fontVariant: ["tabular-nums"],
-              letterSpacing: 0.5,
-            }}
-          >
-            {amount.prefix}
-            {item.amount.toFixed(2)} EPC
-          </Text>
         </View>
       </TouchableOpacity>
     );
