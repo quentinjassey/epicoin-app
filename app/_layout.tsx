@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 
 import { AccessibilityProvider } from '../lib/AccessibilityContext';
+import { GlitchProvider } from '../lib/GlitchContext';
 import { NotificationProvider } from '../lib/NotificationContext';
 import { supabase } from '../lib/supabase';
 
@@ -92,6 +93,7 @@ function RootLayoutNav() {
 
     return (
         <AccessibilityProvider>
+        <GlitchProvider>
         <NotificationProvider>
         <ThemeProvider value={EpitechTheme}>
             <StatusBar style="dark" translucent backgroundColor="transparent" />
@@ -136,6 +138,7 @@ function RootLayoutNav() {
             </Stack>
         </ThemeProvider>
         </NotificationProvider>
+        </GlitchProvider>
         </AccessibilityProvider>
     );
 }

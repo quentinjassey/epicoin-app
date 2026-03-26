@@ -4,6 +4,7 @@ import Icon from '@/components/Icon';
 import NotifBanner from '@/components/NotifBanner';
 import { Colors } from '@/constants/NativeColors';
 import { useAccessibility } from '@/lib/AccessibilityContext';
+import { useGlitch } from '@/lib/GlitchContext';
 import { useNotifications } from '@/lib/NotificationContext';
 
 const TAB_CONFIG = [
@@ -16,6 +17,7 @@ const TAB_CONFIG = [
 function BrutalistTabBar({ state, descriptors, navigation }: any) {
     const { adaptiveColors } = useAccessibility();
     const { unreadCount } = useNotifications();
+    const { triggerGlitch } = useGlitch();
     return (
         <View style={{
             flexDirection: 'row',
@@ -38,6 +40,7 @@ function BrutalistTabBar({ state, descriptors, navigation }: any) {
                         canPreventDefault: true,
                     });
                     if (!isFocused && !event.defaultPrevented) {
+                        triggerGlitch();
                         navigation.navigate(route.name, route.params);
                     }
                 };

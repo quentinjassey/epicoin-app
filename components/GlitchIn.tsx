@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { ViewStyle } from 'react-native';
 import { useAccessibility } from '@/lib/AccessibilityContext';
-import { useNavigationState } from '@react-navigation/native';
+import { useGlitch } from '@/lib/GlitchContext';
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
@@ -22,6 +22,7 @@ type Props = {
 
 export default function GlitchIn({ children, delay = 0, style }: Props) {
     const { prefs } = useAccessibility();
+    const { glitchKey } = useGlitch();
     const opacity = useSharedValue(0);
     const translateX = useSharedValue(0);
     const translateY = useSharedValue(14);
@@ -30,15 +31,6 @@ export default function GlitchIn({ children, delay = 0, style }: Props) {
     const splitRight = useSharedValue(0);
     const splitOpacity = useSharedValue(0);
     const colorIndex = React.useRef(Math.floor(Math.random() * GLITCH_COLORS.length));
-    const hasPlayed = React.useRef(false);
-
-    // Get current tab index to detect tab changes
-    let tabIndex = 0;
-    try {
-        tabIndex = useNavigationState(state => state?.index ?? 0);
-    } catch {
-        tabIndex = 0;
-    }
 
     function playGlitch() {
         colorIndex.current = Math.floor(Math.random() * GLITCH_COLORS.length);
@@ -51,63 +43,51 @@ export default function GlitchIn({ children, delay = 0, style }: Props) {
         splitRight.value = 0;
         splitOpacity.value = 0;
 
-        opacity.value = withDelay(delay,
-            withSequence(
-                withTiming(0.6, { duration: 30 }),
-                withTiming(0, { duration: 15 }),
-                withTiming(0.8, { duration: 25 }),
-                withTiming(0.2, { duration: 15 }),
-                withTiming(1, { duration: 40 }),
-            )
-        );
+        opacity.value = withDelay(delay, withSequence(
+            withTiming(0.6, { duration: 30 }),
+            withTiming(0, { duration: 15 }),
+            withTiming(0.8, { duration: 25 }),
+            withTiming(0.2, { duration: 15 }),
+            withTiming(1, { duration: 40 }),
+        ));
 
-        translateX.value = withDelay(delay,
-            withSequence(
-                withTiming(-16, { duration: 35, easing: Easing.linear }),
-                withTiming(10, { duration: 25, easing: Easing.linear }),
-                withTiming(-6, { duration: 20, easing: Easing.linear }),
-                withSpring(0, { stiffness: 1200, damping: 80, mass: 1 }),
-            )
-        );
+        translateX.value = withDelay(delay, withSequence(
+            withTiming(-16, { duration: 35, easing: Easing.linear }),
+            withTiming(10, { duration: 25, easing: Easing.linear }),
+            withTiming(-6, { duration: 20, easing: Easing.linear }),
+            withSpring(0, { stiffness: 1200, damping: 80, mass: 1 }),
+        ));
 
         translateY.value = withDelay(delay,
             withSpring(0, { stiffness: 800, damping: 60, mass: 1.5 })
         );
 
-        scaleX.value = withDelay(delay,
-            withSequence(
-                withTiming(1.06, { duration: 30 }),
-                withTiming(0.96, { duration: 25 }),
-                withSpring(1, { stiffness: 1500, damping: 100, mass: 1 }),
-            )
-        );
+        scaleX.value = withDelay(delay, withSequence(
+            withTiming(1.06, { duration: 30 }),
+            withTiming(0.96, { duration: 25 }),
+            withSpring(1, { stiffness: 1500, damping: 100, mass: 1 }),
+        ));
 
-        splitLeft.value = withDelay(delay,
-            withSequence(
-                withTiming(-8, { duration: 40, easing: Easing.linear }),
-                withTiming(-4, { duration: 20 }),
-                withSpring(0, { stiffness: 1200, damping: 80, mass: 1 }),
-            )
-        );
+        splitLeft.value = withDelay(delay, withSequence(
+            withTiming(-8, { duration: 40, easing: Easing.linear }),
+            withTiming(-4, { duration: 20 }),
+            withSpring(0, { stiffness: 1200, damping: 80, mass: 1 }),
+        ));
 
-        splitRight.value = withDelay(delay,
-            withSequence(
-                withTiming(8, { duration: 40, easing: Easing.linear }),
-                withTiming(4, { duration: 20 }),
-                withSpring(0, { stiffness: 1200, damping: 80, mass: 1 }),
-            )
-        );
+        splitRight.value = withDelay(delay, withSequence(
+            withTiming(8, { duration: 40, easing: Easing.linear }),
+            withTiming(4, { duration: 20 }),
+            withSpring(0, { stiffness: 1200, damping: 80, mass: 1 }),
+        ));
 
-        splitOpacity.value = withDelay(delay,
-            withSequence(
-                withTiming(0.4, { duration: 35 }),
-                withTiming(0.25, { duration: 25 }),
-                withTiming(0, { duration: 80, easing: Easing.out(Easing.quad) }),
-            )
-        );
+        splitOpacity.value = withDelay(delay, withSequence(
+            withTiming(0.4, { duration: 35 }),
+            withTiming(0.25, { duration: 25 }),
+            withTiming(0, { duration: 80, easing: Easing.out(Easing.quad) }),
+        ));
     }
 
-    // Play on mount
+    // Play on glitchKey change (triggered by tab switch)
     useEffect(() => {
         if (prefs.reduceMotion) {
             opacity.value = 1;
@@ -118,18 +98,7 @@ export default function GlitchIn({ children, delay = 0, style }: Props) {
             return;
         }
         playGlitch();
-        hasPlayed.current = true;
-    }, []);
-
-    // Replay when tab index changes (tab switch)
-    useEffect(() => {
-        if (!hasPlayed.current) return;
-        if (prefs.reduceMotion) {
-            opacity.value = 1;
-            return;
-        }
-        playGlitch();
-    }, [tabIndex]);
+    }, [glitchKey]);
 
     const mainStyle = useAnimatedStyle(() => ({
         opacity: opacity.value,
@@ -155,12 +124,10 @@ export default function GlitchIn({ children, delay = 0, style }: Props) {
 
     return (
         <Animated.View style={[{ position: 'relative' }, style]}>
-            <Animated.View
-                pointerEvents="none"
+            <Animated.View pointerEvents="none"
                 style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: glitchColor }, leftSplitStyle]}
             />
-            <Animated.View
-                pointerEvents="none"
+            <Animated.View pointerEvents="none"
                 style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: altColor }, rightSplitStyle]}
             />
             <Animated.View style={mainStyle}>
