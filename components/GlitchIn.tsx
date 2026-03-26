@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { ViewStyle } from 'react-native';
 import { useAccessibility } from '@/lib/AccessibilityContext';
+import { useNavigationState } from '@react-navigation/native';
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
@@ -25,16 +26,23 @@ export default function GlitchIn({ children, delay = 0, style }: Props) {
     const translateX = useSharedValue(0);
     const translateY = useSharedValue(14);
     const scaleX = useSharedValue(1);
-    // RGB split layers
     const splitLeft = useSharedValue(0);
     const splitRight = useSharedValue(0);
     const splitOpacity = useSharedValue(0);
     const colorIndex = React.useRef(Math.floor(Math.random() * GLITCH_COLORS.length));
+    const hasPlayed = React.useRef(false);
+
+    // Get current tab index to detect tab changes
+    let tabIndex = 0;
+    try {
+        tabIndex = useNavigationState(state => state?.index ?? 0);
+    } catch {
+        tabIndex = 0;
+    }
 
     function playGlitch() {
         colorIndex.current = Math.floor(Math.random() * GLITCH_COLORS.length);
 
-        // Reset all
         opacity.value = 0;
         translateX.value = 0;
         translateY.value = 14;
@@ -43,9 +51,7 @@ export default function GlitchIn({ children, delay = 0, style }: Props) {
         splitRight.value = 0;
         splitOpacity.value = 0;
 
-        // Main element: fast flicker then spring in
-        opacity.value = withDelay(
-            delay,
+        opacity.value = withDelay(delay,
             withSequence(
                 withTiming(0.6, { duration: 30 }),
                 withTiming(0, { duration: 15 }),
@@ -55,9 +61,7 @@ export default function GlitchIn({ children, delay = 0, style }: Props) {
             )
         );
 
-        // Horizontal jitter then spring snap
-        translateX.value = withDelay(
-            delay,
+        translateX.value = withDelay(delay,
             withSequence(
                 withTiming(-16, { duration: 35, easing: Easing.linear }),
                 withTiming(10, { duration: 25, easing: Easing.linear }),
@@ -66,15 +70,11 @@ export default function GlitchIn({ children, delay = 0, style }: Props) {
             )
         );
 
-        // Slide up with spring
-        translateY.value = withDelay(
-            delay,
+        translateY.value = withDelay(delay,
             withSpring(0, { stiffness: 800, damping: 60, mass: 1.5 })
         );
 
-        // Width distortion snap
-        scaleX.value = withDelay(
-            delay,
+        scaleX.value = withDelay(delay,
             withSequence(
                 withTiming(1.06, { duration: 30 }),
                 withTiming(0.96, { duration: 25 }),
@@ -82,9 +82,7 @@ export default function GlitchIn({ children, delay = 0, style }: Props) {
             )
         );
 
-        // RGB split: left and right offset then snap back
-        splitLeft.value = withDelay(
-            delay,
+        splitLeft.value = withDelay(delay,
             withSequence(
                 withTiming(-8, { duration: 40, easing: Easing.linear }),
                 withTiming(-4, { duration: 20 }),
@@ -92,8 +90,7 @@ export default function GlitchIn({ children, delay = 0, style }: Props) {
             )
         );
 
-        splitRight.value = withDelay(
-            delay,
+        splitRight.value = withDelay(delay,
             withSequence(
                 withTiming(8, { duration: 40, easing: Easing.linear }),
                 withTiming(4, { duration: 20 }),
@@ -101,9 +98,7 @@ export default function GlitchIn({ children, delay = 0, style }: Props) {
             )
         );
 
-        // Split layers flash
-        splitOpacity.value = withDelay(
-            delay,
+        splitOpacity.value = withDelay(delay,
             withSequence(
                 withTiming(0.4, { duration: 35 }),
                 withTiming(0.25, { duration: 25 }),
@@ -112,6 +107,7 @@ export default function GlitchIn({ children, delay = 0, style }: Props) {
         );
     }
 
+    // Play on mount
     useEffect(() => {
         if (prefs.reduceMotion) {
             opacity.value = 1;
@@ -122,7 +118,18 @@ export default function GlitchIn({ children, delay = 0, style }: Props) {
             return;
         }
         playGlitch();
+        hasPlayed.current = true;
     }, []);
+
+    // Replay when tab index changes (tab switch)
+    useEffect(() => {
+        if (!hasPlayed.current) return;
+        if (prefs.reduceMotion) {
+            opacity.value = 1;
+            return;
+        }
+        playGlitch();
+    }, [tabIndex]);
 
     const mainStyle = useAnimatedStyle(() => ({
         opacity: opacity.value,
@@ -148,37 +155,14 @@ export default function GlitchIn({ children, delay = 0, style }: Props) {
 
     return (
         <Animated.View style={[{ position: 'relative' }, style]}>
-            {/* Left RGB split ghost */}
             <Animated.View
                 pointerEvents="none"
-                style={[
-                    {
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        backgroundColor: glitchColor,
-                    },
-                    leftSplitStyle,
-                ]}
+                style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: glitchColor }, leftSplitStyle]}
             />
-            {/* Right RGB split ghost */}
             <Animated.View
                 pointerEvents="none"
-                style={[
-                    {
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        backgroundColor: altColor,
-                    },
-                    rightSplitStyle,
-                ]}
+                style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: altColor }, rightSplitStyle]}
             />
-            {/* Main content */}
             <Animated.View style={mainStyle}>
                 {children}
             </Animated.View>
