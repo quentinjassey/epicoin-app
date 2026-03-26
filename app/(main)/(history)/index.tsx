@@ -6,9 +6,11 @@ import Icon from "@/components/Icon";
 import React, { useCallback, useState } from "react";
 import {
     ActivityIndicator,
+    Modal,
     RefreshControl,
     ScrollView,
     Text,
+    TouchableOpacity,
     View
 } from "react-native";
 import { supabase } from "../../../lib/supabase";
@@ -34,6 +36,7 @@ export default function HistoryScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -217,8 +220,10 @@ export default function HistoryScreen() {
     const status = getStatusBadge(item.status);
 
     return (
-      <View
+      <TouchableOpacity
         key={item.id}
+        onPress={() => setSelectedTx(item)}
+        activeOpacity={0.8}
         style={{
           backgroundColor: Colors.white,
           padding: 16,
@@ -323,7 +328,7 @@ export default function HistoryScreen() {
             {item.amount.toFixed(2)} EPC
           </Text>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -441,6 +446,155 @@ export default function HistoryScreen() {
         </View>
       )}
       </GlitchIn>
+
+      {/* Transaction Detail Modal */}
+      <Modal
+        visible={!!selectedTx}
+        animationType="slide"
+        presentationStyle="formSheet"
+        onRequestClose={() => setSelectedTx(null)}
+      >
+        {selectedTx && (() => {
+          const icon = getTransactionIcon(selectedTx);
+          const label = getTransactionLabel(selectedTx);
+          const amount = getAmountDisplay(selectedTx);
+          const isSender = selectedTx.sender_id === currentUserId;
+          const isTopUp = selectedTx.type === "topup" || selectedTx.type === "top_up";
+          const isPurchase = selectedTx.type === "payment" || selectedTx.type === "purchase";
+
+          function getTypeLabel(): string {
+            if (isTopUp) return "RECHARGEMENT";
+            if (isPurchase) return "ACHAT";
+            if (isSender) return "TRANSFERT ENVOYE";
+            return "TRANSFERT RECU";
+          }
+
+          return (
+            <View style={{ flex: 1, backgroundColor: Colors.white }}>
+              {/* Header */}
+              <View style={{
+                backgroundColor: icon.color,
+                paddingTop: 24,
+                paddingBottom: 28,
+                paddingHorizontal: 24,
+                borderBottomWidth: 3,
+                borderBottomColor: Colors.black,
+              }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                  <Text style={{ color: Colors.white, fontSize: 11, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2 }}>
+                    {getTypeLabel()}
+                  </Text>
+                  <TouchableOpacity onPress={() => setSelectedTx(null)} style={{ borderWidth: 2, borderColor: Colors.white, padding: 4 }}>
+                    <Icon name="xmark" size={18} color={Colors.white} />
+                  </TouchableOpacity>
+                </View>
+
+                <View style={{ alignItems: 'center' }}>
+                  <Text style={{ color: Colors.white, fontSize: 48, fontWeight: '900', fontVariant: ['tabular-nums'], letterSpacing: -2 }}>
+                    {amount.prefix}{selectedTx.amount.toFixed(2)}
+                  </Text>
+                  <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 18, fontWeight: '800', marginTop: 4 }}>EPC</Text>
+                </View>
+              </View>
+
+              <ScrollView contentContainerStyle={{ padding: 24 }}>
+                {/* Description */}
+                <View style={{
+                  backgroundColor: Colors.offWhite,
+                  borderWidth: 2,
+                  borderColor: Colors.black,
+                  padding: 20,
+                  marginBottom: 20,
+                  shadowColor: Colors.black,
+                  shadowOffset: { width: 3, height: 3 },
+                  shadowOpacity: 1,
+                  shadowRadius: 0,
+                }}>
+                  <Text style={{ color: Colors.black, fontSize: 16, fontWeight: '700', lineHeight: 24 }}>
+                    {label}
+                  </Text>
+                </View>
+
+                {/* Details */}
+                <View style={{ borderWidth: 2, borderColor: Colors.black, backgroundColor: Colors.white, marginBottom: 20 }}>
+                  <View style={{ backgroundColor: Colors.black, paddingHorizontal: 14, paddingVertical: 8 }}>
+                    <Text style={{ color: Colors.white, fontSize: 11, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2 }}>Details</Text>
+                  </View>
+
+                  <View style={{ padding: 14 }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+                      <Text style={{ color: Colors.mediumGray, fontWeight: '700', fontSize: 13, textTransform: 'uppercase' }}>Date</Text>
+                      <Text style={{ color: Colors.black, fontWeight: '800', fontSize: 13 }}>
+                        {format(new Date(selectedTx.created_at), "d MMMM yyyy 'a' HH:mm", { locale: fr })}
+                      </Text>
+                    </View>
+
+                    <View style={{ height: 1, backgroundColor: Colors.lightGray, marginBottom: 10 }} />
+
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+                      <Text style={{ color: Colors.mediumGray, fontWeight: '700', fontSize: 13, textTransform: 'uppercase' }}>Type</Text>
+                      <Text style={{ color: Colors.black, fontWeight: '800', fontSize: 13 }}>{getTypeLabel()}</Text>
+                    </View>
+
+                    <View style={{ height: 1, backgroundColor: Colors.lightGray, marginBottom: 10 }} />
+
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+                      <Text style={{ color: Colors.mediumGray, fontWeight: '700', fontSize: 13, textTransform: 'uppercase' }}>Montant</Text>
+                      <Text style={{ color: icon.color, fontWeight: '900', fontSize: 18 }}>{amount.prefix}{selectedTx.amount.toFixed(2)} EPC</Text>
+                    </View>
+
+                    {selectedTx.sender && (
+                      <>
+                        <View style={{ height: 1, backgroundColor: Colors.lightGray, marginBottom: 10 }} />
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+                          <Text style={{ color: Colors.mediumGray, fontWeight: '700', fontSize: 13, textTransform: 'uppercase' }}>De</Text>
+                          <Text style={{ color: Colors.black, fontWeight: '800', fontSize: 13 }}>{selectedTx.sender.full_name}</Text>
+                        </View>
+                      </>
+                    )}
+
+                    {selectedTx.receiver && (
+                      <>
+                        <View style={{ height: 1, backgroundColor: Colors.lightGray, marginBottom: 10 }} />
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+                          <Text style={{ color: Colors.mediumGray, fontWeight: '700', fontSize: 13, textTransform: 'uppercase' }}>A</Text>
+                          <Text style={{ color: Colors.black, fontWeight: '800', fontSize: 13 }}>{selectedTx.receiver.full_name}</Text>
+                        </View>
+                      </>
+                    )}
+
+                    {selectedTx.metadata?.product_name && (
+                      <>
+                        <View style={{ height: 1, backgroundColor: Colors.lightGray, marginBottom: 10 }} />
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+                          <Text style={{ color: Colors.mediumGray, fontWeight: '700', fontSize: 13, textTransform: 'uppercase' }}>Produit</Text>
+                          <Text style={{ color: Colors.black, fontWeight: '800', fontSize: 13 }}>{selectedTx.metadata.product_name}</Text>
+                        </View>
+                      </>
+                    )}
+
+                    <View style={{ height: 1, backgroundColor: Colors.lightGray, marginBottom: 10 }} />
+
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                      <Text style={{ color: Colors.mediumGray, fontWeight: '700', fontSize: 13, textTransform: 'uppercase' }}>Statut</Text>
+                      <View style={{ backgroundColor: icon.color, paddingHorizontal: 10, paddingVertical: 3 }}>
+                        <Text style={{ color: Colors.white, fontWeight: '900', fontSize: 11, textTransform: 'uppercase', letterSpacing: 1 }}>
+                          {selectedTx.status === 'completed' ? 'COMPLETE' : selectedTx.status === 'pending_review' ? 'EN ATTENTE' : selectedTx.status === 'failed' ? 'ECHOUE' : selectedTx.status.toUpperCase()}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                </View>
+
+                {/* TX ID */}
+                <Text style={{ color: Colors.quaternaryLabel, fontSize: 10, fontWeight: '600', textAlign: 'center', fontFamily: 'SpaceMono' }}>
+                  TX: {selectedTx.id}
+                </Text>
+              </ScrollView>
+            </View>
+          );
+        })()}
+      </Modal>
     </ScrollView>
   );
 }
