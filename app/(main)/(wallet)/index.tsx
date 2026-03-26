@@ -128,55 +128,48 @@ export default function WalletScreen() {
         const isTopUp = tx.type === 'topup' || tx.type === 'top_up';
         const isPurchase = tx.type === 'payment' || tx.type === 'purchase';
 
+        // Determine base icon and label
+        let icon = 'arrow.down.circle.fill';
+        let label = `Recu de ${tx.sender?.full_name || 'Utilisateur'}`;
+        let prefix = '+';
+
         if (isTopUp) {
             const bonus = tx.metadata?.bonus || 0;
-            return {
-                icon: 'plus.circle.fill',
-                color: adaptiveColors.success,
-                label: bonus > 0 ? `Rechargement (+${bonus} bonus)` : 'Rechargement',
-                prefix: '+',
-                amountColor: adaptiveColors.success,
-            };
+            icon = 'plus.circle.fill';
+            label = bonus > 0 ? `Rechargement (+${bonus} bonus)` : 'Rechargement';
+            prefix = '+';
+        } else if (isPurchase) {
+            icon = 'cart.fill';
+            label = `Achat ${tx.metadata?.product_name || 'Produit'}`;
+            prefix = '-';
+        } else if (isSender) {
+            icon = 'arrow.up.circle.fill';
+            label = `Envoye a ${tx.receiver?.full_name || 'Utilisateur'}`;
+            prefix = '-';
         }
 
-        if (isPurchase) {
-            const productName = tx.metadata?.product_name || 'Produit';
-            let label = `Achat ${productName}`;
-            if (tx.status === 'pending_review') label += ' (en attente)';
-            else if (tx.status === 'failed') {
-                label += tx.metadata?.refunded ? ' (rembourse)' : ' (echoue)';
-            }
-            return {
-                icon: 'cart.fill',
-                color: adaptiveColors.error,
-                label,
-                prefix: '-',
-                amountColor: adaptiveColors.error,
-            };
-        }
-
-        if (isSender) {
-            let label = `Envoye a ${tx.receiver?.full_name || 'Utilisateur'}`;
-            if (tx.status === 'pending_review') label += ' (en attente)';
-            else if (tx.status === 'failed') label += ' (echoue)';
-            return {
-                icon: 'arrow.up.circle.fill',
-                color: adaptiveColors.error,
-                label,
-                prefix: '-',
-                amountColor: adaptiveColors.error,
-            };
-        }
-
-        let label = `Recu de ${tx.sender?.full_name || 'Utilisateur'}`;
+        // Append status to label
         if (tx.status === 'pending_review') label += ' (en attente)';
-        else if (tx.status === 'failed') label += ' (echoue)';
+        else if (tx.status === 'failed') {
+            label += tx.metadata?.refunded ? ' (rembourse)' : ' (echoue)';
+        }
+
+        // Color based on STATUS first, then type
+        let color = adaptiveColors.success;
+        if (tx.status === 'pending_review') {
+            color = adaptiveColors.warning;
+        } else if (tx.status === 'failed') {
+            color = adaptiveColors.error;
+        } else if (isPurchase || isSender) {
+            color = adaptiveColors.error;
+        }
+
         return {
-            icon: 'arrow.down.circle.fill',
-            color: adaptiveColors.success,
+            icon,
+            color,
             label,
-            prefix: '+',
-            amountColor: adaptiveColors.success,
+            prefix,
+            amountColor: color,
         };
     }
 

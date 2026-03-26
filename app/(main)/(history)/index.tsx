@@ -104,32 +104,26 @@ export default function HistoryScreen() {
     const isTopUp = tx.type === "topup" || tx.type === "top_up";
     const isPurchase = tx.type === "payment" || tx.type === "purchase";
 
+    // Override color based on status
+    if (tx.status === "pending_review") {
+      const name = isTopUp ? "plus.circle.fill" : isPurchase ? "cart.fill" : isSender ? "arrow.up.circle.fill" : "arrow.down.circle.fill";
+      return { name, color: adaptiveColors.warning, bg: Colors.white };
+    }
+    if (tx.status === "failed") {
+      const name = isTopUp ? "plus.circle.fill" : isPurchase ? "cart.fill" : isSender ? "arrow.up.circle.fill" : "arrow.down.circle.fill";
+      return { name, color: adaptiveColors.error, bg: Colors.white };
+    }
+
     if (isTopUp) {
-      return {
-        name: "plus.circle.fill",
-        color: adaptiveColors.success,
-        bg: Colors.white,
-      };
+      return { name: "plus.circle.fill", color: adaptiveColors.success, bg: Colors.white };
     }
     if (isPurchase) {
-      return {
-        name: "cart.fill",
-        color: adaptiveColors.error,
-        bg: Colors.white,
-      };
+      return { name: "cart.fill", color: adaptiveColors.error, bg: Colors.white };
     }
     if (isSender) {
-      return {
-        name: "arrow.up.circle.fill",
-        color: adaptiveColors.error,
-        bg: Colors.white,
-      };
+      return { name: "arrow.up.circle.fill", color: adaptiveColors.error, bg: Colors.white };
     }
-    return {
-      name: "arrow.down.circle.fill",
-      color: adaptiveColors.success,
-      bg: Colors.white,
-    };
+    return { name: "arrow.down.circle.fill", color: adaptiveColors.success, bg: Colors.white };
   }
 
   function getTransactionLabel(tx: Transaction): string {
@@ -170,17 +164,19 @@ export default function HistoryScreen() {
     const isTopUp = tx.type === "topup" || tx.type === "top_up";
     const isPurchase = tx.type === "payment" || tx.type === "purchase";
 
-    if (isTopUp) {
-      return { prefix: "+", color: adaptiveColors.success };
+    // Override color for non-completed statuses
+    if (tx.status === "pending_review") {
+      const prefix = (isTopUp || (!isSender && !isPurchase)) ? "+" : "-";
+      return { prefix, color: adaptiveColors.warning };
+    }
+    if (tx.status === "failed") {
+      const prefix = (isTopUp || (!isSender && !isPurchase)) ? "+" : "-";
+      return { prefix, color: adaptiveColors.error };
     }
 
-    if (isPurchase) {
-      return { prefix: "-", color: adaptiveColors.error };
-    }
-
-    if (isSender) {
-      return { prefix: "-", color: adaptiveColors.error };
-    }
+    if (isTopUp) return { prefix: "+", color: adaptiveColors.success };
+    if (isPurchase) return { prefix: "-", color: adaptiveColors.error };
+    if (isSender) return { prefix: "-", color: adaptiveColors.error };
     return { prefix: "+", color: adaptiveColors.success };
   }
 
