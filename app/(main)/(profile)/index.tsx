@@ -98,11 +98,11 @@ export default function ProfileScreen() {
         },
         {
             icon: 'bell.badge.fill',
-            label: 'NOTIFICATIONS',
-            description: 'Gérer vos alertes',
+            label: 'CENTRE DE NOTIFICATIONS',
+            description: 'Voir toutes vos notifications',
             color: adaptiveColors.warning,
             bg: Colors.offWhite,
-            route: '/(main)/(profile)/notifications' as const,
+            route: '/(main)/(profile)/notification-center' as const,
         },
         {
             icon: 'eye.fill',

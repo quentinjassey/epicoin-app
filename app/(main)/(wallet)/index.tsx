@@ -8,6 +8,7 @@ import GlitchIn from '@/components/GlitchIn';
 import { supabase } from '../../../lib/supabase';
 import { Colors } from '@/constants/NativeColors';
 import { useAccessibility } from '@/lib/AccessibilityContext';
+import { useNotifications } from '@/lib/NotificationContext';
 
 type Transaction = {
     id: string;
@@ -24,6 +25,7 @@ type Transaction = {
 
 export default function WalletScreen() {
     const { adaptiveColors } = useAccessibility();
+    const { unreadCount } = useNotifications();
     const [balance, setBalance] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -236,6 +238,32 @@ export default function WalletScreen() {
                     style={{ width: 120, height: 40 }}
                     resizeMode="contain"
                 />
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <TouchableOpacity
+                    style={{ position: 'relative' }}
+                    onPress={() => router.push('/(main)/(profile)/notification-center' as any)}
+                >
+                    <Icon name="bell.badge.fill" size={24} color={unreadCount > 0 ? adaptiveColors.primary : Colors.mediumGray} />
+                    {unreadCount > 0 && (
+                        <View style={{
+                            position: 'absolute',
+                            top: -6,
+                            right: -8,
+                            backgroundColor: adaptiveColors.error,
+                            minWidth: 16,
+                            height: 16,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderWidth: 1.5,
+                            borderColor: Colors.white,
+                            paddingHorizontal: 3,
+                        }}>
+                            <Text style={{ color: Colors.white, fontSize: 9, fontWeight: '900' }}>
+                                {unreadCount > 99 ? '99+' : unreadCount}
+                            </Text>
+                        </View>
+                    )}
+                </TouchableOpacity>
                 <TouchableOpacity
                     style={{
                         width: 40,
@@ -256,6 +284,7 @@ export default function WalletScreen() {
                         {fullName.charAt(0)}
                     </Text>
                 </TouchableOpacity>
+                </View>
             </View></GlitchIn>
 
             {/* ── Greeting ── */}

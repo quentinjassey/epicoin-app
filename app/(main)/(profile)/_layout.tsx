@@ -15,6 +15,7 @@ export default function ProfileStack() {
       <Stack.Screen name="delete-account" />
       <Stack.Screen name="data-export" />
       <Stack.Screen name="accessibility" />
+      <Stack.Screen name="notification-center" />
     </Stack>
   );
 }

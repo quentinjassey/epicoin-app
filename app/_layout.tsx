@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 
 import { AccessibilityProvider } from '../lib/AccessibilityContext';
+import { NotificationProvider } from '../lib/NotificationContext';
 import { supabase } from '../lib/supabase';
 
 export {
@@ -91,6 +92,7 @@ function RootLayoutNav() {
 
     return (
         <AccessibilityProvider>
+        <NotificationProvider>
         <ThemeProvider value={EpitechTheme}>
             <StatusBar style="dark" translucent backgroundColor="transparent" />
             <Stack screenOptions={{ contentStyle: { backgroundColor: '#FFFFFF' } }}>
@@ -133,6 +135,7 @@ function RootLayoutNav() {
                 />
             </Stack>
         </ThemeProvider>
+        </NotificationProvider>
         </AccessibilityProvider>
     );
 }

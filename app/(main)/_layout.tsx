@@ -3,6 +3,7 @@ import { Text, View, TouchableOpacity } from 'react-native';
 import Icon from '@/components/Icon';
 import { Colors } from '@/constants/NativeColors';
 import { useAccessibility } from '@/lib/AccessibilityContext';
+import { useNotifications } from '@/lib/NotificationContext';
 
 const TAB_CONFIG = [
     { name: '(wallet)', label: 'WALLET', icon: 'wallet.pass.fill' },
@@ -13,6 +14,7 @@ const TAB_CONFIG = [
 
 function BrutalistTabBar({ state, descriptors, navigation }: any) {
     const { adaptiveColors } = useAccessibility();
+    const { unreadCount } = useNotifications();
     return (
         <View style={{
             flexDirection: 'row',
@@ -50,18 +52,39 @@ function BrutalistTabBar({ state, descriptors, navigation }: any) {
                             paddingVertical: 4,
                         }}
                     >
-                        <View style={{
-                            backgroundColor: isFocused ? adaptiveColors.primary : 'transparent',
-                            padding: 7,
-                            borderWidth: isFocused ? 2 : 0,
-                            borderColor: Colors.black,
-                            marginBottom: 5,
-                        }}>
-                            <Icon
-                                name={config.icon}
-                                size={26}
-                                color={isFocused ? Colors.white : Colors.mediumGray}
-                            />
+                        <View style={{ position: 'relative' }}>
+                            <View style={{
+                                backgroundColor: isFocused ? adaptiveColors.primary : 'transparent',
+                                padding: 7,
+                                borderWidth: isFocused ? 2 : 0,
+                                borderColor: Colors.black,
+                                marginBottom: 5,
+                            }}>
+                                <Icon
+                                    name={config.icon}
+                                    size={26}
+                                    color={isFocused ? Colors.white : Colors.mediumGray}
+                                />
+                            </View>
+                            {config.name === '(profile)' && unreadCount > 0 && (
+                                <View style={{
+                                    position: 'absolute',
+                                    top: -4,
+                                    right: -6,
+                                    backgroundColor: adaptiveColors.error,
+                                    minWidth: 18,
+                                    height: 18,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderWidth: 2,
+                                    borderColor: Colors.white,
+                                    paddingHorizontal: 4,
+                                }}>
+                                    <Text style={{ color: Colors.white, fontSize: 10, fontWeight: '900' }}>
+                                        {unreadCount > 99 ? '99+' : unreadCount}
+                                    </Text>
+                                </View>
+                            )}
                         </View>
                         <Text style={{
                             fontSize: 10,
