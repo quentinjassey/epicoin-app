@@ -241,7 +241,7 @@ export default function WalletScreen() {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                 <TouchableOpacity
                     style={{ position: 'relative' }}
-                    onPress={() => router.push('/(main)/(profile)/notification-center' as any)}
+                    onPress={() => router.push('/(main)/(wallet)/notification-center' as any)}
                 >
                     <Icon name="bell.badge.fill" size={24} color={unreadCount > 0 ? adaptiveColors.primary : Colors.mediumGray} />
                     {unreadCount > 0 && (

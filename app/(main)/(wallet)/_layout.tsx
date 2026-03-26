@@ -8,6 +8,7 @@ export default function WalletStack() {
       }}
     >
       <Stack.Screen name="index" />
+      <Stack.Screen name="notification-center" />
     </Stack>
   );
 }
