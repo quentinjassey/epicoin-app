@@ -206,8 +206,8 @@ export default function WalletScreen() {
                 flexDirection: 'row',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                paddingTop: 8,
-                paddingBottom: 10,
+                paddingTop: 70,
+                paddingBottom: 12,
                 paddingHorizontal: 20,
                 backgroundColor: Colors.white,
                 borderBottomWidth: 1,
@@ -268,7 +268,6 @@ export default function WalletScreen() {
             </View>
 
             <ScrollView
-                contentInsetAdjustmentBehavior="automatic"
                 style={{ flex: 1 }}
                 contentContainerStyle={{
                     padding: 20,
