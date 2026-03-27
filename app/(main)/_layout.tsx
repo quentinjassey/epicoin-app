@@ -70,7 +70,7 @@ function BrutalistTabBar({ state, descriptors, navigation }: any) {
                                     color={isFocused ? Colors.white : Colors.mediumGray}
                                 />
                             </View>
-                            {config.name === '(profile)' && unreadCount > 0 && (
+                            {config.name === '(wallet)' && unreadCount > 0 && (
                                 <View style={{
                                     position: 'absolute',
                                     top: -4,

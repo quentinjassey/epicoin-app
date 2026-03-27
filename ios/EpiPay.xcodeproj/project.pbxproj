@@ -8,11 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		2160CBE741307C2E31DB3F8B /* libPods-EpiPay.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 28E7F44FA5D083377D2851E9 /* libPods-EpiPay.a */; };
-		231BB3161DCBD87967BA45D9 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF8A22EF3F7D789F2E4B0549 /* ExpoModulesProvider.swift */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		6C8D6A3CAA1EC20B3ABC3B4B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 1A61E375EC34AB8BE5321BBE /* PrivacyInfo.xcprivacy */; };
+		A484D358BBE1BF739303BDE1 /* libPods-EpiPay.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7ECD0D1E1EC3B56E343E6EE1 /* libPods-EpiPay.a */; };
+		A6721E5594050A6CC23DB12C /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 530268C6F99F7F6F75A850B3 /* PrivacyInfo.xcprivacy */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
+		DD66545ED110599B1093268D /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27B2899438C2327213D83322 /* ExpoModulesProvider.swift */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
@@ -20,16 +20,16 @@
 		13B07F961A680F5B00A75B9A /* EpiPay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EpiPay.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = EpiPay/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = EpiPay/Info.plist; sourceTree = "<group>"; };
-		1A61E375EC34AB8BE5321BBE /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = EpiPay/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		28E7F44FA5D083377D2851E9 /* libPods-EpiPay.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-EpiPay.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		27B2899438C2327213D83322 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-EpiPay/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		530268C6F99F7F6F75A850B3 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = EpiPay/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		76D22DDB135A84E42C198082 /* Pods-EpiPay.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-EpiPay.release.xcconfig"; path = "Target Support Files/Pods-EpiPay/Pods-EpiPay.release.xcconfig"; sourceTree = "<group>"; };
+		7ECD0D1E1EC3B56E343E6EE1 /* libPods-EpiPay.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-EpiPay.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		81B3CA0B8D7DB9B9C641D019 /* Pods-EpiPay.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-EpiPay.debug.xcconfig"; path = "Target Support Files/Pods-EpiPay/Pods-EpiPay.debug.xcconfig"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = EpiPay/SplashScreen.storyboard; sourceTree = "<group>"; };
-		B44DBF4E4C32ED49DC41C3CC /* Pods-EpiPay.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-EpiPay.debug.xcconfig"; path = "Target Support Files/Pods-EpiPay/Pods-EpiPay.debug.xcconfig"; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = EpiPay/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* EpiPay-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "EpiPay-Bridging-Header.h"; path = "EpiPay/EpiPay-Bridging-Header.h"; sourceTree = "<group>"; };
-		F33CF7009DA1AEB7BDE9479D /* Pods-EpiPay.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-EpiPay.release.xcconfig"; path = "Target Support Files/Pods-EpiPay/Pods-EpiPay.release.xcconfig"; sourceTree = "<group>"; };
-		FF8A22EF3F7D789F2E4B0549 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-EpiPay/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -37,7 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2160CBE741307C2E31DB3F8B /* libPods-EpiPay.a in Frameworks */,
+				A484D358BBE1BF739303BDE1 /* libPods-EpiPay.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,7 +53,7 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				1A61E375EC34AB8BE5321BBE /* PrivacyInfo.xcprivacy */,
+				530268C6F99F7F6F75A850B3 /* PrivacyInfo.xcprivacy */,
 			);
 			name = EpiPay;
 			sourceTree = "<group>";
@@ -62,17 +62,19 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				28E7F44FA5D083377D2851E9 /* libPods-EpiPay.a */,
+				7ECD0D1E1EC3B56E343E6EE1 /* libPods-EpiPay.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		82193BC99C71F6E662BD2A97 /* EpiPay */ = {
+		2F9FF0D84F4AA4354B90131D /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				FF8A22EF3F7D789F2E4B0549 /* ExpoModulesProvider.swift */,
+				81B3CA0B8D7DB9B9C641D019 /* Pods-EpiPay.debug.xcconfig */,
+				76D22DDB135A84E42C198082 /* Pods-EpiPay.release.xcconfig */,
 			);
-			name = EpiPay;
+			name = Pods;
+			path = Pods;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -89,8 +91,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				F62DB6E282DFA12F812EC6A9 /* Pods */,
-				D415C12E8775E4A06E08D891 /* ExpoModulesProviders */,
+				2F9FF0D84F4AA4354B90131D /* Pods */,
+				E524F6C2126D10B451CEBCFA /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -114,22 +116,20 @@
 			path = EpiPay/Supporting;
 			sourceTree = "<group>";
 		};
-		D415C12E8775E4A06E08D891 /* ExpoModulesProviders */ = {
+		D381E1969691938410AEBD8C /* EpiPay */ = {
 			isa = PBXGroup;
 			children = (
-				82193BC99C71F6E662BD2A97 /* EpiPay */,
+				27B2899438C2327213D83322 /* ExpoModulesProvider.swift */,
 			);
-			name = ExpoModulesProviders;
+			name = EpiPay;
 			sourceTree = "<group>";
 		};
-		F62DB6E282DFA12F812EC6A9 /* Pods */ = {
+		E524F6C2126D10B451CEBCFA /* ExpoModulesProviders */ = {
 			isa = PBXGroup;
 			children = (
-				B44DBF4E4C32ED49DC41C3CC /* Pods-EpiPay.debug.xcconfig */,
-				F33CF7009DA1AEB7BDE9479D /* Pods-EpiPay.release.xcconfig */,
+				D381E1969691938410AEBD8C /* EpiPay */,
 			);
-			name = Pods;
-			path = Pods;
+			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -140,13 +140,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "EpiPay" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				EDD20B63C24A6B08B4CAB115 /* [Expo] Configure project */,
+				1C3D7FEA016F815B7AE22626 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				4DC88B15D1E43D07B5AF0B52 /* [CP] Embed Pods Frameworks */,
+				675C9407C7B62D89C90E9EED /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -196,7 +196,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				6C8D6A3CAA1EC20B3ABC3B4B /* PrivacyInfo.xcprivacy in Resources */,
+				A6721E5594050A6CC23DB12C /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -242,7 +242,31 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		4DC88B15D1E43D07B5AF0B52 /* [CP] Embed Pods Frameworks */ = {
+		1C3D7FEA016F815B7AE22626 /* [Expo] Configure project */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/.xcode.env",
+				"$(SRCROOT)/.xcode.env.local",
+				"$(SRCROOT)/EpiPay/EpiPay.entitlements",
+				"$(SRCROOT)/Pods/Target Support Files/Pods-EpiPay/expo-configure-project.sh",
+			);
+			name = "[Expo] Configure project";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/Pods/Target Support Files/Pods-EpiPay/ExpoModulesProvider.swift",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-EpiPay/expo-configure-project.sh\"\n";
+		};
+		675C9407C7B62D89C90E9EED /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -316,30 +340,6 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-EpiPay/Pods-EpiPay-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		EDD20B63C24A6B08B4CAB115 /* [Expo] Configure project */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/.xcode.env",
-				"$(SRCROOT)/.xcode.env.local",
-				"$(SRCROOT)/EpiPay/EpiPay.entitlements",
-				"$(SRCROOT)/Pods/Target Support Files/Pods-EpiPay/expo-configure-project.sh",
-			);
-			name = "[Expo] Configure project";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(SRCROOT)/Pods/Target Support Files/Pods-EpiPay/ExpoModulesProvider.swift",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-EpiPay/expo-configure-project.sh\"\n";
-		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -348,7 +348,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				231BB3161DCBD87967BA45D9 /* ExpoModulesProvider.swift in Sources */,
+				DD66545ED110599B1093268D /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -357,7 +357,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B44DBF4E4C32ED49DC41C3CC /* Pods-EpiPay.debug.xcconfig */;
+			baseConfigurationReference = 81B3CA0B8D7DB9B9C641D019 /* Pods-EpiPay.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -393,7 +393,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F33CF7009DA1AEB7BDE9479D /* Pods-EpiPay.release.xcconfig */;
+			baseConfigurationReference = 76D22DDB135A84E42C198082 /* Pods-EpiPay.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
