@@ -52,76 +52,94 @@ Confirme à l'utilisateur
 
 ## 2. Setup initial — échange de credentials
 
-### Principe : le RECEVEUR authentifie l'ENVOYEUR
+### Principe fondamental : chaque campus a sa propre base de données
 
-Le setup est **asymétrique par direction**. Quand Campus B envoie à Campus A, c'est Campus A qui reçoit l'appel — donc c'est Campus A qui doit avoir enregistré Campus B dans sa base pour l'authentifier.
+Chaque campus fait tourner son propre Supabase indépendant. Il n'y a **pas de base partagée**. Quand Campus B appelle l'endpoint `/intercampus-receive` de Campus A, la fonction s'exécute sur le serveur de Campus A et interroge **uniquement la base de Campus A**.
 
 ```
-B → A  :  A doit avoir l'api_key_hash de B dans sa DB
-A → B  :  B doit avoir l'api_key_hash de A dans sa DB
+┌─────────────────────┐         ┌─────────────────────┐
+│     CAMPUS A        │         │     CAMPUS B        │
+│  (Supabase Paris)   │         │  (Supabase Lyon)    │
+│                     │         │                     │
+│  DB wallets :       │         │  DB wallets :       │
+│  - son propre       │         │  - son propre       │
+│    wallet           │         │    wallet           │
+│  - wallet de B  ←──┼─────────┼── B s'y enregistre  │
+│    (pour l'auth)    │  échange│    (son api_key_hash)│
+│                     │  infos  │                     │
+│  A s'enregistre ───┼─────────┼→ wallet de A        │
+│  (son api_key_hash) │         │   (pour l'auth)     │
+└─────────────────────┘         └─────────────────────┘
 ```
 
-La clé brute `api_key` (`epw_xxx...`) reste **secrète chez vous** et ne voyage jamais.
+**La règle :** pour qu'un campus puisse T'envoyer de l'argent, il faut que son `api_key_hash` soit enregistré dans **ta propre base**. Chacun gère sa liste de campus autorisés indépendamment.
 
 ---
 
 ### Scénario : Campus B veut vous envoyer de l'EPC
 
-**Ce que vous donnez à Campus B** (2 informations seulement) :
+**Étape 1 — Campus B vous communique :**
 
-| Information | Exemple |
-|-------------|---------|
-| `wallet_id` | `a1b2c3d4-e5f6-7890-abcd-ef1234567890` |
-| `functions_url` | `https://xxx.supabase.co/functions/v1` |
+| Information | Exemple | Pourquoi |
+|-------------|---------|----------|
+| `campus_id` | `bordeaux` | Pour que vous l'identifiiez |
+| `campus_name` | `Epitech Bordeaux` | Libellé dans vos transactions |
+| `api_key_hash` | `46dc92...` | Pour que vous l'authentifiiez |
 
-**Ce que Campus B vous donne** (pour que vous l'authentifiez) :
-
-| Information | Exemple |
-|-------------|---------|
-| `campus_id` | `bordeaux` |
-| `campus_name` | `Epitech Bordeaux` |
-| `api_key_hash` | `46dc92...` |
-
-**Ce que vous exécutez chez vous** pour autoriser Campus B à vous envoyer :
+**Étape 2 — Vous exécutez dans votre propre Supabase SQL Editor :**
 
 ```sql
+-- Dans VOTRE base (pas celle de B)
 INSERT INTO public.wallets (campus_id, campus_name, api_key_hash, is_active, balance, country)
 VALUES ('bordeaux', 'Epitech Bordeaux', '46dc92...', true, 0, 'FR');
 ```
 
-C'est tout. Campus B peut maintenant appeler votre `/intercampus-receive`.
+**Étape 3 — Vous communiquez à Campus B :**
+
+| Information | Exemple | Pourquoi |
+|-------------|---------|----------|
+| `wallet_id` | `a1b2c3d4-...` | La destination de ses transferts |
+| `functions_url` | `https://votre-projet.supabase.co/functions/v1` | Où appeler |
+
+Campus B peut maintenant appeler votre `/intercampus-receive`. Il n'a pas besoin de votre `api_key_hash`.
 
 ---
 
 ### Scénario : Vous voulez envoyer de l'EPC à Campus B
 
-**Ce que Campus B vous donne** (2 informations) :
+**Étape 1 — Campus B vous communique :**
 
-| Information | Exemple |
-|-------------|---------|
-| `wallet_id` | `b2c3d4e5-...` |
-| `functions_url` | `https://campus-b.supabase.co/functions/v1` |
+| Information | Exemple | Pourquoi |
+|-------------|---------|----------|
+| `wallet_id` | `b2c3d4e5-...` | La destination de vos transferts |
+| `functions_url` | `https://campus-b.supabase.co/functions/v1` | Où appeler |
 
-**Ce que vous donnez à Campus B** (pour qu'il vous authentifie) :
+**Étape 2 — Vous communiquez à Campus B :**
 
-| Information | Exemple |
-|-------------|---------|
-| `campus_id` | `paris` |
-| `campus_name` | `Epitech Paris` |
-| `api_key_hash` | `ec74fb...` |
+| Information | Exemple | Pourquoi |
+|-------------|---------|----------|
+| `campus_id` | `paris` | Pour qu'il vous identifie |
+| `campus_name` | `Epitech Paris` | Libellé dans ses transactions |
+| `api_key_hash` | `ec74fb...` | Pour qu'il vous authentifie |
 
-Campus B exécute le même INSERT chez lui avec vos informations.
+**Étape 3 — Campus B exécute dans SA propre base :**
+
+```sql
+-- Dans LA BASE DE B (pas la vôtre)
+INSERT INTO public.wallets (campus_id, campus_name, api_key_hash, is_active, balance, country)
+VALUES ('paris', 'Epitech Paris', 'ec74fb...', true, 0, 'FR');
+```
 
 ---
 
 ### Tableau récapitulatif
 
-| Sens | Receveur doit avoir | Envoyeur doit avoir |
-|------|--------------------|--------------------|
-| **B → vous** | `api_key_hash` de B dans votre DB | votre `wallet_id` + `functions_url` |
-| **Vous → B** | `api_key_hash` de vous dans la DB de B | `wallet_id` de B + `functions_url` de B |
+| Sens | Qui fait l'INSERT | Dans quelle base | Données insérées |
+|------|-------------------|-----------------|-----------------|
+| **B → vous** | **Vous** | Votre Supabase | `api_key_hash` de B |
+| **Vous → B** | **Campus B** | Supabase de B | Votre `api_key_hash` |
 
-> Ces informations ne changent pas. L'échange se fait une seule fois via un canal sécurisé.
+> Ces informations ne changent pas dans le temps. L'échange se fait une seule fois.
 
 ---
 
