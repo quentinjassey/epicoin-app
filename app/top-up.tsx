@@ -1,6 +1,5 @@
 import { Colors } from "@/constants/NativeColors";
 import { useAccessibility } from '@/lib/AccessibilityContext';
-import { StripeProvider, useStripe } from "@stripe/stripe-react-native";
 import { router } from "expo-router";
 import Icon from "@/components/Icon";
 import React, { useState } from "react";
@@ -10,14 +9,40 @@ import {
     ScrollView,
     Text,
     TouchableOpacity,
+    TurboModuleRegistry,
     View,
 } from "react-native";
 import { supabase } from "../lib/supabase";
 import { collectTransactionContext } from "../lib/transactionContext";
 
+// Stripe nécessite des modules natifs absents d'Expo Go.
+// On détecte la disponibilité via TurboModuleRegistry.get (jamais throwing)
+// et on charge le package seulement si le module natif existe.
+const isStripeAvailable =
+  !!TurboModuleRegistry.get('StripeSdk') &&
+  !!TurboModuleRegistry.get('OnrampSdk');
+
+type UseStripeResult = {
+  initPaymentSheet: (params: any) => Promise<{ error?: any }>;
+  presentPaymentSheet: () => Promise<{ error?: any }>;
+};
+
+let StripeProvider: React.ComponentType<{ publishableKey: string; children: React.ReactNode }> =
+  ({ children }) => React.createElement(React.Fragment, null, children);
+
+let useStripeCompat: () => UseStripeResult = () => ({
+  initPaymentSheet: async () => ({ error: undefined }),
+  presentPaymentSheet: async () => ({ error: undefined }),
+});
+
+if (isStripeAvailable) {
+  const stripe = require('@stripe/stripe-react-native');
+  StripeProvider = stripe.StripeProvider;
+  useStripeCompat = stripe.useStripe;
+}
+
 const CONVERSION_RATE = 5; // 1€ = 5 EPC
-const STRIPE_PUBLISHABLE_KEY =
-  process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || "";
+const STRIPE_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || "";
 
 interface TopUpOption {
   id: string;
@@ -36,11 +61,9 @@ const TOPUP_OPTIONS: TopUpOption[] = [
 
 function TopUpContent() {
   const { adaptiveColors } = useAccessibility();
-  const [selectedOption, setSelectedOption] = useState<TopUpOption | null>(
-    null,
-  );
+  const [selectedOption, setSelectedOption] = useState<TopUpOption | null>(null);
   const [loading, setLoading] = useState(false);
-  const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  const { initPaymentSheet, presentPaymentSheet } = useStripeCompat();
 
   function getBaseEpc(euros: number): number {
     return euros * CONVERSION_RATE;
@@ -52,6 +75,11 @@ function TopUpContent() {
 
   async function handlePayment() {
     if (!selectedOption) return;
+
+    if (!isStripeAvailable) {
+      Alert.alert("Mode démo", "Le paiement nécessite un build natif. Fonctionnalité non disponible dans Expo Go.");
+      return;
+    }
 
     setLoading(true);
 
@@ -75,10 +103,7 @@ function TopUpContent() {
       );
 
       if (error || !data?.clientSecret) {
-        Alert.alert(
-          "Erreur",
-          "Impossible d'initialiser le paiement. Veuillez réessayer.",
-        );
+        Alert.alert("Erreur", "Impossible d'initialiser le paiement. Veuillez réessayer.");
         setLoading(false);
         return;
       }
@@ -87,9 +112,7 @@ function TopUpContent() {
         merchantDisplayName: "EpiCoin",
         paymentIntentClientSecret: data.clientSecret,
         returnURL: "epicoin://payment-return",
-        defaultBillingDetails: {
-          name: "Étudiant Epitech",
-        },
+        defaultBillingDetails: { name: "Étudiant Epitech" },
       });
 
       if (initError) {
@@ -108,10 +131,7 @@ function TopUpContent() {
         return;
       }
 
-      console.log(
-        "[Top-up] Calling confirm-payment with payment_intent_id:",
-        data.id,
-      );
+      console.log("[Top-up] Calling confirm-payment with payment_intent_id:", data.id);
 
       // Retry logic: si le réseau coupe après le paiement Stripe, on retente la confirmation
       const MAX_RETRIES = 3;
@@ -133,15 +153,9 @@ function TopUpContent() {
         );
 
         if (attempt < MAX_RETRIES) {
-          // Attente exponentielle: 1s, 2s
           await new Promise((r) => setTimeout(r, attempt * 1000));
         }
       }
-
-      console.log("[Top-up] Confirm payment response:", {
-        confirmData,
-        confirmError,
-      });
 
       if (confirmError) {
         console.error("[Top-up] Confirm payment error after retries:", confirmError);
@@ -154,7 +168,6 @@ function TopUpContent() {
         return;
       }
 
-      // Gérer les différents statuts de transaction
       if (confirmData.status === "pending_review") {
         Alert.alert(
           "Vérification de sécurité",
@@ -176,15 +189,11 @@ function TopUpContent() {
       }
 
       if (confirmData.status === "error" || !confirmData?.success) {
-        Alert.alert(
-          "Erreur",
-          confirmData.message || "Impossible de confirmer le paiement.",
-        );
+        Alert.alert("Erreur", confirmData.message || "Impossible de confirmer le paiement.");
         setLoading(false);
         return;
       }
 
-      // Transaction réussie
       Alert.alert(
         "Rechargement réussi",
         `${totalEpc} EPC ont été ajoutés à votre compte${selectedOption.bonus > 0 ? ` (dont ${selectedOption.bonus} de bonus)` : ""} !`,
@@ -239,9 +248,7 @@ function TopUpContent() {
               key={option.id}
               onPress={() => setSelectedOption(option)}
               style={{
-                backgroundColor: isSelected
-                  ? adaptiveColors.primary
-                  : Colors.white,
+                backgroundColor: isSelected ? adaptiveColors.primary : Colors.white,
                 borderRadius: 0,
                 padding: 20,
                 borderWidth: 2,
@@ -252,21 +259,9 @@ function TopUpContent() {
                 shadowRadius: 0,
               }}
             >
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                 <View style={{ flex: 1 }}>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      marginBottom: 8,
-                    }}
-                  >
+                  <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
                     <Text
                       style={{
                         fontSize: 32,
@@ -281,9 +276,7 @@ function TopUpContent() {
                     {(option.popular || option.bestValue) && (
                       <View
                         style={{
-                          backgroundColor: isSelected
-                            ? "rgba(255, 255, 255, 0.25)"
-                            : adaptiveColors.warning,
+                          backgroundColor: isSelected ? "rgba(255, 255, 255, 0.25)" : adaptiveColors.warning,
                           paddingHorizontal: 8,
                           paddingVertical: 4,
                           borderRadius: 0,
@@ -309,24 +302,19 @@ function TopUpContent() {
                   <Text
                     style={{
                       fontSize: 15,
-                      color: isSelected
-                        ? "rgba(255, 255, 255, 0.75)"
-                        : Colors.secondaryLabel,
+                      color: isSelected ? "rgba(255, 255, 255, 0.75)" : Colors.secondaryLabel,
                       marginBottom: 4,
                       fontWeight: "700",
                     }}
                   >
-                    {baseEpc} EPC{" "}
-                    {option.bonus > 0 ? `+ ${option.bonus} bonus` : ""}
+                    {baseEpc} EPC{option.bonus > 0 ? ` + ${option.bonus} bonus` : ""}
                   </Text>
 
                   <Text
                     style={{
                       fontSize: 20,
                       fontWeight: "900",
-                      color: isSelected
-                        ? Colors.epitechYellow
-                        : adaptiveColors.primary,
+                      color: isSelected ? Colors.epitechYellow : adaptiveColors.primary,
                       fontVariant: ["tabular-nums"],
                     }}
                   >
@@ -335,11 +323,7 @@ function TopUpContent() {
                 </View>
 
                 {isSelected && (
-                  <Icon
-                    name="checkmark.circle.fill"
-                    size={32}
-                    color={Colors.white}
-                  />
+                  <Icon name="checkmark.circle.fill" size={32} color={Colors.white} />
                 )}
               </View>
             </TouchableOpacity>
@@ -362,18 +346,8 @@ function TopUpContent() {
             shadowRadius: 0,
           }}
         >
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              marginBottom: 12,
-            }}
-          >
-            <Icon
-              name="info.circle.fill"
-              size={20}
-              color={adaptiveColors.primary}
-            />
+          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
+            <Icon name="info.circle.fill" size={20} color={adaptiveColors.primary} />
             <Text
               style={{
                 fontSize: 15,
@@ -388,66 +362,29 @@ function TopUpContent() {
             </Text>
           </View>
           <View style={{ gap: 8 }}>
-            <View
-              style={{ flexDirection: "row", justifyContent: "space-between" }}
-            >
+            <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
               <Text style={{ color: Colors.secondaryLabel, fontWeight: "700" }}>Montant</Text>
-              <Text
-                style={{
-                  fontWeight: "800",
-                  color: Colors.black,
-                  fontVariant: ["tabular-nums"],
-                }}
-              >
+              <Text style={{ fontWeight: "800", color: Colors.black, fontVariant: ["tabular-nums"] }}>
                 {selectedOption.euros}€
               </Text>
             </View>
-            <View
-              style={{ flexDirection: "row", justifyContent: "space-between" }}
-            >
+            <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
               <Text style={{ color: Colors.secondaryLabel, fontWeight: "700" }}>EPC de base</Text>
-              <Text
-                style={{
-                  fontWeight: "800",
-                  color: Colors.black,
-                  fontVariant: ["tabular-nums"],
-                }}
-              >
+              <Text style={{ fontWeight: "800", color: Colors.black, fontVariant: ["tabular-nums"] }}>
                 {getBaseEpc(selectedOption.euros)} EPC
               </Text>
             </View>
             {selectedOption.bonus > 0 && (
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                }}
-              >
+              <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
                 <Text style={{ color: adaptiveColors.success, fontWeight: "700" }}>Bonus</Text>
-                <Text
-                  style={{
-                    fontWeight: "800",
-                    color: adaptiveColors.success,
-                    fontVariant: ["tabular-nums"],
-                  }}
-                >
+                <Text style={{ fontWeight: "800", color: adaptiveColors.success, fontVariant: ["tabular-nums"] }}>
                   +{selectedOption.bonus} EPC
                 </Text>
               </View>
             )}
-            <View
-              style={{
-                height: 2,
-                backgroundColor: Colors.black,
-                marginVertical: 8,
-              }}
-            />
-            <View
-              style={{ flexDirection: "row", justifyContent: "space-between" }}
-            >
-              <Text
-                style={{ fontSize: 17, fontWeight: "900", color: Colors.black, textTransform: "uppercase" }}
-              >
+            <View style={{ height: 2, backgroundColor: Colors.black, marginVertical: 8 }} />
+            <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+              <Text style={{ fontSize: 17, fontWeight: "900", color: Colors.black, textTransform: "uppercase" }}>
                 Total
               </Text>
               <Text
@@ -467,9 +404,7 @@ function TopUpContent() {
 
       <TouchableOpacity
         style={{
-          backgroundColor: selectedOption
-            ? adaptiveColors.primary
-            : Colors.lightGray,
+          backgroundColor: selectedOption ? adaptiveColors.primary : Colors.lightGray,
           borderRadius: 0,
           padding: 16,
           alignItems: "center",
@@ -489,7 +424,11 @@ function TopUpContent() {
           <ActivityIndicator color={Colors.white} />
         ) : (
           <>
-            <Icon name="creditcard.fill" size={20} color={selectedOption ? Colors.white : Colors.tertiaryLabel} />
+            <Icon
+              name="creditcard.fill"
+              size={20}
+              color={selectedOption ? Colors.white : Colors.tertiaryLabel}
+            />
             <Text
               style={{
                 color: selectedOption ? Colors.white : Colors.tertiaryLabel,
@@ -514,19 +453,8 @@ function TopUpContent() {
           marginTop: 24,
         }}
       >
-        <Icon
-          name="lock.shield.fill"
-          size={16}
-          color={Colors.tertiaryLabel}
-        />
-        <Text
-          style={{
-            color: Colors.tertiaryLabel,
-            fontSize: 13,
-            marginLeft: 8,
-            fontWeight: "700",
-          }}
-        >
+        <Icon name="lock.shield.fill" size={16} color={Colors.tertiaryLabel} />
+        <Text style={{ color: Colors.tertiaryLabel, fontSize: 13, marginLeft: 8, fontWeight: "700" }}>
           Paiement sécurisé par Stripe
         </Text>
       </View>

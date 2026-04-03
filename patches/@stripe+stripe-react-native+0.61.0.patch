@@ -1,0 +1,36 @@
+diff --git a/node_modules/@stripe/stripe-react-native/lib/commonjs/specs/NativeOnrampSdkModule.js b/node_modules/@stripe/stripe-react-native/lib/commonjs/specs/NativeOnrampSdkModule.js
+index 7a10041..0c96454 100644
+--- a/node_modules/@stripe/stripe-react-native/lib/commonjs/specs/NativeOnrampSdkModule.js
++++ b/node_modules/@stripe/stripe-react-native/lib/commonjs/specs/NativeOnrampSdkModule.js
+@@ -1,2 +1,2 @@
+-Object.defineProperty(exports,"__esModule",{value:true});exports.default=void 0;var _reactNative=require("react-native");var _default=exports.default=_reactNative.TurboModuleRegistry.getEnforcing('OnrampSdk');
++Object.defineProperty(exports,"__esModule",{value:true});exports.default=void 0;var _reactNative=require("react-native");var _default=exports.default=_reactNative.TurboModuleRegistry.get('OnrampSdk');
+ //# sourceMappingURL=NativeOnrampSdkModule.js.map
+\ No newline at end of file
+diff --git a/node_modules/@stripe/stripe-react-native/lib/commonjs/specs/NativeStripeSdkModule.js b/node_modules/@stripe/stripe-react-native/lib/commonjs/specs/NativeStripeSdkModule.js
+index a81aafa..2987226 100644
+--- a/node_modules/@stripe/stripe-react-native/lib/commonjs/specs/NativeStripeSdkModule.js
++++ b/node_modules/@stripe/stripe-react-native/lib/commonjs/specs/NativeStripeSdkModule.js
+@@ -1,2 +1,2 @@
+-Object.defineProperty(exports,"__esModule",{value:true});exports.default=void 0;var _reactNative=require("react-native");var _default=exports.default=_reactNative.TurboModuleRegistry.getEnforcing('StripeSdk');
++Object.defineProperty(exports,"__esModule",{value:true});exports.default=void 0;var _reactNative=require("react-native");var _default=exports.default=_reactNative.TurboModuleRegistry.get('StripeSdk');
+ //# sourceMappingURL=NativeStripeSdkModule.js.map
+\ No newline at end of file
+diff --git a/node_modules/@stripe/stripe-react-native/lib/module/specs/NativeOnrampSdkModule.js b/node_modules/@stripe/stripe-react-native/lib/module/specs/NativeOnrampSdkModule.js
+index 7a10041..0c96454 100644
+--- a/node_modules/@stripe/stripe-react-native/lib/module/specs/NativeOnrampSdkModule.js
++++ b/node_modules/@stripe/stripe-react-native/lib/module/specs/NativeOnrampSdkModule.js
+@@ -1,2 +1,2 @@
+-Object.defineProperty(exports,"__esModule",{value:true});exports.default=void 0;var _reactNative=require("react-native");var _default=exports.default=_reactNative.TurboModuleRegistry.getEnforcing('OnrampSdk');
++Object.defineProperty(exports,"__esModule",{value:true});exports.default=void 0;var _reactNative=require("react-native");var _default=exports.default=_reactNative.TurboModuleRegistry.get('OnrampSdk');
+ //# sourceMappingURL=NativeOnrampSdkModule.js.map
+\ No newline at end of file
+diff --git a/node_modules/@stripe/stripe-react-native/lib/module/specs/NativeStripeSdkModule.js b/node_modules/@stripe/stripe-react-native/lib/module/specs/NativeStripeSdkModule.js
+index a81aafa..2987226 100644
+--- a/node_modules/@stripe/stripe-react-native/lib/module/specs/NativeStripeSdkModule.js
++++ b/node_modules/@stripe/stripe-react-native/lib/module/specs/NativeStripeSdkModule.js
+@@ -1,2 +1,2 @@
+-Object.defineProperty(exports,"__esModule",{value:true});exports.default=void 0;var _reactNative=require("react-native");var _default=exports.default=_reactNative.TurboModuleRegistry.getEnforcing('StripeSdk');
++Object.defineProperty(exports,"__esModule",{value:true});exports.default=void 0;var _reactNative=require("react-native");var _default=exports.default=_reactNative.TurboModuleRegistry.get('StripeSdk');
+ //# sourceMappingURL=NativeStripeSdkModule.js.map
+\ No newline at end of file
