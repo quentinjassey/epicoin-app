@@ -170,7 +170,6 @@ serve(async (req) => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-API-Key': sourceWallet.api_key_hash // En prod, utiliser la vraie clé API
                 },
                 body: JSON.stringify({
                     transaction_id: transactionId,
@@ -179,7 +178,7 @@ serve(async (req) => {
                     amount,
                     currency,
                     initiator_user_id: user.id,
-                    api_key: sourceWallet.api_key_hash, // En prod, utiliser la vraie clé
+                    api_key: sourceWallet.api_key_hash,
                     source_campus_id: sourceWallet.campus_id,
                     enriched_data: {
                         description,

@@ -55,9 +55,8 @@ serve(async (req) => {
             )
         }
 
-        // Vérifier l'API key (simplified - en prod, utiliser la fonction SQL)
-        const providedKeyHash = await hashApiKey(api_key)
-        if (providedKeyHash !== sourceWallet.api_key_hash) {
+        // Comparaison directe : intercampus-send transmet api_key_hash comme clé d'authentification
+        if (api_key !== sourceWallet.api_key_hash) {
             return new Response(
                 JSON.stringify({
                     success: false,
@@ -163,13 +162,3 @@ serve(async (req) => {
         )
     }
 })
-
-// Helper function to hash API key
-async function hashApiKey(apiKey: string): Promise<string> {
-    const encoder = new TextEncoder()
-    const data = encoder.encode(apiKey)
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data)
-    const hashArray = Array.from(new Uint8Array(hashBuffer))
-    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
-    return hashHex
-}
