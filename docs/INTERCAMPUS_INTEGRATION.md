@@ -52,16 +52,46 @@ Confirme à l'utilisateur
 
 ## 2. Setup initial — échange de credentials
 
-Avant tout transfert, les deux campus doivent s'échanger **4 informations** :
+### Pourquoi enregistrer le wallet du partenaire ?
 
-| Information | Description | Qui la communique |
-|-------------|-------------|-------------------|
-| `wallet_id` | UUID du wallet campus | Chaque campus au partenaire |
-| `api_key_hash` | Hash SHA-256 de la clé API | Chaque campus au partenaire |
-| `campus_id` | Identifiant court du campus (`paris`, `lyon`…) | Chaque campus au partenaire |
-| `functions_url` | URL de base des edge functions Supabase | Chaque campus au partenaire |
+Quand Campus B reçoit un appel de Campus A, il vérifie l'authentification en cherchant le wallet de Campus A **dans sa propre base de données** :
 
-> Ces informations ne changent pas dans le temps et peuvent être échangées une seule fois via un canal sécurisé (email, Slack, etc.).
+```sql
+SELECT * FROM wallets WHERE campus_id = 'paris'  -- cherche dans la DB de B
+-- puis compare api_key reçue === api_key_hash stocké
+```
+
+**Campus B doit donc enregistrer le wallet de Campus A chez lui avant tout transfert.** La clé brute (`api_key`) ne voyage jamais — seul le hash est partagé et stocké.
+
+### Ce que chaque campus communique à son partenaire
+
+| Information | Exemple | Utilité côté partenaire |
+|-------------|---------|------------------------|
+| `campus_id` | `paris` | Identifier le wallet dans sa DB |
+| `campus_name` | `Epitech Paris` | Libellé dans les transactions |
+| `api_key_hash` | `ec74fb...` | Authentifiant — comparé directement, jamais re-hashé |
+| `wallet_id` | `a1b2c3...` | Référence dans les transactions |
+| `functions_url` | `https://xxx.supabase.co/functions/v1` | Pour savoir où appeler |
+
+> La clé brute `api_key` (`epw_xxx...`) reste **secrète chez vous**. Ne la partagez jamais.
+
+### Ce que le partenaire exécute pour vous enregistrer chez lui
+
+Une fois qu'il a reçu vos informations, il exécute ce SQL dans son propre Supabase :
+
+```sql
+INSERT INTO public.wallets (campus_id, campus_name, api_key_hash, balance, is_active, country)
+VALUES (
+  'paris',           -- votre campus_id
+  'Epitech Paris',   -- votre campus_name
+  'ec74fb...',       -- votre api_key_hash (PAS la clé brute)
+  0,
+  true,
+  'FR'
+);
+```
+
+> Ces informations ne changent pas dans le temps. L'échange se fait une seule fois via un canal sécurisé (email, Slack, etc.).
 
 ---
 
