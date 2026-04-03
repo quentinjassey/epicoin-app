@@ -52,46 +52,76 @@ Confirme à l'utilisateur
 
 ## 2. Setup initial — échange de credentials
 
-### Pourquoi enregistrer le wallet du partenaire ?
+### Principe : le RECEVEUR authentifie l'ENVOYEUR
 
-Quand Campus B reçoit un appel de Campus A, il vérifie l'authentification en cherchant le wallet de Campus A **dans sa propre base de données** :
+Le setup est **asymétrique par direction**. Quand Campus B envoie à Campus A, c'est Campus A qui reçoit l'appel — donc c'est Campus A qui doit avoir enregistré Campus B dans sa base pour l'authentifier.
 
-```sql
-SELECT * FROM wallets WHERE campus_id = 'paris'  -- cherche dans la DB de B
--- puis compare api_key reçue === api_key_hash stocké
+```
+B → A  :  A doit avoir l'api_key_hash de B dans sa DB
+A → B  :  B doit avoir l'api_key_hash de A dans sa DB
 ```
 
-**Campus B doit donc enregistrer le wallet de Campus A chez lui avant tout transfert.** La clé brute (`api_key`) ne voyage jamais — seul le hash est partagé et stocké.
+La clé brute `api_key` (`epw_xxx...`) reste **secrète chez vous** et ne voyage jamais.
 
-### Ce que chaque campus communique à son partenaire
+---
 
-| Information | Exemple | Utilité côté partenaire |
-|-------------|---------|------------------------|
-| `campus_id` | `paris` | Identifier le wallet dans sa DB |
-| `campus_name` | `Epitech Paris` | Libellé dans les transactions |
-| `api_key_hash` | `ec74fb...` | Authentifiant — comparé directement, jamais re-hashé |
-| `wallet_id` | `a1b2c3...` | Référence dans les transactions |
-| `functions_url` | `https://xxx.supabase.co/functions/v1` | Pour savoir où appeler |
+### Scénario : Campus B veut vous envoyer de l'EPC
 
-> La clé brute `api_key` (`epw_xxx...`) reste **secrète chez vous**. Ne la partagez jamais.
+**Ce que vous donnez à Campus B** (2 informations seulement) :
 
-### Ce que le partenaire exécute pour vous enregistrer chez lui
+| Information | Exemple |
+|-------------|---------|
+| `wallet_id` | `a1b2c3d4-e5f6-7890-abcd-ef1234567890` |
+| `functions_url` | `https://xxx.supabase.co/functions/v1` |
 
-Une fois qu'il a reçu vos informations, il exécute ce SQL dans son propre Supabase :
+**Ce que Campus B vous donne** (pour que vous l'authentifiez) :
+
+| Information | Exemple |
+|-------------|---------|
+| `campus_id` | `bordeaux` |
+| `campus_name` | `Epitech Bordeaux` |
+| `api_key_hash` | `46dc92...` |
+
+**Ce que vous exécutez chez vous** pour autoriser Campus B à vous envoyer :
 
 ```sql
-INSERT INTO public.wallets (campus_id, campus_name, api_key_hash, balance, is_active, country)
-VALUES (
-  'paris',           -- votre campus_id
-  'Epitech Paris',   -- votre campus_name
-  'ec74fb...',       -- votre api_key_hash (PAS la clé brute)
-  0,
-  true,
-  'FR'
-);
+INSERT INTO public.wallets (campus_id, campus_name, api_key_hash, is_active, balance, country)
+VALUES ('bordeaux', 'Epitech Bordeaux', '46dc92...', true, 0, 'FR');
 ```
 
-> Ces informations ne changent pas dans le temps. L'échange se fait une seule fois via un canal sécurisé (email, Slack, etc.).
+C'est tout. Campus B peut maintenant appeler votre `/intercampus-receive`.
+
+---
+
+### Scénario : Vous voulez envoyer de l'EPC à Campus B
+
+**Ce que Campus B vous donne** (2 informations) :
+
+| Information | Exemple |
+|-------------|---------|
+| `wallet_id` | `b2c3d4e5-...` |
+| `functions_url` | `https://campus-b.supabase.co/functions/v1` |
+
+**Ce que vous donnez à Campus B** (pour qu'il vous authentifie) :
+
+| Information | Exemple |
+|-------------|---------|
+| `campus_id` | `paris` |
+| `campus_name` | `Epitech Paris` |
+| `api_key_hash` | `ec74fb...` |
+
+Campus B exécute le même INSERT chez lui avec vos informations.
+
+---
+
+### Tableau récapitulatif
+
+| Sens | Receveur doit avoir | Envoyeur doit avoir |
+|------|--------------------|--------------------|
+| **B → vous** | `api_key_hash` de B dans votre DB | votre `wallet_id` + `functions_url` |
+| **Vous → B** | `api_key_hash` de vous dans la DB de B | `wallet_id` de B + `functions_url` de B |
+
+> Ces informations ne changent pas. L'échange se fait une seule fois via un canal sécurisé.
 
 ---
 
