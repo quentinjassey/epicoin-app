@@ -19,6 +19,7 @@ serve(async (req) => {
       transaction_id,
       source_wallet_id,
       destination_wallet_id,
+      destination_user_id,
       amount,
       currency,
       initiator_user_id,
@@ -27,10 +28,16 @@ serve(async (req) => {
       enriched_data
     } = await req.json()
 
-    console.log('[Intercampus Receive] Incoming payment:', { source_campus_id, destination_wallet_id, amount, transaction_id })
+    console.log('[Intercampus Receive] Incoming payment:', { source_campus_id, destination_wallet_id, destination_user_id, amount, transaction_id })
 
-    // Auth : vérifier que api_key correspond au wallet DESTINATAIRE
-    // Le campus envoyeur doit connaître l'api_key_hash du wallet qu'il veut créditer
+    if (!destination_user_id) {
+      return new Response(
+        JSON.stringify({ success: false, status: 'failed', message: 'destination_user_id requis' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Auth : api_key doit correspondre au wallet CAMPUS destinataire
     const { data: destWallet } = await supabase
       .from('wallets')
       .select('*')
@@ -40,7 +47,7 @@ serve(async (req) => {
 
     if (!destWallet) {
       return new Response(
-        JSON.stringify({ success: false, status: 'failed', message: 'Wallet de destination introuvable ou inactif' }),
+        JSON.stringify({ success: false, status: 'failed', message: 'Wallet campus destinataire introuvable ou inactif' }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -52,17 +59,30 @@ serve(async (req) => {
       )
     }
 
-    // Retrouver le wallet source si connu localement (pour l'enregistrement en DB)
+    // Vérifier que l'utilisateur destinataire existe
+    const { data: destUser } = await supabase
+      .from('profiles')
+      .select('id, full_name')
+      .eq('id', destination_user_id)
+      .single()
+
+    if (!destUser) {
+      return new Response(
+        JSON.stringify({ success: false, status: 'failed', message: 'Utilisateur destinataire introuvable' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Source wallet local (fallback sur campus wallet si non enregistré)
     const { data: sourceWallet } = await supabase
       .from('wallets')
       .select('id, campus_name')
       .eq('campus_id', source_campus_id)
       .maybeSingle()
 
-    const effectiveSourceWalletId = source_wallet_id || sourceWallet?.id || destination_wallet_id
+    const effectiveSourceWalletId = source_wallet_id || sourceWallet?.id || destWallet.id
     const sourceCampusName = sourceWallet?.campus_name || source_campus_id
 
-    // Fraud detection
     console.log('[Intercampus Receive] Calling fraud detection')
     const fraudResponse = await fetch(
       `${Deno.env.get('SUPABASE_URL')}/functions/v1/fraud-detection`,
@@ -99,6 +119,7 @@ serve(async (req) => {
     const { data: result, error } = await supabase.rpc('intercampus_receive', {
       p_source_wallet_id: effectiveSourceWalletId,
       p_destination_wallet_id: destWallet.id,
+      p_destination_user_id: destination_user_id,
       p_amount: amount,
       p_initiator_user_id: initiator_user_id,
       p_provider_tx_id: transaction_id,
@@ -109,7 +130,7 @@ serve(async (req) => {
 
     if (error) throw error
 
-    console.log('[Intercampus Receive] Transaction result:', result)
+    console.log('[Intercampus Receive] Result:', result)
     return new Response(
       JSON.stringify(result),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

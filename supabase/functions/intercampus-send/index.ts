@@ -27,9 +27,10 @@ serve(async (req) => {
 
     const {
       source_wallet_id,
-      destination_wallet_id,
+      destination_wallet_id,   // campus wallet UUID du campus destinataire
+      destination_user_id,     // user UUID à créditer chez le campus destinataire
       destination_campus_api_url,
-      destination_api_key,   // api_key_hash du wallet DESTINATAIRE
+      destination_api_key,     // api_key_hash du campus destinataire
       amount,
       currency,
       description,
@@ -43,7 +44,14 @@ serve(async (req) => {
       )
     }
 
-    console.log('[Intercampus Send]', { user_id: user.id, source_wallet_id, destination_wallet_id, amount })
+    if (!destination_user_id) {
+      return new Response(
+        JSON.stringify({ success: false, status: 'failed', message: 'destination_user_id requis — utiliser lookup-user pour l obtenir' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    console.log('[Intercampus Send]', { user_id: user.id, source_wallet_id, destination_wallet_id, destination_user_id, amount })
 
     const { data: sourceWallet } = await supabase
       .from('wallets')
@@ -138,10 +146,11 @@ serve(async (req) => {
           transaction_id: transactionId,
           source_wallet_id: sourceWallet.id,
           destination_wallet_id,
+          destination_user_id,
           amount,
           currency,
           initiator_user_id: user.id,
-          api_key: destination_api_key,  // clé du wallet DESTINATAIRE
+          api_key: destination_api_key,
           source_campus_id: sourceWallet.campus_id,
           enriched_data: { description, device_info: deviceInfo, ...enriched_data }
         })
@@ -154,8 +163,7 @@ serve(async (req) => {
       if (!destResult.success) {
         await supabase.from('wallets').update({ balance: sourceWallet.balance }).eq('id', source_wallet_id)
         await supabase.from('transactions').update({
-          status: 'failed',
-          reason_code: 'DEST_REJECTED',
+          status: 'failed', reason_code: 'DEST_REJECTED',
           metadata: { ...sendResult.metadata, destination_error: destResult.message }
         }).eq('id', sendResult.transaction_id)
 
