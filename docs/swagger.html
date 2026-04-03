@@ -478,6 +478,7 @@
                   "destination_wallet_id",
                   "destination_campus_api_url",
                   "destination_api_key",
+                  "destination_user_id",
                   "amount"
                 ],
                 "properties": {
@@ -500,6 +501,11 @@
                   "destination_api_key": {
                     "type": "string",
                     "description": "api_key_hash du wallet destinataire (fourni par le campus destinataire lors de l échange de credentials)"
+                  },
+                  "destination_user_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "UUID du profil utilisateur destinataire — obtenu via /lookup-user"
                   },
                   "amount": {
                     "type": "number",
@@ -633,6 +639,11 @@
                   "destination_wallet_id": {
                     "type": "string",
                     "format": "uuid"
+                  },
+                  "destination_user_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "UUID du profil utilisateur à créditer (profiles.id)"
                   },
                   "amount": {
                     "type": "number",
@@ -1448,13 +1459,12 @@
               "schema": {
                 "type": "object",
                 "required": [
-                  "api_key",
-                  "source_campus_id"
+                  "api_key"
                 ],
                 "properties": {
                   "api_key": {
                     "type": "string",
-                    "description": "Hash SHA-256 de la clé API du wallet appelant (api_key_hash)"
+                    "description": "api_key_hash de n importe quel campus wallet actif — pas de source_campus_id requis"
                   },
                   "source_campus_id": {
                     "type": "string",

@@ -180,8 +180,7 @@ POST https://<campus-cible>/functions/v1/lookup-user
 Content-Type: application/json
 
 {
-  "api_key": "<votre api_key_hash>",
-  "source_campus_id": "paris",
+  "api_key": "<api_key_hash-du-wallet-destinataire>",
   "email": "alice.martin@epitech.eu"
 }
 ```
@@ -190,12 +189,13 @@ Ou par nom + campus :
 
 ```http
 {
-  "api_key": "<votre api_key_hash>",
-  "source_campus_id": "paris",
+  "api_key": "<api_key_hash-du-wallet-destinataire>",
   "full_name": "Alice Martin",
   "campus": "Lyon"
 }
 ```
+
+> `source_campus_id` n'est plus requis. `api_key` = l'`api_key_hash` que le campus destinataire vous a communiqué.
 
 ### Réponse (succès)
 
@@ -208,6 +208,7 @@ Ou par nom + campus :
 }
 ```
 
+> `user_id` est la valeur à utiliser comme `destination_user_id` dans `/intercampus-send`.  
 > Le solde de l'utilisateur n'est jamais retourné.
 
 ### Réponse (erreur)
@@ -296,9 +297,10 @@ Content-Type: application/json
 
 {
   "source_wallet_id": "uuid-votre-wallet",
-  "destination_wallet_id": "uuid-wallet-campus-cible",
+  "destination_wallet_id": "uuid-campus-wallet-cible",
+  "destination_user_id": "uuid-utilisateur-cible",
   "destination_campus_api_url": "https://<campus-cible>/functions/v1",
-  "destination_api_key": "api_key_hash-du-wallet-destinataire",
+  "destination_api_key": "api_key_hash-du-campus-cible",
   "amount": 100,
   "currency": "EPC",
   "description": "Transfert pour événement inter-campus",
@@ -309,7 +311,9 @@ Content-Type: application/json
 }
 ```
 
-> `destination_api_key` est l'`api_key_hash` que le campus destinataire vous a communiqué. C'est lui qui prouve que vous êtes autorisé à créditer ce wallet.
+> - `destination_wallet_id` : UUID du **campus wallet** cible (partagé lors de l'échange de credentials)
+> - `destination_user_id` : UUID du **profil utilisateur** à créditer — obtenu via `/lookup-user`
+> - `destination_api_key` : `api_key_hash` du campus destinataire — prouve que vous êtes autorisé
 
 ### Réponse (succès)
 
@@ -363,16 +367,26 @@ curl -X POST https://srvkyiugewdjrpvcmquq.supabase.co/functions/v1/lookup-user \
 ### cURL — Simuler une réception (test)
 
 ```bash
+# 1. Trouver le user_id de l'utilisateur cible
+curl -X POST https://srvkyiugewdjrpvcmquq.supabase.co/functions/v1/lookup-user \
+  -H "Content-Type: application/json" \
+  -d '{
+    "api_key": "<api_key_hash>",
+    "email": "alice@epitech.eu"
+  }'
+
+# 2. Envoyer le transfert directement sur le receive (simulation)
 curl -X POST https://srvkyiugewdjrpvcmquq.supabase.co/functions/v1/intercampus-receive \
   -H "Content-Type: application/json" \
   -d '{
     "transaction_id": "test-'$(uuidgen)'",
     "source_wallet_id": "<uuid-wallet-source>",
-    "destination_wallet_id": "<uuid-votre-wallet>",
+    "destination_wallet_id": "9ec8742d-726b-4138-80fa-4121f8f27261",
+    "destination_user_id": "<user_id-du-lookup>",
     "amount": 10,
     "currency": "EPC",
     "initiator_user_id": "<uuid-user-source>",
-    "api_key": "<api_key_hash-du-wallet-destinataire>",
+    "api_key": "2335b6e64cf44639ae55fff777d0faab6961c14e6fe63b4a148cc8fc7d3f0451",
     "source_campus_id": "<campus-id-source>",
     "enriched_data": {"country": "FR", "description": "Test"}
   }'
@@ -399,6 +413,7 @@ def send_intercampus(
     user_jwt: str,
     source_wallet_id: str,
     destination_wallet_id: str,
+    destination_user_id: str,
     destination_url: str,
     destination_api_key: str,
     amount: int,
@@ -409,6 +424,7 @@ def send_intercampus(
         json={
             "source_wallet_id": source_wallet_id,
             "destination_wallet_id": destination_wallet_id,
+            "destination_user_id": destination_user_id,
             "destination_campus_api_url": destination_url,
             "destination_api_key": destination_api_key,
             "amount": amount,
@@ -424,9 +440,10 @@ if user["success"]:
     result = send_intercampus(
         user_jwt="<jwt-utilisateur>",
         source_wallet_id="<uuid-wallet-paris>",
-        destination_wallet_id="<uuid-wallet-lyon>",
+        destination_wallet_id="<uuid-campus-wallet-lyon>",
+        destination_user_id=user["user_id"],
         destination_url="https://campus-lyon.supabase.co/functions/v1",
-        destination_api_key="<api_key_hash-wallet-lyon>",
+        destination_api_key="<api_key_hash-campus-lyon>",
         amount=100,
         description="Transfert Alice",
     )
@@ -453,7 +470,7 @@ async function lookupUser(email, targetBaseUrl) {
   return res.json();
 }
 
-async function sendIntercampus({ userJwt, sourceWalletId, destWalletId, destUrl, destApiKey, amount, description = "" }) {
+async function sendIntercampus({ userJwt, sourceWalletId, destWalletId, destUserId, destUrl, destApiKey, amount, description = "" }) {
   const res = await fetch(`${BASE_URL}/intercampus-send`, {
     method: "POST",
     headers: {
@@ -463,6 +480,7 @@ async function sendIntercampus({ userJwt, sourceWalletId, destWalletId, destUrl,
     body: JSON.stringify({
       source_wallet_id: sourceWalletId,
       destination_wallet_id: destWalletId,
+      destination_user_id: destUserId,
       destination_campus_api_url: destUrl,
       destination_api_key: destApiKey,
       amount,
@@ -479,9 +497,10 @@ if (user.success) {
   const result = await sendIntercampus({
     userJwt: "<jwt-utilisateur>",
     sourceWalletId: "<uuid-wallet-paris>",
-    destWalletId: "<uuid-wallet-lyon>",
+    destWalletId: "<uuid-campus-wallet-lyon>",
+    destUserId: user.user_id,
     destUrl: "https://campus-lyon.supabase.co/functions/v1",
-    destApiKey: "<api_key_hash-wallet-lyon>",
+    destApiKey: "<api_key_hash-campus-lyon>",
     amount: 100,
     description: "Transfert Alice",
   });
