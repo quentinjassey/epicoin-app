@@ -22,6 +22,14 @@
         "buildType": "apk"
       }
     },
+    "appetize": {
+      "ios": {
+        "simulator": true
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
     "production": {
       "ios": {
         "simulator": false

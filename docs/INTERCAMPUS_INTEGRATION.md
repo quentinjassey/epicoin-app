@@ -54,90 +54,81 @@ Confirme à l'utilisateur
 
 ### Principe fondamental : chaque campus a sa propre base de données
 
-Chaque campus fait tourner son propre Supabase indépendant. Il n'y a **pas de base partagée**. Quand Campus B appelle l'endpoint `/intercampus-receive` de Campus A, la fonction s'exécute sur le serveur de Campus A et interroge **uniquement la base de Campus A**.
+Chaque campus fait tourner son propre Supabase indépendant. Il n'y a **pas de base partagée**. L'authentification est basée sur l'`api_key_hash` du **wallet destinataire** : pour envoyer de l'argent à quelqu'un, il faut connaître la clé de son wallet.
+
+**Aucun INSERT en base n'est requis de part ou d'autre.**
 
 ```
 ┌─────────────────────┐         ┌─────────────────────┐
 │     CAMPUS A        │         │     CAMPUS B        │
 │  (Supabase Paris)   │         │  (Supabase Lyon)    │
-│                     │         │                     │
-│  DB wallets :       │         │  DB wallets :       │
-│  - son propre       │         │  - son propre       │
-│    wallet           │         │    wallet           │
-│  - wallet de B  ←──┼─────────┼── B s'y enregistre  │
-│    (pour l'auth)    │  échange│    (son api_key_hash)│
-│                     │  infos  │                     │
-│  A s'enregistre ───┼─────────┼→ wallet de A        │
-│  (son api_key_hash) │         │   (pour l'auth)     │
+│                     │                               │
+│                     │   Campus B partage :          │
+│                     │   - wallet_id                 │
+│                     │   - api_key_hash  ──────────→ │ (stocké côté A)
+│                     │   - functions_url             │
+│                     │                               │
+│  Campus A appelle : │                               │
+│  /intercampus-send  │                               │
+│  avec               │                               │
+│  destination_api_key│──────────────────────────────→│ /intercampus-receive
+│  = api_key_hash de B│                               │ vérifie : api_key == 
+│                     │                               │ destWallet.api_key_hash
 └─────────────────────┘         └─────────────────────┘
 ```
 
-**La règle :** pour qu'un campus puisse T'envoyer de l'argent, il faut que son `api_key_hash` soit enregistré dans **ta propre base**. Chacun gère sa liste de campus autorisés indépendamment.
+**La règle :** pour recevoir de l'argent d'un campus partenaire, vous lui communiquez simplement votre `wallet_id` + `api_key_hash` + `functions_url`. Aucune inscription ou INSERT n'est nécessaire.
 
 ---
 
-### Scénario : Campus B veut vous envoyer de l'EPC
+### Ce que vous communiquez à un campus partenaire pour qu'il vous envoie de l'EPC
 
-**Étape 1 — Campus B vous communique :**
+| Information | Où la trouver | Pourquoi |
+|-------------|---------------|----------|
+| `wallet_id` | Résultat de `create_campus_wallet()` | UUID de votre wallet — destination des fonds |
+| `api_key_hash` | Résultat de `create_campus_wallet()` | Prouve que l'expéditeur est autorisé |
+| `functions_url` | `https://<votre-projet>.supabase.co/functions/v1` | URL à appeler |
 
-| Information | Exemple | Pourquoi |
-|-------------|---------|----------|
-| `campus_id` | `bordeaux` | Pour que vous l'identifiiez |
-| `campus_name` | `Epitech Bordeaux` | Libellé dans vos transactions |
-| `api_key_hash` | `46dc92...` | Pour que vous l'authentifiiez |
-
-**Étape 2 — Vous exécutez dans votre propre Supabase SQL Editor :**
-
-```sql
--- Dans VOTRE base (pas celle de B)
-INSERT INTO public.wallets (campus_id, campus_name, api_key_hash, is_active, balance, country)
-VALUES ('bordeaux', 'Epitech Bordeaux', '46dc92...', true, 0, 'FR');
-```
-
-**Étape 3 — Vous communiquez à Campus B :**
-
-| Information | Exemple | Pourquoi |
-|-------------|---------|----------|
-| `wallet_id` | `a1b2c3d4-...` | La destination de ses transferts |
-| `functions_url` | `https://votre-projet.supabase.co/functions/v1` | Où appeler |
-
-Campus B peut maintenant appeler votre `/intercampus-receive`. Il n'a pas besoin de votre `api_key_hash`.
+C'est tout. Pas d'INSERT dans votre base, pas d'enregistrement préalable.
 
 ---
 
-### Scénario : Vous voulez envoyer de l'EPC à Campus B
+### Scénario complet : Campus B veut vous envoyer de l'EPC
 
-**Étape 1 — Campus B vous communique :**
+**Vous communiquez à Campus B (une seule fois) :**
 
-| Information | Exemple | Pourquoi |
-|-------------|---------|----------|
-| `wallet_id` | `b2c3d4e5-...` | La destination de vos transferts |
-| `functions_url` | `https://campus-b.supabase.co/functions/v1` | Où appeler |
-
-**Étape 2 — Vous communiquez à Campus B :**
-
-| Information | Exemple | Pourquoi |
-|-------------|---------|----------|
-| `campus_id` | `paris` | Pour qu'il vous identifie |
-| `campus_name` | `Epitech Paris` | Libellé dans ses transactions |
-| `api_key_hash` | `ec74fb...` | Pour qu'il vous authentifie |
-
-**Étape 3 — Campus B exécute dans SA propre base :**
-
-```sql
--- Dans LA BASE DE B (pas la vôtre)
-INSERT INTO public.wallets (campus_id, campus_name, api_key_hash, is_active, balance, country)
-VALUES ('paris', 'Epitech Paris', 'ec74fb...', true, 0, 'FR');
 ```
+wallet_id      : a1b2c3d4-e5f6-7890-abcd-ef1234567890
+api_key_hash   : ec74fbebc17b937cbe8171997e628d0373d55f8d...
+functions_url  : https://srvkyiugewdjrpvcmquq.supabase.co/functions/v1
+```
+
+**Campus B appelle (côté lui) :**
+
+```http
+POST https://campus-b.supabase.co/functions/v1/intercampus-send
+Authorization: Bearer <jwt-user-campus-b>
+
+{
+  "source_wallet_id": "<wallet-id-de-B>",
+  "destination_wallet_id": "a1b2c3d4-...",
+  "destination_campus_api_url": "https://srvkyiugewdjrpvcmquq.supabase.co/functions/v1",
+  "destination_api_key": "ec74fbebc17b937cbe8171997e628d0373d55f8d...",
+  "amount": 100,
+  "currency": "EPC"
+}
+```
+
+Votre `/intercampus-receive` reçoit l'appel, vérifie que `api_key == votre api_key_hash`, et crédite votre wallet.
 
 ---
 
 ### Tableau récapitulatif
 
-| Sens | Qui fait l'INSERT | Dans quelle base | Données insérées |
-|------|-------------------|-----------------|-----------------|
-| **B → vous** | **Vous** | Votre Supabase | `api_key_hash` de B |
-| **Vous → B** | **Campus B** | Supabase de B | Votre `api_key_hash` |
+| Sens | Ce que vous partagez | INSERT requis |
+|------|---------------------|--------------|
+| **B → vous** | Votre `wallet_id` + `api_key_hash` + `functions_url` à Campus B | **Aucun** |
+| **Vous → B** | Campus B vous donne son `wallet_id` + `api_key_hash` + `functions_url` | **Aucun** |
 
 > Ces informations ne changent pas dans le temps. L'échange se fait une seule fois.
 
@@ -252,7 +243,7 @@ Content-Type: application/json
   "amount": 100,
   "currency": "EPC",
   "initiator_user_id": "uuid-user-source",
-  "api_key": "api_key_hash-du-campus-source",
+  "api_key": "api_key_hash-de-VOTRE-wallet-destinataire",
   "source_campus_id": "paris",
   "enriched_data": {
     "country": "FR",
@@ -261,6 +252,8 @@ Content-Type: application/json
   }
 }
 ```
+
+> `api_key` est l'`api_key_hash` du wallet **destinataire** (votre wallet). C'est la valeur que vous avez communiquée à l'expéditeur lors de l'échange de credentials.
 
 ### Réponses possibles
 
@@ -305,6 +298,7 @@ Content-Type: application/json
   "source_wallet_id": "uuid-votre-wallet",
   "destination_wallet_id": "uuid-wallet-campus-cible",
   "destination_campus_api_url": "https://<campus-cible>/functions/v1",
+  "destination_api_key": "api_key_hash-du-wallet-destinataire",
   "amount": 100,
   "currency": "EPC",
   "description": "Transfert pour événement inter-campus",
@@ -314,6 +308,8 @@ Content-Type: application/json
   }
 }
 ```
+
+> `destination_api_key` est l'`api_key_hash` que le campus destinataire vous a communiqué. C'est lui qui prouve que vous êtes autorisé à créditer ce wallet.
 
 ### Réponse (succès)
 
@@ -376,7 +372,7 @@ curl -X POST https://srvkyiugewdjrpvcmquq.supabase.co/functions/v1/intercampus-r
     "amount": 10,
     "currency": "EPC",
     "initiator_user_id": "<uuid-user-source>",
-    "api_key": "<api_key_hash-du-campus-source>",
+    "api_key": "<api_key_hash-du-wallet-destinataire>",
     "source_campus_id": "<campus-id-source>",
     "enriched_data": {"country": "FR", "description": "Test"}
   }'
@@ -404,6 +400,7 @@ def send_intercampus(
     source_wallet_id: str,
     destination_wallet_id: str,
     destination_url: str,
+    destination_api_key: str,
     amount: int,
     description: str = "",
 ) -> dict:
@@ -413,6 +410,7 @@ def send_intercampus(
             "source_wallet_id": source_wallet_id,
             "destination_wallet_id": destination_wallet_id,
             "destination_campus_api_url": destination_url,
+            "destination_api_key": destination_api_key,
             "amount": amount,
             "currency": "EPC",
             "description": description,
@@ -428,6 +426,7 @@ if user["success"]:
         source_wallet_id="<uuid-wallet-paris>",
         destination_wallet_id="<uuid-wallet-lyon>",
         destination_url="https://campus-lyon.supabase.co/functions/v1",
+        destination_api_key="<api_key_hash-wallet-lyon>",
         amount=100,
         description="Transfert Alice",
     )
@@ -454,7 +453,7 @@ async function lookupUser(email, targetBaseUrl) {
   return res.json();
 }
 
-async function sendIntercampus({ userJwt, sourceWalletId, destWalletId, destUrl, amount, description = "" }) {
+async function sendIntercampus({ userJwt, sourceWalletId, destWalletId, destUrl, destApiKey, amount, description = "" }) {
   const res = await fetch(`${BASE_URL}/intercampus-send`, {
     method: "POST",
     headers: {
@@ -465,6 +464,7 @@ async function sendIntercampus({ userJwt, sourceWalletId, destWalletId, destUrl,
       source_wallet_id: sourceWalletId,
       destination_wallet_id: destWalletId,
       destination_campus_api_url: destUrl,
+      destination_api_key: destApiKey,
       amount,
       currency: "EPC",
       description,
@@ -481,6 +481,7 @@ if (user.success) {
     sourceWalletId: "<uuid-wallet-paris>",
     destWalletId: "<uuid-wallet-lyon>",
     destUrl: "https://campus-lyon.supabase.co/functions/v1",
+    destApiKey: "<api_key_hash-wallet-lyon>",
     amount: 100,
     description: "Transfert Alice",
   });
