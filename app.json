@@ -29,8 +29,6 @@
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "android.permission.USE_BIOMETRIC",
-        "android.permission.USE_FINGERPRINT",
-        "android.permission.USE_BIOMETRIC",
         "android.permission.USE_FINGERPRINT"
       ],
       "package": "com.anonymous.epipay"
@@ -52,6 +50,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "566f63ca-78b1-410b-9350-f6d503003020"
+      }
     }
   }
 }

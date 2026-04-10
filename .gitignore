@@ -79,6 +79,9 @@ supabase/.temp/
 *.swp
 *.swo
 
+# MCP local config
+.mcp.json
+
 # Logs
 logs/
 *.log

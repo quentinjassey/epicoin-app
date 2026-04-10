@@ -28,6 +28,12 @@
       },
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://srvkyiugewdjrpvcmquq.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNydmt5aXVnZXdkanJwdmNtcXVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzNDQyODMsImV4cCI6MjA3OTkyMDI4M30.BBLPyjb7Ad3MbCVZfNS5A1S8wl3JKs-9tgAINOnah5Y",
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_test_51S7CXGCid46yuEQ7lfPNGIJPQyBIPlOmxFLUSi5Vx4ODGuHcLiH0bcVca3VWK6xYxFBTYRGcfwYPP4M8Na09PIdZ00sSw19iR9",
+        "EXPO_PUBLIC_APP_NAME": "EpiCoin"
       }
     },
     "production": {
