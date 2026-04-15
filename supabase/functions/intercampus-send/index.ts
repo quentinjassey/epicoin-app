@@ -31,6 +31,7 @@ serve(async (req) => {
       destination_user_id,     // user UUID à créditer chez le campus destinataire
       destination_campus_api_url,
       destination_api_key,     // api_key_hash du campus destinataire
+      receive_path,            // chemin de l'endpoint receive chez le campus destinataire
       amount,
       currency,
       description,
@@ -67,9 +68,15 @@ serve(async (req) => {
       )
     }
 
-    if (sourceWallet.balance < amount) {
+    const { data: senderProfile } = await supabase
+      .from('profiles')
+      .select('balance')
+      .eq('id', user.id)
+      .single()
+
+    if (!senderProfile || senderProfile.balance < amount) {
       return new Response(
-        JSON.stringify({ success: false, status: 'failed', message: 'Solde du wallet insuffisant' }),
+        JSON.stringify({ success: false, status: 'failed', message: 'Solde insuffisant' }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -125,10 +132,21 @@ serve(async (req) => {
       p_provider_tx_id: transactionId,
       p_fraud_score: fraudAnalysis.riskScore,
       p_fraud_features: fraudAnalysis.features,
-      p_enriched_data: { currency, description, device_info: deviceInfo, ...enriched_data }
+      p_enriched_data: { currency, description, device_info: deviceInfo, destination_campus_name: enriched_data?.destination_campus_name, ...enriched_data }
     })
 
     if (sendError) throw sendError
+
+    if (!sendResult?.success) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          status: sendResult?.status || 'error',
+          message: sendResult?.message || 'Erreur lors de la transaction locale',
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
     if (sendResult.status === 'blocked' || sendResult.status === 'pending_review') {
       return new Response(
@@ -138,8 +156,10 @@ serve(async (req) => {
     }
 
     try {
-      console.log('[Intercampus Send] Calling destination:', destination_campus_api_url)
-      const destResponse = await fetch(`${destination_campus_api_url}/intercampus-receive`, {
+      const effectiveReceivePath = receive_path ?? '/intercampus-receive'
+      const receiveUrl = `${destination_campus_api_url}${effectiveReceivePath}`
+      console.log('[Intercampus Send] Calling destination:', receiveUrl)
+      const destResponse = await fetch(receiveUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -161,11 +181,9 @@ serve(async (req) => {
       const destResult = await destResponse.json()
 
       if (!destResult.success) {
-        await supabase.from('wallets').update({ balance: sourceWallet.balance }).eq('id', source_wallet_id)
-        await supabase.from('transactions').update({
-          status: 'failed', reason_code: 'DEST_REJECTED',
-          metadata: { ...sendResult.metadata, destination_error: destResult.message }
-        }).eq('id', sendResult.transaction_id)
+        await supabase.from('profiles').update({ balance: senderProfile.balance }).eq('id', user.id)
+        await supabase.from('transactions').update({ status: 'failed', reason_code: 'DEST_REJECTED' }).eq('id', sendResult.transaction_id)
+        await supabase.rpc('merge_transaction_metadata', { p_tx_id: sendResult.transaction_id, p_extra: { destination_error: destResult.message } })
 
         return new Response(
           JSON.stringify({
@@ -177,10 +195,11 @@ serve(async (req) => {
         )
       }
 
-      await supabase.from('transactions').update({
-        executed_at: new Date().toISOString(),
-        metadata: { ...sendResult.metadata, destination_tx_id: destResult.transaction_id }
-      }).eq('id', sendResult.transaction_id)
+      // Merge destination_tx_id into existing metadata (not overwrite)
+      await supabase.rpc('merge_transaction_metadata', {
+        p_tx_id: sendResult.transaction_id,
+        p_extra: { destination_tx_id: destResult.transaction_id, executed_at: new Date().toISOString() }
+      })
 
       console.log('[Intercampus Send] Transfer successful')
       return new Response(
@@ -197,11 +216,9 @@ serve(async (req) => {
 
     } catch (destError) {
       console.error('[Intercampus Send] Destination error:', destError.message)
-      await supabase.from('wallets').update({ balance: sourceWallet.balance }).eq('id', source_wallet_id)
-      await supabase.from('transactions').update({
-        status: 'failed', reason_code: 'NETWORK_ERROR',
-        metadata: { ...sendResult.metadata, error: destError.message }
-      }).eq('id', sendResult.transaction_id)
+      await supabase.from('profiles').update({ balance: senderProfile.balance }).eq('id', user.id)
+      await supabase.from('transactions').update({ status: 'failed', reason_code: 'NETWORK_ERROR' }).eq('id', sendResult.transaction_id)
+      await supabase.rpc('merge_transaction_metadata', { p_tx_id: sendResult.transaction_id, p_extra: { error: destError.message } })
 
       return new Response(
         JSON.stringify({

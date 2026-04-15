@@ -24,6 +24,7 @@ type UserProfile = {
     isIntercampus?: boolean;
     campusName?: string;
     functionsUrl?: string;
+    receivePath?: string;
     remoteWalletId?: string;
     destinationApiKey?: string;
 };
@@ -121,6 +122,7 @@ export default function SendScreen() {
                             isIntercampus: true,
                             campusName: fedResult.campus_name,
                             functionsUrl: fedResult.functions_url,
+                            receivePath: fedResult.receive_path ?? '/intercampus-receive',
                             remoteWalletId: fedResult.remote_wallet_id,
                             destinationApiKey: fedResult.destination_api_key,
                         }]);
@@ -273,10 +275,14 @@ export default function SendScreen() {
                     amount: amountNum,
                     currency: 'EPC',
                     description: note || `Transfert vers ${selectedUser.full_name}`,
+                    receive_path: selectedUser.receivePath ?? '/intercampus-receive',
                     enriched_data: {
                         country: context?.country,
                         city: context?.city,
                         device_info: context?.device_info,
+                        destination_campus_name: selectedUser.campusName,
+                        receiver_name: selectedUser.full_name,
+                        receiver_email: selectedUser.email,
                     },
                 },
             });

@@ -57,7 +57,7 @@ serve(async (req) => {
     // 2. Fan-out vers les campus partenaires actifs
     const { data: partners } = await supabase
       .from('partner_campuses')
-      .select('campus_id, campus_name, functions_url, remote_wallet_id, api_key_hash')
+      .select('campus_id, campus_name, functions_url, remote_wallet_id, api_key_hash, receive_path, lookup_path')
       .eq('is_active', true)
 
     if (!partners || partners.length === 0) {
@@ -71,7 +71,8 @@ serve(async (req) => {
 
     const results = await Promise.allSettled(
       partners.map(async (partner) => {
-        const resp = await fetch(`${partner.functions_url}/lookup-user`, {
+        const lookupUrl = `${partner.functions_url}${partner.lookup_path ?? '/lookup-user'}`
+        const resp = await fetch(lookupUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ api_key: partner.api_key_hash, email }),
@@ -89,6 +90,7 @@ serve(async (req) => {
           campus: data.campus,
           campus_name: partner.campus_name,
           functions_url: partner.functions_url,
+          receive_path: partner.receive_path ?? '/intercampus-receive',
           remote_wallet_id: partner.remote_wallet_id,
           destination_api_key: partner.api_key_hash,
         }

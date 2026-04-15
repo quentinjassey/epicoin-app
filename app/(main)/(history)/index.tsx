@@ -19,7 +19,8 @@ import { useAccessibility } from '@/lib/AccessibilityContext';
 
 type Transaction = {
   id: string;
-  type: "transfer" | "topup" | "top_up" | "payment" | "purchase";
+  type: "transfer" | "topup" | "top_up" | "payment" | "purchase" | "intercampus";
+  direction?: "incoming" | "outgoing";
   amount: number;
   status: string;
   created_at: string;
@@ -59,6 +60,7 @@ export default function HistoryScreen() {
           `
                     id,
                     type,
+                    direction,
                     amount,
                     status,
                     created_at,
@@ -100,9 +102,10 @@ export default function HistoryScreen() {
     color: any;
     bg: string;
   } {
-    const isSender = tx.sender_id === currentUserId;
+    const isSender = tx.sender_id === currentUserId || tx.direction === 'outgoing';
     const isTopUp = tx.type === "topup" || tx.type === "top_up";
     const isPurchase = tx.type === "payment" || tx.type === "purchase";
+    const isIntercampus = tx.type === "intercampus";
 
     // Override color based on status
     if (tx.status === "pending_review") {
@@ -120,6 +123,11 @@ export default function HistoryScreen() {
     if (isPurchase) {
       return { name: "cart.fill", color: adaptiveColors.error, bg: Colors.white };
     }
+    if (isIntercampus) {
+      return isSender
+        ? { name: "arrow.up.circle.fill", color: adaptiveColors.error, bg: Colors.white }
+        : { name: "arrow.down.circle.fill", color: adaptiveColors.success, bg: Colors.white };
+    }
     if (isSender) {
       return { name: "arrow.up.circle.fill", color: adaptiveColors.error, bg: Colors.white };
     }
@@ -127,9 +135,17 @@ export default function HistoryScreen() {
   }
 
   function getTransactionLabel(tx: Transaction): string {
-    const isSender = tx.sender_id === currentUserId;
+    const isSender = tx.sender_id === currentUserId || tx.direction === 'outgoing';
     const isTopUp = tx.type === "topup" || tx.type === "top_up";
     const isPurchase = tx.type === "payment" || tx.type === "purchase";
+    const isIntercampus = tx.type === "intercampus";
+
+    if (isIntercampus) {
+      const campusName = tx.metadata?.destination_campus || tx.metadata?.source_campus_id || "Campus partenaire";
+      const partnerName = tx.metadata?.receiver_name;
+      if (isSender) return partnerName ? `Envoyé à ${partnerName} · ${campusName}` : `Envoyé à ${campusName}`;
+      return `Reçu de ${campusName}`;
+    }
 
     if (isTopUp) {
       const bonus = tx.metadata?.bonus || 0;
@@ -160,7 +176,7 @@ export default function HistoryScreen() {
   }
 
   function getAmountDisplay(tx: Transaction): { prefix: string; color: any } {
-    const isSender = tx.sender_id === currentUserId;
+    const isSender = tx.sender_id === currentUserId || tx.direction === 'outgoing';
     const isTopUp = tx.type === "topup" || tx.type === "top_up";
     const isPurchase = tx.type === "payment" || tx.type === "purchase";
 
@@ -458,13 +474,14 @@ export default function HistoryScreen() {
           const icon = getTransactionIcon(selectedTx);
           const label = getTransactionLabel(selectedTx);
           const amount = getAmountDisplay(selectedTx);
-          const isSender = selectedTx.sender_id === currentUserId;
+          const isSender = selectedTx.sender_id === currentUserId || selectedTx.direction === 'outgoing';
           const isTopUp = selectedTx.type === "topup" || selectedTx.type === "top_up";
           const isPurchase = selectedTx.type === "payment" || selectedTx.type === "purchase";
 
           function getTypeLabel(): string {
             if (isTopUp) return "RECHARGEMENT";
             if (isPurchase) return "ACHAT";
+            if (selectedTx.type === "intercampus") return isSender ? "INTERCAMPUS ENVOYE" : "INTERCAMPUS RECU";
             if (isSender) return "TRANSFERT ENVOYE";
             return "TRANSFERT RECU";
           }
@@ -559,6 +576,31 @@ export default function HistoryScreen() {
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
                           <Text style={{ color: Colors.mediumGray, fontWeight: '700', fontSize: 13, textTransform: 'uppercase' }}>A</Text>
                           <Text style={{ color: Colors.black, fontWeight: '800', fontSize: 13 }}>{selectedTx.receiver.full_name}</Text>
+                        </View>
+                      </>
+                    )}
+
+                    {selectedTx.type === 'intercampus' && selectedTx.metadata?.receiver_name && (
+                      <>
+                        <View style={{ height: 1, backgroundColor: Colors.lightGray, marginBottom: 10 }} />
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+                          <Text style={{ color: Colors.mediumGray, fontWeight: '700', fontSize: 13, textTransform: 'uppercase' }}>A</Text>
+                          <View style={{ alignItems: 'flex-end' }}>
+                            <Text style={{ color: Colors.black, fontWeight: '800', fontSize: 13 }}>{selectedTx.metadata.receiver_name}</Text>
+                            {selectedTx.metadata?.receiver_email && (
+                              <Text style={{ color: Colors.mediumGray, fontWeight: '600', fontSize: 11 }}>{selectedTx.metadata.receiver_email}</Text>
+                            )}
+                          </View>
+                        </View>
+                      </>
+                    )}
+
+                    {selectedTx.type === 'intercampus' && selectedTx.metadata?.destination_campus && (
+                      <>
+                        <View style={{ height: 1, backgroundColor: Colors.lightGray, marginBottom: 10 }} />
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+                          <Text style={{ color: Colors.mediumGray, fontWeight: '700', fontSize: 13, textTransform: 'uppercase' }}>Campus</Text>
+                          <Text style={{ color: Colors.black, fontWeight: '800', fontSize: 13 }}>{selectedTx.metadata.destination_campus}</Text>
                         </View>
                       </>
                     )}
