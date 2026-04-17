@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>EpiPay — Contraintes Techniques & Réglementaires</title>
+  <style>
+    :root {
+      --blue: #013AFB;
+      --green: #00ff97;
+      --magenta: #ff1ef7;
+      --orange: #ff5a3a;
+      --white: #FFFFFF;
+      --offwhite: #F2F4F8;
+      --black: #181818;
+      --gray: #6B7280;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    @page {
+      size: A3 landscape;
+      margin: 12mm;
+    }
+
+    @media print {
+      html, body {
+        background: #FFFFFF !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      body { padding: 0 !important; }
+      .wrap { max-width: 100% !important; }
+      .section { box-shadow: 6px 6px 0 var(--black) !important; page-break-inside: avoid; }
+    }
+
+    body {
+      background: var(--offwhite);
+      color: var(--black);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      min-height: 100vh;
+      padding: 40px;
+    }
+
+    .wrap {
+      max-width: 1500px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    .title {
+      border: 3px solid var(--black);
+      background: var(--white);
+      padding: 20px 28px;
+      box-shadow: 8px 8px 0 var(--black);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .title h1 {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .title h1 .num {
+      color: var(--blue);
+      margin-right: 10px;
+    }
+    .legend {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border: 2px solid var(--black);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    .badge.done { background: var(--green); color: var(--black); }
+    .badge.target { background: var(--white); color: var(--black); }
+    .badge .dot {
+      width: 8px; height: 8px;
+      background: var(--black);
+    }
+
+    .section {
+      border: 3px solid var(--black);
+      background: var(--white);
+      box-shadow: 8px 8px 0 var(--black);
+      overflow: hidden;
+    }
+
+    .section-header {
+      padding: 16px 24px;
+      color: var(--white);
+      font-weight: 900;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      font-size: 14px;
+      border-bottom: 3px solid var(--black);
+    }
+    .section-header.blue { background: var(--blue); }
+    .section-header.magenta { background: var(--magenta); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead tr { background: var(--black); color: var(--white); }
+    thead th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-weight: 900;
+      border-right: 2px solid #333;
+    }
+    thead th:last-child { border-right: none; }
+    thead th.status-col { width: 140px; text-align: center; }
+    thead th.label-col { width: 210px; }
+    thead th.req-col { width: 340px; }
+
+    tbody td {
+      padding: 14px 16px;
+      border-bottom: 2px solid var(--black);
+      font-size: 13px;
+      vertical-align: top;
+      border-right: 2px solid var(--black);
+    }
+    tbody td:last-child { border-right: none; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:nth-child(even) { background: var(--offwhite); }
+
+    td.label {
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-size: 12px;
+      color: var(--black);
+      background: var(--white) !important;
+      border-right: 2px solid var(--black);
+    }
+    tbody tr:nth-child(even) td.label { background: var(--offwhite) !important; }
+
+    td.req {
+      font-weight: 600;
+      color: var(--black);
+      line-height: 1.4;
+    }
+    td.impl {
+      font-weight: 500;
+      color: var(--black);
+      line-height: 1.4;
+    }
+    td.impl code {
+      background: var(--black);
+      color: var(--green);
+      padding: 2px 6px;
+      font-size: 11px;
+      font-family: "SF Mono", Menlo, monospace;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    td.status {
+      text-align: center;
+      vertical-align: middle;
+    }
+    .status-pill {
+      display: inline-block;
+      padding: 5px 10px;
+      border: 2px solid var(--black);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .status-pill.done { background: var(--green); color: var(--black); }
+    .status-pill.target { background: var(--orange); color: var(--white); }
+    .status-pill.partial { background: var(--white); color: var(--black); }
+  </style>
+</head>
+<body>
+
+  <div class="wrap">
+
+    <div class="title">
+      <h1><span class="num">7.1</span>Contraintes Techniques &amp; Réglementaires</h1>
+      <div class="legend">
+        <span class="badge done"><span class="dot"></span>Réalisé — MVP</span>
+        <span class="badge target" style="background: #fff;"><span class="dot" style="background: var(--orange);"></span>Ciblé — Prod</span>
+      </div>
+    </div>
+
+    <!-- SECTION 1 : CONTRAINTES TECHNIQUES -->
+    <section class="section">
+      <div class="section-header blue">Contraintes techniques</div>
+      <table>
+        <thead>
+          <tr>
+            <th class="label-col">Contrainte</th>
+            <th class="req-col">Exigence</th>
+            <th>Implémentation EpiPay</th>
+            <th class="status-col">Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="label">Architecture modulaire</td>
+            <td class="req">Wallet, moteur IA et API inter-campus indépendants et évolutifs.</td>
+            <td class="impl">Expo Router modulaire par feature (<code>(wallet)</code>, <code>(shop)</code>, <code>admin</code>). Edge Functions Deno isolées : <code>federated-lookup</code>, <code>intercampus-send</code>, <code>intercampus-receive</code>, <code>fraud-scoring</code>.</td>
+            <td class="status"><span class="status-pill done">Réalisé</span></td>
+          </tr>
+          <tr>
+            <td class="label">API REST JSON</td>
+            <td class="req">Tous les échanges inter-campus utilisent un format JSON standardisé.</td>
+            <td class="impl">Contrat JSON documenté (Swagger) : <code>POST /lookup-user</code>, <code>POST /intercampus-receive</code>. Body normalisé (<code>api_key</code>, <code>email</code>, <code>amount</code>, <code>initiator_user_id</code>). Intégré avec 2 campus (Jordan, Toscan).</td>
+            <td class="status"><span class="status-pill done">Réalisé</span></td>
+          </tr>
+          <tr>
+            <td class="label">Performance</td>
+            <td class="req">Analyse fraude &lt; 300 ms ; système stable sans exigence 24/7.</td>
+            <td class="impl">Scoring IA léger côté edge function (règles métier + features). Latence mesurée 120–250 ms. Pas de SLA 24/7 (environnement de démo).</td>
+            <td class="status"><span class="status-pill done">Réalisé</span></td>
+          </tr>
+          <tr>
+            <td class="label">Base de données centrale</td>
+            <td class="req">Stockage unifié utilisateurs, transactions, alertes et logs.</td>
+            <td class="impl">Supabase Postgres (Frankfurt) : <code>profiles</code>, <code>transactions</code>, <code>intercampus_events</code>, <code>fraud_alerts</code>, <code>partner_campuses</code>. RLS activée sur toutes les tables.</td>
+            <td class="status"><span class="status-pill done">Réalisé</span></td>
+          </tr>
+          <tr>
+            <td class="label">Journalisation</td>
+            <td class="req">Traçabilité complète des opérations et décisions.</td>
+            <td class="impl">Logs Supabase Edge Functions + métadonnées transaction (GPS, device, rules triggered). Table <code>fraud_alerts</code> stocke motif + score + décision.</td>
+            <td class="status"><span class="status-pill done">Réalisé</span></td>
+          </tr>
+          <tr>
+            <td class="label">Séparation des rôles</td>
+            <td class="req">Accès différencié étudiant / administrateur.</td>
+            <td class="impl">Routes séparées <code>app/(main)</code> (étudiant) vs <code>app/admin</code> (admin). Guard par <code>profiles.role</code> + policies RLS distinctes. Panel admin : fraude, métriques, produits, users.</td>
+            <td class="status"><span class="status-pill done">Réalisé</span></td>
+          </tr>
+          <tr>
+            <td class="label">Accessibilité</td>
+            <td class="req">Interface simple, claire, en français, conforme RGAA. Compatible navigateurs standards.</td>
+            <td class="impl"><code>AccessibilityProvider</code> global : 4 modes daltonisme (protan/deutan/tritan/achromat), texte agrandi, contraste élevé, reduce motion, texte gras. UI 100 % français. Préfs chiffrées (SecureStore).</td>
+            <td class="status"><span class="status-pill done">Réalisé</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- SECTION 2 : CONTRAINTES RÉGLEMENTAIRES -->
+    <section class="section">
+      <div class="section-header magenta">Contraintes réglementaires</div>
+      <table>
+        <thead>
+          <tr>
+            <th class="label-col">Contrainte</th>
+            <th class="req-col">Exigence</th>
+            <th>Implémentation EpiPay</th>
+            <th class="status-col">Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="label">RGPD</td>
+            <td class="req">Minimisation des données, pseudonymisation, accès restreints.</td>
+            <td class="impl">Écran consentement obligatoire (<code>consent.tsx</code>), privacy-policy intégrée, export données JSON, suppression compte avec anonymisation. Hébergement Supabase Frankfurt (UE). DPO : <code>dpo@epipay.epitech.digital</code>.</td>
+            <td class="status"><span class="status-pill done">Réalisé</span></td>
+          </tr>
+          <tr>
+            <td class="label">Traçabilité</td>
+            <td class="req">Journalisation obligatoire des transactions et décisions IA.</td>
+            <td class="impl">Table <code>transactions</code> immuable (append-only) + <code>fraud_alerts</code> avec <code>rules_triggered</code>, <code>score</code>, <code>decision</code>. Conservation 5 ans (conforme DSP2).</td>
+            <td class="status"><span class="status-pill done">Réalisé</span></td>
+          </tr>
+          <tr>
+            <td class="label">Explicabilité</td>
+            <td class="req">Chaque alerte IA doit fournir une justification compréhensible.</td>
+            <td class="impl">Composant <code>FraudAlert</code> affiche les règles déclenchées en langage naturel (ex : « Transaction &gt; 500 EPC », « Device inconnu »). Score détaillé visible admin.</td>
+            <td class="status"><span class="status-pill done">Réalisé</span></td>
+          </tr>
+          <tr>
+            <td class="label">Décision humaine</td>
+            <td class="req">L'IA ne prend pas de décisions irréversibles.</td>
+            <td class="impl">Flow fraude = alerte + mise en quarantaine réversible. Admin valide ou rejette manuellement. Aucun blocage auto définitif. Export/delete compte : double confirmation user.</td>
+            <td class="status"><span class="status-pill done">Réalisé</span></td>
+          </tr>
+          <tr>
+            <td class="label">Sécurisation des échanges</td>
+            <td class="req">Échanges inter-campus authentifiés et conformes au JSON défini.</td>
+            <td class="impl">Clé API par campus partenaire (<code>api_key_hash</code> en BDD), HTTPS TLS 1.3, validation stricte du body. Auth utilisateur = JWT Supabase. Projection Prod : mTLS + rotation clés automatique.</td>
+            <td class="status"><span class="status-pill partial">Partiel</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+  </div>
+
+</body>
+</html>

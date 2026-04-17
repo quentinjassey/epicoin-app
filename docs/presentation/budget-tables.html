@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>EpiPay — Budget Réel & Projection ROI</title>
+  <style>
+    :root {
+      --blue: #013AFB;
+      --green: #00ff97;
+      --magenta: #ff1ef7;
+      --orange: #ff5a3a;
+      --white: #FFFFFF;
+      --offwhite: #F2F4F8;
+      --black: #181818;
+      --gray: #6B7280;
+      --red: #E11D48;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    @page {
+      size: A3 landscape;
+      margin: 12mm;
+    }
+
+    @media print {
+      html, body {
+        background: #FFFFFF !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      body { padding: 0 !important; }
+      .wrap { max-width: 100% !important; }
+      .table-card { box-shadow: 6px 6px 0 var(--black) !important; page-break-inside: avoid; }
+    }
+
+    body {
+      background: var(--offwhite);
+      color: var(--black);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      min-height: 100vh;
+      padding: 48px;
+    }
+
+    .wrap {
+      max-width: 1600px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 32px;
+    }
+
+    .table-card {
+      border: 3px solid var(--black);
+      background: var(--white);
+      box-shadow: 8px 8px 0 var(--black);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 18px 24px;
+      border-bottom: 3px solid var(--black);
+      color: var(--white);
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+    }
+    .card-header.blue { background: var(--blue); }
+    .card-header.orange { background: var(--orange); }
+
+    .card-header .arrow {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-top: 3px solid var(--white);
+      border-right: 3px solid var(--white);
+      transform: rotate(45deg);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead tr {
+      background: var(--black);
+      color: var(--white);
+    }
+    thead th {
+      padding: 14px 16px;
+      text-align: left;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-weight: 900;
+      border-right: 2px solid #333;
+    }
+    thead th:last-child { border-right: none; }
+    thead th.num { text-align: right; }
+
+    tbody td {
+      padding: 16px;
+      border-bottom: 2px solid var(--black);
+      font-size: 14px;
+      font-weight: 600;
+    }
+    tbody td.num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      font-weight: 800;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:nth-child(even) { background: var(--offwhite); }
+
+    tbody tr.total-row {
+      background: var(--black) !important;
+      color: var(--white);
+    }
+    tbody tr.total-row td {
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-size: 13px;
+      border-bottom: none;
+    }
+    tbody tr.total-row td.num {
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+    tbody tr.total-row td.total-val { color: var(--green); }
+
+    .ecart-pos { color: var(--red); }
+    .ecart-neg { color: #047857; }
+    .ecart-zero { color: var(--gray); }
+
+    .pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border: 2px solid var(--black);
+      background: var(--green);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .pill.blue-pill { background: var(--blue); color: var(--white); }
+    .pill.mag-pill { background: var(--magenta); color: var(--white); }
+    .pill.orange-pill { background: var(--orange); color: var(--white); }
+
+    .kv-row td:first-child {
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-size: 12px;
+      width: 45%;
+      background: var(--offwhite);
+      border-right: 2px solid var(--black);
+    }
+    .kv-row td:last-child {
+      font-weight: 700;
+    }
+
+    .big-num {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--blue);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.5px;
+    }
+    .hyp-label {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--gray);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-left: 6px;
+    }
+    .growth {
+      display: inline-block;
+      background: var(--green);
+      border: 2px solid var(--black);
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      margin-left: 8px;
+    }
+
+    .footnote {
+      max-width: 1600px;
+      margin: 32px auto 0;
+      padding: 14px 20px;
+      border: 2px solid var(--black);
+      background: var(--white);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--gray);
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .footnote strong { color: var(--black); }
+  </style>
+</head>
+<body>
+
+  <div class="wrap">
+
+    <!-- TABLE 1 : DEVIS INITIAL → BUDGET RÉEL -->
+    <section class="table-card">
+      <div class="card-header blue">
+        <span>Devis Initial (Étape 1)</span>
+        <span class="arrow"></span>
+        <span>Budget Réel (Étape 3)</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Postes</th>
+            <th class="num">Prévu (€ HT)</th>
+            <th class="num">Réel (€ HT)</th>
+            <th class="num">Écart</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Coûts humains (j/h)</td>
+            <td class="num">19 200</td>
+            <td class="num">20 400</td>
+            <td class="num ecart-pos">+1 200 (+6,3 %)</td>
+          </tr>
+          <tr>
+            <td>Hébergement / Cloud</td>
+            <td class="num">50</td>
+            <td class="num">720</td>
+            <td class="num ecart-pos">+670 (×14)</td>
+          </tr>
+          <tr>
+            <td>APIs &amp; licences</td>
+            <td class="num">0</td>
+            <td class="num">2 100</td>
+            <td class="num ecart-pos">+2 100</td>
+          </tr>
+          <tr>
+            <td>Sécurité &amp; tests</td>
+            <td class="num">1 200</td>
+            <td class="num">6 500</td>
+            <td class="num ecart-pos">+5 300 (+442 %)</td>
+          </tr>
+          <tr class="total-row">
+            <td>Total</td>
+            <td class="num total-val">20 450</td>
+            <td class="num total-val">29 720</td>
+            <td class="num total-val">+9 270 (+45 %)</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- TABLE 2 : PROJECTION ROI -->
+    <section class="table-card">
+      <div class="card-header orange">Projection ROI</div>
+      <table>
+        <tbody>
+          <tr class="kv-row">
+            <td>Modèle économique</td>
+            <td>
+              <span class="pill blue-pill">Transactions</span>
+              <span class="pill mag-pill">Abonnements</span>
+              <span class="pill orange-pill">Commissions</span>
+            </td>
+          </tr>
+          <tr class="kv-row">
+            <td>Revenus estimés An 1</td>
+            <td>
+              <span class="big-num">6 000 €</span><span class="hyp-label">Basse</span>
+              &nbsp;/&nbsp;
+              <span class="big-num">18 000 €</span><span class="hyp-label">Haute</span>
+            </td>
+          </tr>
+          <tr class="kv-row">
+            <td>Revenus estimés An 2</td>
+            <td>
+              <span class="big-num">32 000 €</span>
+              <span class="growth">+78 % croissance</span>
+            </td>
+          </tr>
+          <tr class="kv-row">
+            <td>Point d'équilibre</td>
+            <td>
+              Mois <strong>17</strong> &nbsp;/&nbsp; An <strong>2</strong>
+            </td>
+          </tr>
+          <tr class="kv-row">
+            <td>ROI projeté 2 ans</td>
+            <td>
+              <span class="big-num" style="color: #047857;">+68 %</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+  </div>
+
+  <div class="footnote">
+    <div><strong>Hypothèses Réel (12 mois prod) —</strong> +2 j/h conception inter-campus · Supabase Pro Frankfurt 60 €/mois · EAS + Apple/Google + Sentry + Twilio 2FA · pen test externe + audit RGPD + tests charge.</div>
+    <div><strong>Hypothèses ROI —</strong> 500 étudiants actifs An 1, 1 800 An 2 · commission 1,5 % · abonnement premium 3 €/mois · 2 campus partenaires intégrés d'ici Q3. ROI = (revenus cumulés 50 k€ − coût 29,7 k€) / coût.</div>
+  </div>
+
+</body>
+</html>

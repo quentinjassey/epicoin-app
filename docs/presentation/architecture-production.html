@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>EpiPay — Architecture Cible Production (Phase 3)</title>
+  <style>
+    :root {
+      --blue: #013AFB;
+      --green: #00ff97;
+      --magenta: #ff1ef7;
+      --orange: #ff5a3a;
+      --white: #FFFFFF;
+      --offwhite: #F2F4F8;
+      --black: #181818;
+      --gray: #6B7280;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    @page {
+      size: 440mm 540mm;
+      margin: 10mm;
+    }
+
+    @media print {
+      html, body {
+        background: #FFFFFF !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      body { padding: 0 !important; }
+      .header, .canvas, .footer { max-width: 100% !important; }
+      .header { box-shadow: 6px 6px 0 var(--black) !important; }
+      .zone { box-shadow: 4px 4px 0 var(--black) !important; page-break-inside: avoid; }
+    }
+
+    body {
+      background: var(--offwhite);
+      color: var(--black);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      min-height: 100vh;
+      padding: 48px;
+    }
+
+    .header {
+      max-width: 1600px;
+      margin: 0 auto 40px;
+      border: 3px solid var(--black);
+      background: var(--white);
+      padding: 32px;
+      box-shadow: 8px 8px 0 var(--black);
+    }
+
+    .header .tag {
+      display: inline-block;
+      background: var(--blue);
+      color: var(--white);
+      padding: 6px 14px;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      border: 2px solid var(--black);
+      margin-bottom: 16px;
+    }
+
+    .header h1 {
+      font-size: 38px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -1px;
+      line-height: 1.05;
+      margin-bottom: 8px;
+    }
+
+    .header h1 .accent { color: var(--blue); }
+
+    .header .subtitle {
+      font-size: 14px;
+      color: var(--gray);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 20px;
+      border-top: 2px solid var(--black);
+      padding-top: 20px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+    .legend-box {
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--black);
+    }
+
+    .canvas {
+      max-width: 1600px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      grid-template-rows: auto;
+      gap: 24px;
+    }
+
+    .zone {
+      background: var(--white);
+      border: 3px solid var(--black);
+      padding: 20px;
+      position: relative;
+      box-shadow: 6px 6px 0 var(--black);
+    }
+
+    .zone::before {
+      content: "";
+      position: absolute;
+      top: -3px; left: -3px; right: -3px;
+      height: 8px;
+      background: var(--accent, var(--blue));
+    }
+
+    .zone-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 16px;
+      padding-top: 4px;
+    }
+
+    .zone-title {
+      font-size: 14px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+    }
+
+    .zone-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: var(--gray);
+      text-transform: uppercase;
+    }
+
+    .services {
+      display: grid;
+      gap: 12px;
+    }
+    .services.cols-2 { grid-template-columns: 1fr 1fr; }
+    .services.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .services.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+    .service {
+      border: 2px solid var(--black);
+      background: var(--offwhite);
+      padding: 12px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      position: relative;
+      min-height: 72px;
+    }
+
+    .service.accent-blue { background: rgba(1, 58, 251, 0.08); border-left: 6px solid var(--blue); }
+    .service.accent-green { background: rgba(0, 255, 151, 0.15); border-left: 6px solid #059669; }
+    .service.accent-magenta { background: rgba(255, 30, 247, 0.08); border-left: 6px solid var(--magenta); }
+    .service.accent-orange { background: rgba(255, 90, 58, 0.1); border-left: 6px solid var(--orange); }
+
+    .service .name {
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      line-height: 1.2;
+    }
+    .service .tech {
+      font-size: 10px;
+      color: var(--gray);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .service .badge {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: var(--black);
+      color: var(--white);
+      font-size: 9px;
+      font-weight: 900;
+      padding: 2px 6px;
+      letter-spacing: 1px;
+    }
+    .service .badge.cert { background: var(--green); color: var(--black); }
+
+    /* Grid placement */
+    .zone-client { grid-column: 5 / 9; --accent: var(--magenta); }
+    .zone-edge { grid-column: 5 / 9; --accent: var(--orange); }
+    .zone-backend { grid-column: 1 / 13; --accent: var(--blue); }
+    .zone-data { grid-column: 1 / 7; --accent: #059669; }
+    .zone-payments { grid-column: 7 / 13; --accent: var(--orange); }
+    .zone-compliance { grid-column: 1 / 7; --accent: var(--magenta); }
+    .zone-observ { grid-column: 7 / 13; --accent: var(--blue); }
+    .zone-cloud { grid-column: 1 / 13; --accent: var(--green); }
+
+    .coverage {
+      max-width: 1600px;
+      margin: 0 auto 32px;
+      border: 3px solid var(--black);
+      background: var(--white);
+      box-shadow: 6px 6px 0 var(--black);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .coverage-item {
+      padding: 16px 20px;
+      border-right: 2px solid var(--black);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .coverage-item:last-child { border-right: none; }
+    .coverage-num {
+      background: var(--blue);
+      color: var(--white);
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 14px;
+      border: 2px solid var(--black);
+      flex-shrink: 0;
+    }
+    .coverage-label {
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      line-height: 1.25;
+    }
+    .coverage-check {
+      margin-left: auto;
+      width: 24px;
+      height: 24px;
+      background: var(--green);
+      border: 2px solid var(--black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    .cloud-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .cloud-col {
+      border: 2px solid var(--black);
+      padding: 14px 16px;
+      background: var(--offwhite);
+    }
+    .cloud-col.chosen {
+      background: rgba(0, 255, 151, 0.15);
+      border-left: 6px solid #059669;
+    }
+    .cloud-col.rejected {
+      background: rgba(107, 114, 128, 0.08);
+      border-left: 6px solid var(--gray);
+      opacity: 0.75;
+    }
+    .cloud-col h4 {
+      font-size: 13px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .cloud-tag {
+      display: inline-block;
+      padding: 3px 8px;
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      border: 2px solid var(--black);
+    }
+    .cloud-tag.pick { background: var(--green); color: var(--black); }
+    .cloud-tag.skip { background: var(--white); color: var(--gray); }
+    .cloud-col .why {
+      font-size: 10px;
+      color: var(--gray);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+    .cloud-col ul {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .cloud-col li {
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.4;
+      padding-left: 18px;
+      position: relative;
+    }
+    .cloud-col li::before {
+      content: "■";
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: var(--black);
+      font-size: 10px;
+    }
+    .cloud-col.chosen li::before { color: #059669; }
+    .cloud-verdict {
+      grid-column: 1 / 3;
+      margin-top: 10px;
+      padding: 12px 16px;
+      background: var(--black);
+      color: var(--white);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      line-height: 1.5;
+      text-transform: uppercase;
+      border: 2px solid var(--black);
+    }
+    .cloud-verdict strong { color: var(--green); font-weight: 900; }
+
+    /* Flow arrows between rows */
+    .arrow-down {
+      grid-column: 5 / 9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 50px;
+      position: relative;
+    }
+    .arrow-down::before {
+      content: "";
+      width: 4px;
+      height: 100%;
+      background: var(--black);
+    }
+    .arrow-down::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-top: 14px solid var(--black);
+    }
+    .arrow-down .label {
+      position: absolute;
+      background: var(--black);
+      color: var(--green);
+      padding: 3px 10px;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      z-index: 2;
+      border: 2px solid var(--black);
+    }
+
+    .fanout {
+      grid-column: 1 / 13;
+      position: relative;
+      height: 70px;
+    }
+    .fanout .bus {
+      position: absolute;
+      top: 8px;
+      left: 12.5%;
+      right: 12.5%;
+      height: 4px;
+      background: var(--black);
+    }
+    .fanout .branch {
+      position: absolute;
+      top: 8px;
+      width: 4px;
+      background: var(--black);
+      height: 58px;
+      transform: translateX(-50%);
+    }
+    .fanout .branch::after {
+      content: "";
+      position: absolute;
+      bottom: -2px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-top: 14px solid var(--black);
+    }
+    .fanout .branch:nth-child(1) { left: 12.5%; }
+    .fanout .branch:nth-child(2) { left: 37.5%; }
+    .fanout .branch:nth-child(3) { left: 62.5%; }
+    .fanout .branch:nth-child(4) { left: 87.5%; }
+    .fanout .dot {
+      position: absolute;
+      top: 10px;
+      width: 18px;
+      height: 18px;
+      background: var(--blue);
+      border: 3px solid var(--black);
+      transform: translate(-50%, -50%);
+      z-index: 2;
+    }
+    .fanout .dot:nth-child(5) { left: 12.5%; }
+    .fanout .dot:nth-child(6) { left: 37.5%; }
+    .fanout .dot:nth-child(7) { left: 62.5%; }
+    .fanout .dot:nth-child(8) { left: 87.5%; }
+
+    .footer {
+      max-width: 1600px;
+      margin: 40px auto 0;
+      border: 3px solid var(--black);
+      background: var(--black);
+      color: var(--white);
+      padding: 24px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .footer .stat { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-weight: 800; }
+    .footer .stat .val { color: var(--green); font-size: 18px; font-weight: 900; display: block; letter-spacing: 0; }
+    .footer .phase { background: var(--green); color: var(--black); padding: 8px 16px; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; font-size: 13px; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <span class="tag">Phase 3 — Production</span>
+    <h1>EpiPay — Architecture <span class="accent">Cible</span></h1>
+    <p class="subtitle">Infrastructure certifiée PCI-DSS L1 · SOC 2 · DSP2 · RGPD</p>
+    <div class="legend">
+      <div class="legend-item"><span class="legend-box" style="background: rgba(1,58,251,0.08); border-left: 6px solid var(--blue);"></span>Service interne</div>
+      <div class="legend-item"><span class="legend-box" style="background: rgba(0,255,151,0.15); border-left: 6px solid #059669;"></span>Stockage / Données</div>
+      <div class="legend-item"><span class="legend-box" style="background: rgba(255,30,247,0.08); border-left: 6px solid var(--magenta);"></span>Service externe</div>
+      <div class="legend-item"><span class="legend-box" style="background: rgba(255,90,58,0.1); border-left: 6px solid var(--orange);"></span>Sécurité / Edge</div>
+    </div>
+  </div>
+
+  <div class="canvas">
+
+    <section class="zone zone-client">
+      <div class="zone-header">
+        <span class="zone-title">Client</span>
+        <span class="zone-label">01 · Frontend</span>
+      </div>
+      <div class="services cols-2">
+        <div class="service accent-magenta">
+          <span class="name">Utilisateur</span>
+          <span class="tech">Étudiant Epitech</span>
+        </div>
+        <div class="service accent-blue">
+          <span class="name">React Native / PWA</span>
+          <span class="tech">Expo · iOS / Android / Web</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="arrow-down"><span class="label">HTTPS / TLS 1.3</span></div>
+
+    <section class="zone zone-edge">
+      <div class="zone-header">
+        <span class="zone-title">Edge / Sécurité</span>
+        <span class="zone-label">02 · Perimeter</span>
+      </div>
+      <div class="services cols-3">
+        <div class="service accent-orange">
+          <span class="badge">WAF</span>
+          <span class="name">Cloudflare</span>
+          <span class="tech">DDoS Protection</span>
+        </div>
+        <div class="service accent-orange">
+          <span class="name">AWS API Gateway</span>
+          <span class="tech">Rate Limiting · Throttle</span>
+        </div>
+        <div class="service accent-orange">
+          <span class="badge">MFA</span>
+          <span class="name">AWS Cognito</span>
+          <span class="tech">Auth · JWT · SCA DSP2</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="arrow-down"><span class="label">Token validé</span></div>
+
+    <section class="zone zone-backend">
+      <div class="zone-header">
+        <span class="zone-title">Backend Production — Microservices</span>
+        <span class="zone-label">03 · Core</span>
+      </div>
+      <div class="services cols-4">
+        <div class="service accent-blue">
+          <span class="name">API Gateway FastAPI</span>
+          <span class="tech">AWS Lambda / ECS</span>
+        </div>
+        <div class="service accent-blue">
+          <span class="name">Service Wallet</span>
+          <span class="tech">Solde · Top-up · Transferts</span>
+        </div>
+        <div class="service accent-blue">
+          <span class="name">Service Transactions</span>
+          <span class="tech">Ledger · Historique</span>
+        </div>
+        <div class="service accent-blue">
+          <span class="name">Service Fraud ML</span>
+          <span class="tech">Scoring temps réel · Anomalies</span>
+        </div>
+        <div class="service accent-blue" style="grid-column: 1 / 2;">
+          <span class="name">Service Intercampus</span>
+          <span class="tech">Fédération campus partenaires</span>
+        </div>
+        <div class="service accent-blue" style="grid-column: 2 / 3;">
+          <span class="name">Service KYC</span>
+          <span class="tech">Vérification identité</span>
+        </div>
+        <div class="service accent-blue" style="grid-column: 3 / 4;">
+          <span class="name">Service AML</span>
+          <span class="tech">Screening sanctions</span>
+        </div>
+        <div class="service accent-blue" style="grid-column: 4 / 5;">
+          <span class="name">Service Notifications</span>
+          <span class="tech">Push · Email · SMS</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="fanout">
+      <span class="branch"></span>
+      <span class="branch"></span>
+      <span class="branch"></span>
+      <span class="branch"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="bus"></span>
+    </div>
+
+    <section class="zone zone-data">
+      <div class="zone-header">
+        <span class="zone-title">Données</span>
+        <span class="zone-label">04 · Persistence</span>
+      </div>
+      <div class="services cols-2">
+        <div class="service accent-green">
+          <span class="badge cert">Multi-AZ</span>
+          <span class="name">PostgreSQL RDS</span>
+          <span class="tech">ACID · Réplication · Backup 7 ans</span>
+        </div>
+        <div class="service accent-green">
+          <span class="name">Redis ElastiCache</span>
+          <span class="tech">Cache · Rate limit · Sessions</span>
+        </div>
+        <div class="service accent-green">
+          <span class="name">AWS S3</span>
+          <span class="tech">Documents KYC · Chiffré AES-256</span>
+        </div>
+        <div class="service accent-green">
+          <span class="name">Secrets Manager</span>
+          <span class="tech">Clés API · Rotation auto</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="zone zone-payments">
+      <div class="zone-header">
+        <span class="zone-title">Paiements / Bancaire</span>
+        <span class="zone-label">05 · Money</span>
+      </div>
+      <div class="services cols-2">
+        <div class="service accent-magenta">
+          <span class="badge cert">PCI-DSS</span>
+          <span class="name">Stripe</span>
+          <span class="tech">Cartes · 3DS · Webhooks</span>
+        </div>
+        <div class="service accent-magenta">
+          <span class="name">Bridge / TrueLayer</span>
+          <span class="tech">Agrégateur bancaire DSP2</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="zone zone-compliance">
+      <div class="zone-header">
+        <span class="zone-title">Conformité — KYC / AML</span>
+        <span class="zone-label">06 · Regulation</span>
+      </div>
+      <div class="services cols-3">
+        <div class="service accent-magenta">
+          <span class="name">Onfido / Jumio</span>
+          <span class="tech">KYC · Vérification ID</span>
+        </div>
+        <div class="service accent-magenta">
+          <span class="name">ComplyAdvantage</span>
+          <span class="tech">AML · Sanctions OFAC/EU</span>
+        </div>
+        <div class="service accent-magenta">
+          <span class="name">TRACFIN</span>
+          <span class="tech">Déclarations soupçon</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="zone zone-observ">
+      <div class="zone-header">
+        <span class="zone-title">Observabilité</span>
+        <span class="zone-label">07 · Monitoring</span>
+      </div>
+      <div class="services cols-4">
+        <div class="service accent-blue">
+          <span class="name">Datadog</span>
+          <span class="tech">APM · Traces</span>
+        </div>
+        <div class="service accent-blue">
+          <span class="name">Sentry</span>
+          <span class="tech">Exceptions</span>
+        </div>
+        <div class="service accent-blue">
+          <span class="name">CloudWatch</span>
+          <span class="tech">Logs centralisés</span>
+        </div>
+        <div class="service accent-magenta">
+          <span class="name">PagerDuty</span>
+          <span class="tech">Alerting 24/7</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="zone zone-cloud">
+      <div class="zone-header">
+        <span class="zone-title">Choix Cloud vs On-premise — Justifié</span>
+        <span class="zone-label">08 · Décision infrastructure</span>
+      </div>
+      <div class="cloud-grid">
+        <div class="cloud-col chosen">
+          <h4>Cloud souverain UE <span class="cloud-tag pick">Choisi</span></h4>
+          <span class="why">AWS Paris (eu-west-3) + Supabase Frankfurt</span>
+          <ul>
+            <li>RGPD : données hébergées en UE, sous juridiction européenne (conforme hébergement données bancaires art. L.312-1 CMF).</li>
+            <li>Certifications héritées : PCI-DSS L1, SOC 2 Type II, ISO 27001 (évite un audit full-stack interne).</li>
+            <li>Scalabilité élastique : pics rentrée Sept (×3 volume) absorbés sans surprovisionnement.</li>
+            <li>OPEX &lt; CAPEX : pas d'investissement matériel initial, pay-as-you-go aligné sur la croissance users.</li>
+            <li>Haute dispo native : multi-AZ, RTO &lt; 5 min, SLA 99,99 % cible atteignable.</li>
+            <li>Équipe réduite (5–7 pers.) : pas de sysadmin dédié, IaC via Terraform + managed services.</li>
+          </ul>
+        </div>
+        <div class="cloud-col rejected">
+          <h4>On-premise / Colocation <span class="cloud-tag skip">Écarté</span></h4>
+          <span class="why">Datacenter propre ou baie louée OVH/Scaleway bare-metal</span>
+          <ul>
+            <li>CAPEX initial 80–150 k€ (serveurs, HSM, firewall, licences) — incompatible budget MVP.</li>
+            <li>Certifications PCI-DSS / SOC 2 à obtenir en propre : +6–12 mois, +50–100 k€/an audit.</li>
+            <li>Recrutement DevOps / SecOps dédié (2 ETP minimum) pour maintenance 24/7.</li>
+            <li>Élasticité limitée : dimensionnement pic = surcoût matériel permanent.</li>
+            <li>Plan de reprise d'activité (PRA) à concevoir, tester, maintenir en interne.</li>
+            <li>Pertinent uniquement si &gt; 500 k users OU exigence souveraineté stricte (OIV, défense).</li>
+          </ul>
+        </div>
+        <div class="cloud-verdict">
+          <strong>Verdict —</strong> Cloud managé UE retenu pour Phase 3. Hybridation envisagée Phase 4 (&gt; 100 k users) : HSM dédié on-premise pour clés cryptographiques + Cloud pour le reste. Pas de vendor lock-in dur : IaC Terraform portable, base PostgreSQL standard.
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+</body>
+</html>

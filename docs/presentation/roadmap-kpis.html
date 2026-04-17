@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>EpiPay — Roadmap Produit &amp; KPIs</title>
+  <style>
+    :root {
+      --blue: #013AFB;
+      --green: #00ff97;
+      --green-dark: #059669;
+      --magenta: #ff1ef7;
+      --orange: #ff5a3a;
+      --white: #FFFFFF;
+      --offwhite: #F2F4F8;
+      --black: #181818;
+      --gray: #6B7280;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    @page {
+      size: A3 landscape;
+      margin: 12mm;
+    }
+
+    @media print {
+      html, body {
+        background: #FFFFFF !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      body { padding: 0 !important; }
+      .wrap { max-width: 100% !important; }
+      .card, .timeline-wrap { box-shadow: 6px 6px 0 var(--black) !important; page-break-inside: avoid; }
+    }
+
+    body {
+      background: var(--offwhite);
+      color: var(--black);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      min-height: 100vh;
+      padding: 40px;
+    }
+
+    .wrap {
+      max-width: 1500px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .header {
+      border: 3px solid var(--black);
+      background: var(--white);
+      box-shadow: 8px 8px 0 var(--black);
+      padding: 22px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .header .tag {
+      display: inline-block;
+      background: var(--blue);
+      color: var(--white);
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      border: 2px solid var(--black);
+      margin-bottom: 10px;
+    }
+    .header h1 {
+      font-size: 26px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -0.5px;
+    }
+    .header h1 .accent { color: var(--blue); }
+    .vision {
+      max-width: 460px;
+      text-align: right;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--gray);
+      line-height: 1.5;
+    }
+    .vision strong { color: var(--black); }
+
+    /* TIMELINE */
+    .timeline-wrap {
+      border: 3px solid var(--black);
+      background: var(--white);
+      box-shadow: 8px 8px 0 var(--black);
+      padding: 40px 40px 28px;
+    }
+    .timeline {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      padding: 20px 0 40px;
+    }
+    .timeline::before {
+      content: "";
+      position: absolute;
+      top: 62px;
+      left: 6%;
+      right: 6%;
+      height: 4px;
+      background: var(--black);
+      z-index: 0;
+    }
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+    .step .marker {
+      width: 48px;
+      height: 48px;
+      border: 3px solid var(--black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      box-shadow: 4px 4px 0 var(--black);
+    }
+    .step .marker .dot {
+      width: 14px;
+      height: 14px;
+      background: var(--white);
+      border: 2px solid var(--black);
+      border-radius: 50%;
+    }
+    .step.v-mvp .marker { background: var(--blue); }
+    .step.v-v11 .marker { background: var(--green); }
+    .step.v-v20 .marker { background: var(--orange); }
+    .step.v-v30 .marker { background: var(--magenta); }
+
+    .step .ver {
+      margin-top: 22px;
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .step .name {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gray);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-top: 2px;
+    }
+    .step .date {
+      margin-top: 14px;
+      padding: 4px 10px;
+      border: 2px solid var(--black);
+      background: var(--offwhite);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    .step.v-mvp .date { background: var(--green); }
+
+    /* SECTIONS BAS */
+    .grid2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+    }
+    .card {
+      border: 3px solid var(--black);
+      background: var(--white);
+      box-shadow: 8px 8px 0 var(--black);
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 14px 22px;
+      color: var(--white);
+      font-weight: 900;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      font-size: 13px;
+      border-bottom: 3px solid var(--black);
+    }
+    .card-header.blue { background: var(--blue); }
+    .card-header.green { background: var(--green-dark); }
+
+    .feat-list {
+      list-style: none;
+      padding: 0;
+    }
+    .feat-list li {
+      padding: 14px 22px;
+      border-bottom: 2px solid var(--black);
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .feat-list li:last-child { border-bottom: none; }
+    .feat-list li:nth-child(even) { background: var(--offwhite); }
+    .feat-list .arrow {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border-top: 3px solid var(--blue);
+      border-right: 3px solid var(--blue);
+      transform: rotate(45deg);
+      flex-shrink: 0;
+    }
+    .feat-list .ver-tag {
+      margin-left: auto;
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      padding: 3px 8px;
+      border: 2px solid var(--black);
+      text-transform: uppercase;
+    }
+    .ver-tag.t-v11 { background: var(--green); }
+    .ver-tag.t-v20 { background: var(--orange); color: var(--white); }
+    .ver-tag.t-v30 { background: var(--magenta); color: var(--white); }
+
+    /* KPIs */
+    .kpi-list {
+      list-style: none;
+      padding: 0;
+    }
+    .kpi-list li {
+      padding: 14px 22px;
+      border-bottom: 2px solid var(--black);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+    }
+    .kpi-list li:last-child { border-bottom: none; }
+    .kpi-list li:nth-child(even) { background: var(--offwhite); }
+
+    .kpi-label {
+      font-weight: 700;
+      color: var(--black);
+      flex: 1;
+    }
+    .kpi-arrow {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border-top: 2.5px solid var(--green-dark);
+      border-right: 2.5px solid var(--green-dark);
+      transform: rotate(45deg);
+      flex-shrink: 0;
+    }
+    .kpi-value {
+      font-variant-numeric: tabular-nums;
+      font-weight: 900;
+      font-size: 13px;
+      padding: 4px 10px;
+      border: 2px solid var(--black);
+      background: var(--green);
+      color: var(--black);
+      letter-spacing: 0.5px;
+      min-width: 155px;
+      text-align: center;
+    }
+    .kpi-value.strong {
+      background: var(--black);
+      color: var(--green);
+    }
+
+    .footer {
+      border: 3px solid var(--black);
+      background: var(--black);
+      color: var(--white);
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+    }
+    .footer .phase {
+      background: var(--green);
+      color: var(--black);
+      padding: 6px 12px;
+      letter-spacing: 2px;
+      border: 2px solid var(--green);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wrap">
+
+    <!-- HEADER + VISION LONG TERME -->
+    <div class="header">
+      <div>
+        <span class="tag">Étape 3 · Roadmap</span>
+        <h1>Roadmap Produit &amp; <span class="accent">KPIs de Succès</span></h1>
+      </div>
+      <div class="vision">
+        <strong>Vision long terme —</strong><br>
+        Devenir le portefeuille digital de référence pour les campus tech européens,<br>avec 15 campus partenaires d'ici 2028 et une intégration full DSP2.
+      </div>
+    </div>
+
+    <!-- TIMELINE -->
+    <div class="timeline-wrap">
+      <div class="timeline">
+        <div class="step v-mvp">
+          <div class="marker"><span class="dot"></span></div>
+          <span class="ver">MVP</span>
+          <span class="name">Actuel</span>
+          <span class="date">Avr. 2026</span>
+        </div>
+        <div class="step v-v11">
+          <div class="marker"><span class="dot"></span></div>
+          <span class="ver">V1.1</span>
+          <span class="name">Post-lancement</span>
+          <span class="date">Été 2026</span>
+        </div>
+        <div class="step v-v20">
+          <div class="marker"><span class="dot"></span></div>
+          <span class="ver">V2.0</span>
+          <span class="name">Scalabilité</span>
+          <span class="date">Fin 2026</span>
+        </div>
+        <div class="step v-v30">
+          <div class="marker"><span class="dot"></span></div>
+          <span class="ver">V3.0</span>
+          <span class="name">Expansion</span>
+          <span class="date">2027</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FONCTIONNALITES + KPIS -->
+    <div class="grid2">
+
+      <section class="card">
+        <div class="card-header blue">Prochaines Fonctionnalités</div>
+        <ul class="feat-list">
+          <li>
+            <span class="arrow"></span>
+            Notifications push en temps réel &amp; receipts
+            <span class="ver-tag t-v11">V1.1</span>
+          </li>
+          <li>
+            <span class="arrow"></span>
+            Cartes virtuelles &amp; cashback étudiant
+            <span class="ver-tag t-v20">V2.0</span>
+          </li>
+          <li>
+            <span class="arrow"></span>
+            Split payment &amp; cagnottes groupées
+            <span class="ver-tag t-v20">V2.0</span>
+          </li>
+          <li>
+            <span class="arrow"></span>
+            Partenariats bancaires externes (agrégation DSP2)
+            <span class="ver-tag t-v20">V2.0</span>
+          </li>
+          <li>
+            <span class="arrow"></span>
+            Expansion multi-campus (15 campus EU)
+            <span class="ver-tag t-v30">V3.0</span>
+          </li>
+          <li>
+            <span class="arrow"></span>
+            Dashboard analytics avancé (BI admin)
+            <span class="ver-tag t-v30">V3.0</span>
+          </li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <div class="card-header green">KPIs de Succès</div>
+        <ul class="kpi-list">
+          <li>
+            <span class="kpi-label">Utilisateurs actifs / mois</span>
+            <span class="kpi-arrow"></span>
+            <span class="kpi-value strong">500 An 1 · 1 800 An 2</span>
+          </li>
+          <li>
+            <span class="kpi-label">Taux de détection fraude</span>
+            <span class="kpi-arrow"></span>
+            <span class="kpi-value">&gt; 95 %</span>
+          </li>
+          <li>
+            <span class="kpi-label">Temps de réponse API (p95)</span>
+            <span class="kpi-arrow"></span>
+            <span class="kpi-value">&lt; 200 ms</span>
+          </li>
+          <li>
+            <span class="kpi-label">Disponibilité plateforme</span>
+            <span class="kpi-arrow"></span>
+            <span class="kpi-value">99,9 % SLA</span>
+          </li>
+          <li>
+            <span class="kpi-label">Satisfaction client (NPS)</span>
+            <span class="kpi-arrow"></span>
+            <span class="kpi-value">&gt; 60</span>
+          </li>
+          <li>
+            <span class="kpi-label">Point d'équilibre financier</span>
+            <span class="kpi-arrow"></span>
+            <span class="kpi-value">Mois 17</span>
+          </li>
+        </ul>
+      </section>
+
+    </div>
+
+    <div class="footer">
+      <span>CEMSI 2026 · Étape 3 · Roadmap Produit</span>
+      <span class="phase">Phase 3 · Production</span>
+    </div>
+
+  </div>
+
+</body>
+</html>
