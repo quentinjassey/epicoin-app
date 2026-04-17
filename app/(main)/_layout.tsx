@@ -112,6 +112,7 @@ export default function MainTabsLayout() {
     return (
         <View style={{ flex: 1 }}>
         <Tabs
+            initialRouteName="(wallet)"
             tabBar={(props) => <BrutalistTabBar {...props} />}
             screenOptions={{ headerShown: false }}
         >

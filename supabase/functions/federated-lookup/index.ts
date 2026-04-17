@@ -91,7 +91,7 @@ serve(async (req) => {
           campus_name: partner.campus_name,
           functions_url: partner.functions_url,
           receive_path: partner.receive_path ?? '/intercampus-receive',
-          remote_wallet_id: partner.remote_wallet_id,
+          remote_wallet_id: data.wallet_id ?? partner.remote_wallet_id,
           destination_api_key: partner.api_key_hash,
         }
       })

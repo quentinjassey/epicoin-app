@@ -127,6 +127,7 @@ export default function WalletScreen() {
         const isSender = tx.sender_id === currentUserId;
         const isTopUp = tx.type === 'topup' || tx.type === 'top_up';
         const isPurchase = tx.type === 'payment' || tx.type === 'purchase';
+        const isIntercampus = tx.type === 'intercampus';
 
         // Determine base icon and label
         let icon = 'arrow.down.circle.fill';
@@ -142,6 +143,18 @@ export default function WalletScreen() {
             icon = 'cart.fill';
             label = `Achat ${tx.metadata?.product_name || 'Produit'}`;
             prefix = '-';
+        } else if (isIntercampus) {
+            if (isSender) {
+                icon = 'arrow.up.circle.fill';
+                const receiverName = tx.metadata?.receiver_name || 'Inconnu';
+                const campusName = tx.metadata?.destination_campus_name || tx.metadata?.destination_campus || 'Campus Partenaire';
+                label = `Envoye a ${receiverName} · ${campusName}`;
+                prefix = '-';
+            } else {
+                icon = 'arrow.down.circle.fill';
+                label = `Recu de Campus Partenaire`;
+                prefix = '+';
+            }
         } else if (isSender) {
             icon = 'arrow.up.circle.fill';
             label = `Envoye a ${tx.receiver?.full_name || 'Utilisateur'}`;
